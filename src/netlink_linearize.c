@@ -99,6 +99,44 @@ static void netlink_gen_concat(struct netlink_linearize_ctx *ctx,
 	}
 }
 
+static void netlink_gen_payload_mask(struct netlink_linearize_ctx *ctx,
+				     const struct expr *expr,
+				     enum nft_registers dreg)
+{
+	struct nft_data_linearize nld, zero = {};
+	struct nftnl_expr *nle;
+	unsigned int offset, len, masklen;
+	mpz_t mask;
+
+	offset = expr->payload.offset % BITS_PER_BYTE;
+	masklen = expr->len + offset;
+
+	if (masklen > 128)
+		BUG("expr mask length is %u (len %u, offset %u)\n",
+				masklen, expr->len, offset);
+
+	mpz_init2(mask, masklen);
+	mpz_bitmask(mask, expr->len);
+
+	if (offset)
+		mpz_lshift_ui(mask, offset);
+
+	nle = alloc_nft_expr("bitwise");
+
+	len = div_round_up(expr->len, BITS_PER_BYTE);
+
+	nftnl_expr_set_u32(nle, NFT_EXPR_BITWISE_SREG, dreg);
+	nftnl_expr_set_u32(nle, NFT_EXPR_BITWISE_DREG, dreg);
+	nftnl_expr_set_u32(nle, NFT_EXPR_BITWISE_LEN, len);
+
+	netlink_gen_raw_data(mask, expr->byteorder, len, &nld);
+	nftnl_expr_set(nle, NFT_EXPR_BITWISE_MASK, nld.value, nld.len);
+	nftnl_expr_set(nle, NFT_EXPR_BITWISE_XOR, &zero.value, nld.len);
+
+	mpz_clear(mask);
+	nftnl_rule_add_expr(ctx->nlr, nle);
+}
+
 static void netlink_gen_payload(struct netlink_linearize_ctx *ctx,
 				const struct expr *expr,
 				enum nft_registers dreg)
@@ -111,9 +149,13 @@ static void netlink_gen_payload(struct netlink_linearize_ctx *ctx,
 			      expr->payload.base - 1);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_PAYLOAD_OFFSET,
 			      expr->payload.offset / BITS_PER_BYTE);
-	nftnl_expr_set_u32(nle, NFTNL_EXPR_PAYLOAD_LEN,
-			      expr->len / BITS_PER_BYTE);
+	nftnl_expr_set_u32(nle, NFT_EXPR_PAYLOAD_LEN,
+			   div_round_up(expr->len, BITS_PER_BYTE));
+
 	nftnl_rule_add_expr(ctx->nlr, nle);
+
+	if (expr->len % BITS_PER_BYTE)
+		netlink_gen_payload_mask(ctx, expr, dreg);
 }
 
 static void netlink_gen_exthdr(struct netlink_linearize_ctx *ctx,
