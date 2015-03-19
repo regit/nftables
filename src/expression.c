@@ -889,6 +889,14 @@ struct expr *set_ref_expr_alloc(const struct location *loc, struct set *set)
 static void set_elem_expr_print(const struct expr *expr)
 {
 	expr_print(expr->key);
+	if (expr->timeout) {
+		printf(" timeout ");
+		time_print(expr->timeout / 1000);
+	}
+	if (expr->expiration) {
+		printf(" expires ");
+		time_print(expr->expiration / 1000);
+	}
 }
 
 static void set_elem_expr_destroy(struct expr *expr)

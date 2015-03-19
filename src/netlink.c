@@ -225,6 +225,9 @@ static struct nft_set_elem *alloc_nft_setelem(const struct expr *expr)
 
 	netlink_gen_data(key, &nld);
 	nft_set_elem_attr_set(nlse, NFT_SET_ELEM_ATTR_KEY, &nld.value, nld.len);
+	if (elem->timeout)
+		nft_set_elem_attr_set_u64(nlse, NFT_SET_ELEM_ATTR_TIMEOUT,
+					  elem->timeout);
 
 	if (data != NULL) {
 		netlink_gen_data(data, &nld);
@@ -1404,6 +1407,10 @@ static int netlink_delinearize_setelem(struct nft_set_elem *nlse,
 		key = bitmask_expr_to_binops(key);
 
 	expr = set_elem_expr_alloc(&netlink_location, key);
+	if (nft_set_elem_attr_is_set(nlse, NFT_SET_ELEM_ATTR_TIMEOUT))
+		expr->timeout	 = nft_set_elem_attr_get_u64(nlse, NFT_SET_ELEM_ATTR_TIMEOUT);
+	if (nft_set_elem_attr_is_set(nlse, NFT_SET_ELEM_ATTR_EXPIRATION))
+		expr->expiration = nft_set_elem_attr_get_u64(nlse, NFT_SET_ELEM_ATTR_EXPIRATION);
 
 	if (flags & NFT_SET_ELEM_INTERVAL_END) {
 		expr->flags |= EXPR_F_INTERVAL_END;

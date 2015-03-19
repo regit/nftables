@@ -234,6 +234,8 @@ struct expr {
 		struct {
 			/* EXPR_SET_ELEM */
 			struct expr		*key;
+			uint64_t		timeout;
+			uint64_t		expiration;
 		};
 		struct {
 			/* EXPR_UNARY */

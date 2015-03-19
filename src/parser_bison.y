@@ -1779,11 +1779,25 @@ set_list_member_expr	:	opt_newline	set_expr	opt_newline
 			;
 
 set_elem_expr		:	set_elem_expr_alloc
+			|	set_elem_expr_alloc		set_elem_options
 			;
 
 set_elem_expr_alloc	:	set_lhs_expr
 			{
 				$$ = set_elem_expr_alloc(&@1, $1);
+			}
+			;
+
+set_elem_options	:	set_elem_option
+			{
+				$<expr>$	= $<expr>0;
+			}
+			|	set_elem_options	set_elem_option
+			;
+
+set_elem_option		:	TIMEOUT			time_spec
+			{
+				$<expr>0->timeout = $2 * 1000;
 			}
 			;
 
