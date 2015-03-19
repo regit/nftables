@@ -181,6 +181,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token INET			"inet"
 
 %token ADD			"add"
+%token UPDATE			"update"
 %token CREATE			"create"
 %token INSERT			"insert"
 %token DELETE			"delete"
@@ -456,6 +457,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <stmt>			queue_stmt queue_stmt_alloc
 %destructor { stmt_free($$); }	queue_stmt queue_stmt_alloc
 %type <val>			queue_stmt_flags queue_stmt_flag
+%type <stmt>			set_stmt
+%destructor { stmt_free($$); }	set_stmt
+%type <val>			set_stmt_op
 
 %type <expr>			symbol_expr verdict_expr integer_expr
 %destructor { expr_free($$); }	symbol_expr verdict_expr integer_expr
@@ -1267,6 +1271,7 @@ stmt			:	verdict_stmt
 			|	ct_stmt
 			|	masq_stmt
 			|	redir_stmt
+			|	set_stmt
 			;
 
 verdict_stmt		:	verdict_expr
@@ -1577,6 +1582,19 @@ queue_stmt_flags	:	queue_stmt_flag
 
 queue_stmt_flag		:	BYPASS	{ $$ = NFT_QUEUE_FLAG_BYPASS; }
 			|	FANOUT	{ $$ = NFT_QUEUE_FLAG_CPU_FANOUT; }
+			;
+
+set_stmt		:	SET	set_stmt_op	set_elem_expr	symbol_expr
+			{
+				$$ = set_stmt_alloc(&@$);
+				$$->set.op  = $2;
+				$$->set.key = $3;
+				$$->set.set = $4;
+			}
+			;
+
+set_stmt_op		:	ADD	{ $$ = NFT_DYNSET_OP_ADD; }
+			|	UPDATE	{ $$ = NFT_DYNSET_OP_UPDATE; }
 			;
 
 match_stmt		:	relational_expr

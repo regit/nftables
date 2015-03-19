@@ -377,3 +377,34 @@ struct stmt *redir_stmt_alloc(const struct location *loc)
 {
 	return stmt_alloc(loc, &redir_stmt_ops);
 }
+
+static const char * const set_stmt_op_names[] = {
+	[NFT_DYNSET_OP_ADD]	= "add",
+	[NFT_DYNSET_OP_UPDATE]	= "update",
+};
+
+static void set_stmt_print(const struct stmt *stmt)
+{
+	printf("set %s ", set_stmt_op_names[stmt->set.op]);
+	expr_print(stmt->set.key);
+	printf(" ");
+	expr_print(stmt->set.set);
+}
+
+static void set_stmt_destroy(struct stmt *stmt)
+{
+	expr_free(stmt->set.key);
+	expr_free(stmt->set.set);
+}
+
+static const struct stmt_ops set_stmt_ops = {
+	.type		= STMT_SET,
+	.name		= "set",
+	.print		= set_stmt_print,
+	.destroy	= set_stmt_destroy,
+};
+
+struct stmt *set_stmt_alloc(const struct location *loc)
+{
+	return stmt_alloc(loc, &set_stmt_ops);
+}

@@ -104,6 +104,14 @@ extern struct stmt *ct_stmt_alloc(const struct location *loc,
 				  enum nft_ct_keys key,
 				  struct expr *expr);
 
+struct set_stmt {
+	struct expr		*set;
+	struct expr		*key;
+	enum nft_dynset_ops	op;
+};
+
+extern struct stmt *set_stmt_alloc(const struct location *loc);
+
 /**
  * enum stmt_types - statement types
  *
@@ -120,6 +128,7 @@ extern struct stmt *ct_stmt_alloc(const struct location *loc,
  * @STMT_REDIR:		redirect statement
  * @STMT_QUEUE:		QUEUE statement
  * @STMT_CT:		conntrack statement
+ * @STMT_SET:		set statement
  */
 enum stmt_types {
 	STMT_INVALID,
@@ -135,6 +144,7 @@ enum stmt_types {
 	STMT_REDIR,
 	STMT_QUEUE,
 	STMT_CT,
+	STMT_SET,
 };
 
 /**
@@ -184,6 +194,7 @@ struct stmt {
 		struct redir_stmt	redir;
 		struct queue_stmt	queue;
 		struct ct_stmt		ct;
+		struct set_stmt		set;
 	};
 };
 

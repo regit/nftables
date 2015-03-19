@@ -614,7 +614,7 @@ static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 	struct expr *i, *next;
 
 	list_for_each_entry_safe(i, next, &(*expr)->expressions, list) {
-		if (dtype && off == 0)
+		if (expr_is_constant(*expr) && dtype && off == 0)
 			return expr_binary_error(ctx->msgs, i, *expr,
 						 "unexpected concat component, "
 						 "expecting %s",
@@ -1661,6 +1661,30 @@ static int stmt_evaluate_log(struct eval_ctx *ctx, struct stmt *stmt)
 	return 0;
 }
 
+static int stmt_evaluate_set(struct eval_ctx *ctx, struct stmt *stmt)
+{
+	expr_set_context(&ctx->ectx, NULL, 0);
+	if (expr_evaluate(ctx, &stmt->set.set) < 0)
+		return -1;
+	if (stmt->set.set->ops->type != EXPR_SET_REF)
+		return expr_error(ctx->msgs, stmt->set.set,
+				  "Expression does not refer to a set");
+
+	if (stmt_evaluate_arg(ctx, stmt,
+			      stmt->set.set->set->keytype,
+			      stmt->set.set->set->keylen,
+			      &stmt->set.key) < 0)
+		return -1;
+	if (expr_is_constant(stmt->set.key))
+		return expr_error(ctx->msgs, stmt->set.key,
+				  "Key expression can not be constant");
+	if (stmt->set.key->comment != NULL)
+		return expr_error(ctx->msgs, stmt->set.key,
+				  "Key expression comments are not supported");
+
+	return 0;
+}
+
 int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 {
 #ifdef DEBUG
@@ -1695,6 +1719,8 @@ int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 		return stmt_evaluate_redir(ctx, stmt);
 	case STMT_QUEUE:
 		return stmt_evaluate_queue(ctx, stmt);
+	case STMT_SET:
+		return stmt_evaluate_set(ctx, stmt);
 	default:
 		BUG("unknown statement type %s\n", stmt->ops->name);
 	}

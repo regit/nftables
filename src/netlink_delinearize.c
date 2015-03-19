@@ -694,6 +694,40 @@ static void netlink_parse_queue(struct netlink_parse_ctx *ctx,
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }
 
+static void netlink_parse_dynset(struct netlink_parse_ctx *ctx,
+				 const struct location *loc,
+				 const struct nft_rule_expr *nle)
+{
+	struct expr *expr;
+	struct stmt *stmt;
+	struct set *set;
+	enum nft_registers sreg;
+	const char *name;
+
+	name = nft_rule_expr_get_str(nle, NFT_EXPR_DYNSET_SET_NAME);
+	set  = set_lookup(ctx->table, name);
+	if (set == NULL)
+		return netlink_error(ctx, loc,
+				     "Unknown set '%s' in dynset statement",
+				     name);
+
+	sreg = netlink_parse_register(nle, NFT_EXPR_DYNSET_SREG_KEY);
+	expr = netlink_get_register(ctx, loc, sreg);
+	if (expr == NULL)
+		return netlink_error(ctx, loc,
+				     "Dynset statement has no key expression");
+
+	expr = set_elem_expr_alloc(&expr->location, expr);
+	expr->timeout = nft_rule_expr_get_u64(nle, NFT_EXPR_DYNSET_TIMEOUT);
+
+	stmt = set_stmt_alloc(loc);
+	stmt->set.set = set_ref_expr_alloc(loc, set);
+	stmt->set.op  = nft_rule_expr_get_u32(nle, NFT_EXPR_DYNSET_OP);
+	stmt->set.key = expr;
+
+	list_add_tail(&stmt->list, &ctx->rule->stmts);
+}
+
 static const struct {
 	const char	*name;
 	void		(*parse)(struct netlink_parse_ctx *ctx,
@@ -717,6 +751,7 @@ static const struct {
 	{ .name = "masq",	.parse = netlink_parse_masq },
 	{ .name = "redir",	.parse = netlink_parse_redir },
 	{ .name = "queue",	.parse = netlink_parse_queue },
+	{ .name = "dynset",	.parse = netlink_parse_dynset },
 };
 
 static int netlink_parse_expr(struct nft_rule_expr *nle, void *arg)
@@ -1139,6 +1174,9 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 			break;
 		case STMT_REJECT:
 			stmt_reject_postprocess(rctx, stmt);
+			break;
+		case STMT_SET:
+			expr_postprocess(&rctx, stmt, &stmt->set.key);
 			break;
 		default:
 			break;

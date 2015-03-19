@@ -800,6 +800,28 @@ static void netlink_gen_ct_stmt(struct netlink_linearize_ctx *ctx,
 	nft_rule_add_expr(ctx->nlr, nle);
 }
 
+static void netlink_gen_set_stmt(struct netlink_linearize_ctx *ctx,
+				 const struct stmt *stmt)
+{
+	struct nft_rule_expr *nle;
+	enum nft_registers sreg_key;
+
+	sreg_key = get_register(ctx);
+	netlink_gen_expr(ctx, stmt->set.key, sreg_key);
+	release_register(ctx);
+
+	nle = alloc_nft_expr("dynset");
+	netlink_put_register(nle, NFT_EXPR_DYNSET_SREG_KEY, sreg_key);
+	nft_rule_expr_set_u64(nle, NFT_EXPR_DYNSET_TIMEOUT,
+			      stmt->set.key->timeout);
+	nft_rule_expr_set_u32(nle, NFT_EXPR_DYNSET_OP, stmt->set.op);
+	nft_rule_expr_set_str(nle, NFT_EXPR_DYNSET_SET_NAME,
+			      stmt->set.set->set->handle.set);
+	nft_rule_expr_set_u32(nle, NFT_EXPR_DYNSET_SET_ID,
+			      stmt->set.set->set->handle.set_id);
+	nft_rule_add_expr(ctx->nlr, nle);
+}
+
 static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 			     const struct stmt *stmt)
 {
@@ -828,6 +850,8 @@ static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 		return netlink_gen_queue_stmt(ctx, stmt);
 	case STMT_CT:
 		return netlink_gen_ct_stmt(ctx, stmt);
+	case STMT_SET:
+		return netlink_gen_set_stmt(ctx, stmt);
 	default:
 		BUG("unknown statement type %s\n", stmt->ops->name);
 	}
