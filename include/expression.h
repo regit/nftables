@@ -236,6 +236,7 @@ struct expr {
 			struct expr		*key;
 			uint64_t		timeout;
 			uint64_t		expiration;
+			const char		*comment;
 		};
 		struct {
 			/* EXPR_UNARY */

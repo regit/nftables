@@ -897,10 +897,13 @@ static void set_elem_expr_print(const struct expr *expr)
 		printf(" expires ");
 		time_print(expr->expiration / 1000);
 	}
+	if (expr->comment)
+		printf(" comment \"%s\"", expr->comment);
 }
 
 static void set_elem_expr_destroy(struct expr *expr)
 {
+	xfree(expr->comment);
 	expr_free(expr->key);
 }
 

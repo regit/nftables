@@ -1799,6 +1799,10 @@ set_elem_option		:	TIMEOUT			time_spec
 			{
 				$<expr>0->timeout = $2 * 1000;
 			}
+			|	COMMENT			string
+			{
+				$<expr>0->comment = $2;
+			}
 			;
 
 set_lhs_expr		:	concat_expr

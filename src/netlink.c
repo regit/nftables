@@ -228,6 +228,9 @@ static struct nft_set_elem *alloc_nft_setelem(const struct expr *expr)
 	if (elem->timeout)
 		nft_set_elem_attr_set_u64(nlse, NFT_SET_ELEM_ATTR_TIMEOUT,
 					  elem->timeout);
+	if (elem->comment)
+		nft_set_elem_attr_set(nlse, NFT_SET_ELEM_ATTR_USERDATA,
+				      elem->comment, strlen(elem->comment) + 1);
 
 	if (data != NULL) {
 		netlink_gen_data(data, &nld);
@@ -1411,6 +1414,14 @@ static int netlink_delinearize_setelem(struct nft_set_elem *nlse,
 		expr->timeout	 = nft_set_elem_attr_get_u64(nlse, NFT_SET_ELEM_ATTR_TIMEOUT);
 	if (nft_set_elem_attr_is_set(nlse, NFT_SET_ELEM_ATTR_EXPIRATION))
 		expr->expiration = nft_set_elem_attr_get_u64(nlse, NFT_SET_ELEM_ATTR_EXPIRATION);
+	if (nft_set_elem_attr_is_set(nlse, NFT_SET_ELEM_ATTR_USERDATA)) {
+		const void *data;
+		uint32_t len;
+
+		data = nft_set_elem_attr_get(nlse, NFT_SET_ELEM_ATTR_USERDATA, &len);
+		expr->comment = xmalloc(len);
+		memcpy((char *)expr->comment, data, len);
+	}
 
 	if (flags & NFT_SET_ELEM_INTERVAL_END) {
 		expr->flags |= EXPR_F_INTERVAL_END;
