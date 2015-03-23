@@ -173,6 +173,7 @@ enum set_flags {
 	SET_F_CONSTANT		= 0x2,
 	SET_F_INTERVAL		= 0x4,
 	SET_F_MAP		= 0x8,
+	SET_F_TIMEOUT		= 0x10,
 };
 
 /**
@@ -183,6 +184,8 @@ enum set_flags {
  * @location:	location the set was defined/declared at
  * @refcnt:	reference count
  * @flags:	bitmask of set flags
+ * @gc_int:	garbage collection interval
+ * @timeout:	default timeout value
  * @keytype:	key data type
  * @keylen:	key length
  * @datatype:	mapping data type
@@ -197,6 +200,8 @@ struct set {
 	struct location		location;
 	unsigned int		refcnt;
 	uint32_t		flags;
+	uint32_t		gc_int;
+	uint64_t		timeout;
 	const struct datatype	*keytype;
 	unsigned int		keylen;
 	const struct datatype	*datatype;

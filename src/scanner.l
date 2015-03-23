@@ -271,6 +271,8 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 "constant"		{ return CONSTANT; }
 "interval"		{ return INTERVAL; }
+"timeout"		{ return TIMEOUT; }
+"gc-interval"		{ return GC_INTERVAL; }
 "elements"		{ return ELEMENTS; }
 
 "policy"		{ return POLICY; }

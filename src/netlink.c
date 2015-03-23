@@ -1068,6 +1068,11 @@ static struct set *netlink_delinearize_set(struct netlink_ctx *ctx,
 		set->datalen = data_len * BITS_PER_BYTE;
 	}
 
+	if (nft_set_attr_is_set(nls, NFT_SET_ATTR_TIMEOUT))
+		set->timeout = nft_set_attr_get_u64(nls, NFT_SET_ATTR_TIMEOUT);
+	if (nft_set_attr_is_set(nls, NFT_SET_ATTR_GC_INTERVAL))
+		set->gc_int  = nft_set_attr_get_u32(nls, NFT_SET_ATTR_GC_INTERVAL);
+
 	if (nft_set_attr_is_set(nls, NFT_SET_ATTR_POLICY))
 		set->policy = nft_set_attr_get_u32(nls, NFT_SET_ATTR_POLICY);
 
@@ -1131,6 +1136,11 @@ static int netlink_add_set_batch(struct netlink_ctx *ctx,
 		nft_set_attr_set_u32(nls, NFT_SET_ATTR_DATA_LEN,
 				     set->datalen / BITS_PER_BYTE);
 	}
+	if (set->timeout)
+		nft_set_attr_set_u64(nls, NFT_SET_ATTR_TIMEOUT, set->timeout);
+	if (set->gc_int)
+		nft_set_attr_set_u32(nls, NFT_SET_ATTR_GC_INTERVAL, set->gc_int);
+
 	set->handle.set_id = ++set_id;
 	nft_set_attr_set_u32(nls, NFT_SET_ATTR_ID, set->handle.set_id);
 

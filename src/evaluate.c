@@ -1737,6 +1737,10 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 			return -1;
 	}
 
+	/* Default timeout value implies timeout support */
+	if (set->timeout)
+		set->flags |= SET_F_TIMEOUT;
+
 	if (!(set->flags & SET_F_MAP))
 		return 0;
 

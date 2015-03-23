@@ -136,6 +136,7 @@ static void do_set_print(const struct set *set, struct print_fmt_options *opts)
 {
 	const char *delim = "";
 	const char *type;
+	uint32_t flags;
 
 	type = set->flags & SET_F_MAP ? "map" : "set";
 	printf("%s%s", opts->tab, type);
@@ -167,7 +168,12 @@ static void do_set_print(const struct set *set, struct print_fmt_options *opts)
 		}
 	}
 
-	if (set->flags & (SET_F_CONSTANT | SET_F_INTERVAL)) {
+	flags = set->flags;
+	/* "timeout" flag is redundant if a default timeout exists */
+	if (set->timeout)
+		flags &= ~SET_F_TIMEOUT;
+
+	if (flags & (SET_F_CONSTANT | SET_F_INTERVAL | SET_F_TIMEOUT)) {
 		printf("%s%sflags ", opts->tab, opts->tab);
 		if (set->flags & SET_F_CONSTANT) {
 			printf("%sconstant", delim);
@@ -177,6 +183,21 @@ static void do_set_print(const struct set *set, struct print_fmt_options *opts)
 			printf("%sinterval", delim);
 			delim = ",";
 		}
+		if (set->flags & SET_F_TIMEOUT) {
+			printf("%stimeout", delim);
+			delim = ",";
+		}
+		printf("%s", opts->nl);
+	}
+
+	if (set->timeout) {
+		printf("%s%stimeout ", opts->tab, opts->tab);
+		time_print(set->timeout / 1000);
+		printf("%s", opts->nl);
+	}
+	if (set->gc_int) {
+		printf("%s%sgc-interval ", opts->tab, opts->tab);
+		time_print(set->gc_int / 1000);
 		printf("%s", opts->nl);
 	}
 

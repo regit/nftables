@@ -201,6 +201,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %token CONSTANT			"constant"
 %token INTERVAL			"interval"
+%token TIMEOUT			"timeout"
+%token GC_INTERVAL		"gc-interval"
 %token ELEMENTS			"elements"
 
 %token POLICY			"policy"
@@ -944,6 +946,16 @@ set_block		:	/* empty */	{ $$ = $<set>-1; }
 				$1->flags = $3;
 				$$ = $1;
 			}
+			|	set_block	TIMEOUT		time_spec	stmt_seperator
+			{
+				$1->timeout = $3 * 1000;
+				$$ = $1;
+			}
+			|	set_block	GC_INTERVAL	time_spec	stmt_seperator
+			{
+				$1->gc_int = $3 * 1000;
+				$$ = $1;
+			}
 			|	set_block	ELEMENTS	'='		set_expr
 			{
 				$1->init = $4;
@@ -961,6 +973,7 @@ set_flag_list		:	set_flag_list	COMMA		set_flag
 
 set_flag		:	CONSTANT	{ $$ = SET_F_CONSTANT; }
 			|	INTERVAL	{ $$ = SET_F_INTERVAL; }
+			|	TIMEOUT		{ $$ = SET_F_TIMEOUT; }
 			;
 
 map_block_alloc		:	/* empty */
