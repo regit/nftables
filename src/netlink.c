@@ -1383,6 +1383,10 @@ static int netlink_delinearize_setelem(struct nft_set_elem *nlse,
 	    expr->byteorder == BYTEORDER_HOST_ENDIAN)
 		mpz_switch_byteorder(expr->value, expr->len / BITS_PER_BYTE);
 
+	if (expr->dtype->basetype != NULL &&
+	    expr->dtype->basetype->type == TYPE_BITMASK)
+		expr = bitmask_expr_to_binops(expr);
+
 	if (flags & NFT_SET_ELEM_INTERVAL_END) {
 		expr->flags |= EXPR_F_INTERVAL_END;
 	} else {
