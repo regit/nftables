@@ -753,7 +753,7 @@ struct rule_pp_ctx {
 static void payload_dependency_kill(struct rule_pp_ctx *ctx, struct expr *expr)
 {
 	if (ctx->pbase != PROTO_BASE_INVALID &&
-	    ctx->pbase == expr->payload.base - 1 &&
+	    ctx->pbase == expr->payload.base &&
 	    ctx->pdep != NULL) {
 		list_del(&ctx->pdep->list);
 		stmt_free(ctx->pdep);
@@ -766,7 +766,7 @@ static void payload_dependency_store(struct rule_pp_ctx *ctx,
 				     struct stmt *stmt,
 				     enum proto_bases base)
 {
-	ctx->pbase = base;
+	ctx->pbase = base + 1;
 	ctx->pdep  = stmt;
 }
 
