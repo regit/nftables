@@ -409,7 +409,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { handle_free(&$$); } table_spec tables_spec chain_spec chain_identifier ruleid_spec ruleset_spec
 %type <handle>			set_spec set_identifier
 %destructor { handle_free(&$$); } set_spec set_identifier
-%type <val>			handle_spec family_spec family_spec_explicit position_spec
+%type <val>			handle_spec family_spec family_spec_explicit position_spec chain_policy
 
 %type <table>			table_block_alloc table_block
 %destructor { close_scope(state); table_free($$); }	table_block_alloc
@@ -1071,24 +1071,19 @@ hook_spec		:	TYPE		STRING		HOOK		STRING		PRIORITY	NUM
 			}
 			;
 
-policy_spec		:	POLICY		ACCEPT
+policy_spec		:	POLICY		chain_policy
 			{
 				if ($<chain>0->policy != -1) {
 					erec_queue(error(&@$, "you cannot set chain policy twice"),
 						   state->msgs);
 					YYERROR;
 				}
-				$<chain>0->policy	= NF_ACCEPT;
+				$<chain>0->policy	= $2;
 			}
-			|	POLICY		DROP
-			{
-				if ($<chain>0->policy != -1) {
-					erec_queue(error(&@$, "you cannot set chain policy twice"),
-						   state->msgs);
-					YYERROR;
-				}
-				$<chain>0->policy	= NF_DROP;
-			}
+			;
+
+chain_policy		:	ACCEPT		{ $$ = NF_ACCEPT; }
+			|	DROP		{ $$ = NF_DROP;   }
 			;
 
 identifier		:	STRING
