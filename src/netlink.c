@@ -953,19 +953,19 @@ int netlink_get_table(struct netlink_ctx *ctx, const struct handle *h,
 
 	nlt = alloc_nft_table(h);
 	err = mnl_nft_table_get(nf_sock, nlt, 0);
-	nft_table_free(nlt);
-
 	if (err < 0) {
 		netlink_io_error(ctx, loc,
 				 "Could not receive table from kernel: %s",
 				 strerror(errno));
-		return err;
+		goto out;
 	}
 
 	ntable = netlink_delinearize_table(ctx, nlt);
 	table->flags = ntable->flags;
 	xfree(ntable);
-	return 0;
+out:
+	nft_table_free(nlt);
+	return err;
 }
 
 int netlink_list_table(struct netlink_ctx *ctx, const struct handle *h,
