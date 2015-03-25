@@ -31,12 +31,18 @@ signal_received = 0
 
 
 class Colors:
-    HEADER = '\033[95m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    ENDC = '\033[0m'
-
+    if sys.stdout.isatty():
+        HEADER = '\033[95m'
+        GREEN = '\033[92m'
+        YELLOW = '\033[93m'
+        RED = '\033[91m'
+        ENDC = '\033[0m'
+    else:
+        HEADER = ''
+        GREEN = ''
+        YELLOW = ''
+        RED = ''
+        ENDC = ''
 
 def print_error(reason, filename=None, lineno=None):
     '''
