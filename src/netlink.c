@@ -52,7 +52,7 @@ static struct mnl_socket *nfsock_open(void)
 
 	s = mnl_socket_open(NETLINK_NETFILTER);
 	if (s == NULL)
-		netlink_open_error();
+		netlink_init_error();
 	return s;
 }
 
@@ -110,10 +110,11 @@ int netlink_io_error(struct netlink_ctx *ctx, const struct location *loc,
 	return -1;
 }
 
-void __noreturn netlink_open_error(void)
+void __noreturn __netlink_init_error(const char *filename, int line,
+				     const char *reason)
 {
-	fprintf(stderr, "E: Unable to open Netlink socket: %s\n",
-		strerror(errno));
+	fprintf(stderr, "%s:%d: Unable to initialize Netlink socket: %s\n",
+		filename, line, reason);
 	exit(NFT_EXIT_NONL);
 }
 
