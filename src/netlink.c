@@ -1869,7 +1869,7 @@ static int netlink_events_rule_cb(const struct nlmsghdr *nlh, int type,
 			r = netlink_delinearize_rule(monh->ctx, nlr);
 			nlr_for_each_set(nlr, rule_map_decompose_cb, NULL);
 
-			printf("add rule %s %s %s", family, table, chain);
+			printf("add rule %s %s %s ", family, table, chain);
 			rule_print(r);
 			printf("\n");
 
