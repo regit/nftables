@@ -25,6 +25,7 @@
 #include <netlink.h>
 #include <erec.h>
 #include <mnl.h>
+#include <iface.h>
 #include <cli.h>
 
 unsigned int max_errors = 10;
@@ -362,7 +363,8 @@ int main(int argc, char * const *argv)
 out:
 	scanner_destroy(scanner);
 	erec_print_list(stderr, &msgs);
-
 	xfree(buf);
+	iface_cache_release();
+
 	return rc;
 }

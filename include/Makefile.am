@@ -4,6 +4,7 @@ noinst_HEADERS = 	cli.h		\
 			datatype.h	\
 			expression.h	\
 			gmputil.h	\
+			iface.h		\
 			mnl.h		\
 			nftables.h	\
 			payload.h	\

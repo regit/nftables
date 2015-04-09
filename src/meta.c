@@ -30,6 +30,7 @@
 #include <gmputil.h>
 #include <utils.h>
 #include <erec.h>
+#include <iface.h>
 
 static struct symbol_table *realm_tbl;
 static void __init realm_table_init(void)
@@ -138,7 +139,7 @@ static void ifindex_type_print(const struct expr *expr)
 	int ifindex;
 
 	ifindex = mpz_get_uint32(expr->value);
-	if (if_indextoname(ifindex, name))
+	if (nft_if_indextoname(ifindex, name))
 		printf("%s", name);
 	else
 		printf("%d", ifindex);
@@ -149,7 +150,7 @@ static struct error_record *ifindex_type_parse(const struct expr *sym,
 {
 	int ifindex;
 
-	ifindex = if_nametoindex(sym->identifier);
+	ifindex = nft_if_nametoindex(sym->identifier);
 	if (ifindex == 0)
 		return error(&sym->location, "Interface does not exist");
 

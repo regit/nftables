@@ -44,6 +44,7 @@ nft_SOURCES =	main.c				\
 		utils.c				\
 		erec.c				\
 		mnl.c				\
+		iface.c				\
 		scanner.l			\
 		parser_bison.y
 

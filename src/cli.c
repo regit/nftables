@@ -28,6 +28,7 @@
 #include <parser.h>
 #include <erec.h>
 #include <utils.h>
+#include <iface.h>
 #include <cli.h>
 
 #define CMDLINE_HISTFILE	".nft.history"
@@ -123,6 +124,7 @@ static void cli_complete(char *line)
 	nft_run(scanner, state, &msgs);
 	erec_print_list(stdout, &msgs);
 	xfree(line);
+	iface_cache_release();
 }
 
 static char **cli_completion(const char *text, int start, int end)
