@@ -396,6 +396,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <string>			identifier string comment_spec
 %destructor { xfree($$); }	identifier string comment_spec
 
+%type <val>			time_spec
+
 %type <val>			type_identifier
 %type <datatype>		data_type
 
@@ -1091,6 +1093,20 @@ identifier		:	STRING
 
 string			:	STRING
 			|	QUOTED_STRING
+			;
+
+time_spec		:	STRING
+			{
+				struct error_record *erec;
+				uint64_t res;
+
+				erec = time_parse(&@1, $1, &res);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+				$$ = res;
+			}
 			;
 
 family_spec		:	/* empty */		{ $$ = NFPROTO_IPV4; }
