@@ -831,10 +831,6 @@ static struct error_record *time_type_parse(const struct expr *sym,
 			}
 			h = str2int(tmp, c, k);
 			k = 0;
-			if (h > 23) {
-				return error(&sym->location,
-					     "Hour needs to be 0-23");
-			}
 			mask |= HOUR;
 			break;
 		case 'm':
@@ -844,10 +840,6 @@ static struct error_record *time_type_parse(const struct expr *sym,
 			}
 			m = str2int(tmp, c, k);
 			k = 0;
-			if (m > 59) {
-				return error(&sym->location,
-					     "Minute needs to be 0-59");
-			}
 			mask |= MIN;
 			break;
 		case 's':
@@ -857,10 +849,6 @@ static struct error_record *time_type_parse(const struct expr *sym,
 			}
 			s = str2int(tmp, c, k);
 			k = 0;
-			if (s > 59) {
-				return error(&sym->location,
-					     "second needs to be 0-59");
-			}
 			mask |= SECS;
 			break;
 		default:
