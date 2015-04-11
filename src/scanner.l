@@ -117,6 +117,8 @@ quotedstring	\"[^"]*\"
 comment		#.*$
 slash		\/
 
+timestring	([0-9]+d)?([0-9]+h)?([0-9]+m)?([0-9]+s)?
+
 hex4		([[:xdigit:]]{1,4})
 v680		(({hex4}:){7}{hex4})
 v670		((:)((:{hex4}){7}))
@@ -453,6 +455,11 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "json"			{ return JSON; }
 
 {addrstring}		{
+				yylval->string = xstrdup(yytext);
+				return STRING;
+			}
+
+{timestring}		{
 				yylval->string = xstrdup(yytext);
 				return STRING;
 			}

@@ -775,8 +775,6 @@ static void time_type_print(const struct expr *expr)
 	minutes = seconds / 60;
 	seconds %= 60;
 
-	printf("\"");
-
 	if (days > 0)
 		printf("%"PRIu64"d", days);
 	if (hours > 0)
@@ -785,8 +783,6 @@ static void time_type_print(const struct expr *expr)
 		printf("%"PRIu64"m", minutes);
 	if (seconds > 0)
 		printf("%"PRIu64"s", seconds);
-
-	printf("\"");
 }
 
 enum {
