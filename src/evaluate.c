@@ -675,6 +675,19 @@ static int expr_evaluate_list(struct eval_ctx *ctx, struct expr **expr)
 	return 0;
 }
 
+static int expr_evaluate_set_elem(struct eval_ctx *ctx, struct expr **expr)
+{
+	struct expr *elem = *expr;
+
+	if (expr_evaluate(ctx, &elem->key) < 0)
+		return -1;
+
+	elem->dtype = elem->key->dtype;
+	elem->len   = elem->key->len;
+	elem->flags = elem->key->flags;
+	return 0;
+}
+
 static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 {
 	struct expr *set = *expr, *i, *next;
@@ -1100,6 +1113,8 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 		return expr_evaluate_list(ctx, expr);
 	case EXPR_SET:
 		return expr_evaluate_set(ctx, expr);
+	case EXPR_SET_ELEM:
+		return expr_evaluate_set_elem(ctx, expr);
 	case EXPR_MAP:
 		return expr_evaluate_map(ctx, expr);
 	case EXPR_MAPPING:

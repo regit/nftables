@@ -528,6 +528,8 @@ static void netlink_gen_expr(struct netlink_linearize_ctx *ctx,
 		return netlink_gen_meta(ctx, expr, dreg);
 	case EXPR_CT:
 		return netlink_gen_ct(ctx, expr, dreg);
+	case EXPR_SET_ELEM:
+		return netlink_gen_expr(ctx, expr->key, dreg);
 	default:
 		BUG("unknown expression type %s\n", expr->ops->name);
 	}

@@ -27,6 +27,7 @@
  * @EXPR_LIST:		list of expressions
  * @EXPR_SET:		literal set
  * @EXPR_SET_REF:	set reference
+ * @EXPR_SET_ELEM:	set element
  * @EXPR_MAPPING:	a single mapping (key : value)
  * @EXPR_MAP:		map operation (expr map { EXPR_MAPPING, ... })
  * @EXPR_UNARY:		byteorder conversion, generated during evaluation
@@ -48,6 +49,7 @@ enum expr_types {
 	EXPR_LIST,
 	EXPR_SET,
 	EXPR_SET_REF,
+	EXPR_SET_ELEM,
 	EXPR_MAPPING,
 	EXPR_MAP,
 	EXPR_UNARY,
@@ -230,6 +232,10 @@ struct expr {
 			struct set		*set;
 		};
 		struct {
+			/* EXPR_SET_ELEM */
+			struct expr		*key;
+		};
+		struct {
 			/* EXPR_UNARY */
 			struct expr		*arg;
 		};
@@ -363,6 +369,8 @@ extern struct expr *map_expr_alloc(const struct location *loc,
 extern struct expr *set_ref_expr_alloc(const struct location *loc,
 				       struct set *set);
 
+extern struct expr *set_elem_expr_alloc(const struct location *loc,
+					struct expr *key);
 
 extern void range_expr_value_low(mpz_t rop, const struct expr *expr);
 extern void range_expr_value_high(mpz_t rop, const struct expr *expr);

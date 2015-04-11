@@ -205,6 +205,7 @@ struct nft_set *alloc_nft_set(const struct handle *h)
 
 static struct nft_set_elem *alloc_nft_setelem(const struct expr *expr)
 {
+	const struct expr *elem, *key, *data;
 	struct nft_set_elem *nlse;
 	struct nft_data_linearize nld;
 
@@ -212,24 +213,28 @@ static struct nft_set_elem *alloc_nft_setelem(const struct expr *expr)
 	if (nlse == NULL)
 		memory_allocation_error();
 
-	if (expr->ops->type == EXPR_VALUE ||
-	    expr->flags & EXPR_F_INTERVAL_END) {
-		netlink_gen_data(expr, &nld);
-		nft_set_elem_attr_set(nlse, NFT_SET_ELEM_ATTR_KEY,
-				      &nld.value, nld.len);
+	data = NULL;
+	if (expr->ops->type == EXPR_MAPPING) {
+		elem = expr->left;
+		if (!(expr->flags & EXPR_F_INTERVAL_END))
+			data = expr->right;
 	} else {
-		assert(expr->ops->type == EXPR_MAPPING);
-		netlink_gen_data(expr->left, &nld);
-		nft_set_elem_attr_set(nlse, NFT_SET_ELEM_ATTR_KEY,
-				      &nld.value, nld.len);
-		netlink_gen_data(expr->right, &nld);
-		switch (expr->right->ops->type) {
+		elem = expr;
+	}
+	key = elem->key;
+
+	netlink_gen_data(key, &nld);
+	nft_set_elem_attr_set(nlse, NFT_SET_ELEM_ATTR_KEY, &nld.value, nld.len);
+
+	if (data != NULL) {
+		netlink_gen_data(data, &nld);
+		switch (data->ops->type) {
 		case EXPR_VERDICT:
 			nft_set_elem_attr_set_u32(nlse, NFT_SET_ELEM_ATTR_VERDICT,
-						  expr->right->verdict);
-			if (expr->chain != NULL)
+						  data->verdict);
+			if (data->chain != NULL)
 				nft_set_elem_attr_set(nlse, NFT_SET_ELEM_ATTR_CHAIN,
-						nld.chain, strlen(nld.chain));
+						      nld.chain, strlen(nld.chain));
 			break;
 		case EXPR_VALUE:
 			nft_set_elem_attr_set(nlse, NFT_SET_ELEM_ATTR_DATA,
@@ -1368,7 +1373,7 @@ static int netlink_delinearize_setelem(struct nft_set_elem *nlse,
 				       struct set *set)
 {
 	struct nft_data_delinearize nld;
-	struct expr *expr, *data;
+	struct expr *expr, *key, *data;
 	uint32_t flags = 0;
 
 	nld.value =
@@ -1376,17 +1381,19 @@ static int netlink_delinearize_setelem(struct nft_set_elem *nlse,
 	if (nft_set_elem_attr_is_set(nlse, NFT_SET_ELEM_ATTR_FLAGS))
 		flags = nft_set_elem_attr_get_u32(nlse, NFT_SET_ELEM_ATTR_FLAGS);
 
-	expr = netlink_alloc_value(&netlink_location, &nld);
-	expr->dtype	= set->keytype;
-	expr->byteorder	= set->keytype->byteorder;
+	key = netlink_alloc_value(&netlink_location, &nld);
+	key->dtype	= set->keytype;
+	key->byteorder	= set->keytype->byteorder;
 
 	if (!(set->flags & SET_F_INTERVAL) &&
-	    expr->byteorder == BYTEORDER_HOST_ENDIAN)
-		mpz_switch_byteorder(expr->value, expr->len / BITS_PER_BYTE);
+	    key->byteorder == BYTEORDER_HOST_ENDIAN)
+		mpz_switch_byteorder(key->value, key->len / BITS_PER_BYTE);
 
-	if (expr->dtype->basetype != NULL &&
-	    expr->dtype->basetype->type == TYPE_BITMASK)
-		expr = bitmask_expr_to_binops(expr);
+	if (key->dtype->basetype != NULL &&
+	    key->dtype->basetype->type == TYPE_BITMASK)
+		key = bitmask_expr_to_binops(key);
+
+	expr = set_elem_expr_alloc(&netlink_location, key);
 
 	if (flags & NFT_SET_ELEM_INTERVAL_END) {
 		expr->flags |= EXPR_F_INTERVAL_END;

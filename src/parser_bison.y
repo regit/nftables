@@ -484,8 +484,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %type <expr>			set_expr set_list_expr set_list_member_expr
 %destructor { expr_free($$); }	set_expr set_list_expr set_list_member_expr
-%type <expr>			set_lhs_expr set_rhs_expr
-%destructor { expr_free($$); }	set_lhs_expr set_rhs_expr
+%type <expr>			set_elem_expr set_elem_expr_alloc set_lhs_expr set_rhs_expr
+%destructor { expr_free($$); }	set_elem_expr set_elem_expr_alloc set_lhs_expr set_rhs_expr
 
 %type <expr>			expr initializer_expr
 %destructor { expr_free($$); }	expr initializer_expr
@@ -1299,7 +1299,7 @@ verdict_map_list_expr	:	verdict_map_list_member_expr
 			|	verdict_map_list_expr	COMMA	opt_newline
 			;
 
-verdict_map_list_member_expr:	opt_newline	set_lhs_expr	COLON	verdict_expr	opt_newline
+verdict_map_list_member_expr:	opt_newline	set_elem_expr	COLON	verdict_expr	opt_newline
 			{
 				$$ = mapping_expr_alloc(&@$, $2, $4);
 			}
@@ -1755,13 +1755,22 @@ set_list_member_expr	:	opt_newline	set_expr	opt_newline
 			{
 				$$ = $2;
 			}
-			|	opt_newline	set_lhs_expr	opt_newline
+			|	opt_newline	set_elem_expr	opt_newline
 			{
 				$$ = $2;
 			}
-			|	opt_newline	set_lhs_expr	COLON	set_rhs_expr	opt_newline
+			|	opt_newline	set_elem_expr	COLON	set_rhs_expr	opt_newline
 			{
 				$$ = mapping_expr_alloc(&@$, $2, $4);
+			}
+			;
+
+set_elem_expr		:	set_elem_expr_alloc
+			;
+
+set_elem_expr_alloc	:	set_lhs_expr
+			{
+				$$ = set_elem_expr_alloc(&@1, $1);
 			}
 			;
 

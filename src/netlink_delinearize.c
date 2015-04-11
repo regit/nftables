@@ -1033,6 +1033,9 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 		expr_postprocess(ctx, stmt, &expr->left);
 		expr_postprocess(ctx, stmt, &expr->right);
 		break;
+	case EXPR_SET_ELEM:
+		expr_postprocess(ctx, stmt, &expr->key);
+		break;
 	case EXPR_SET_REF:
 	case EXPR_EXTHDR:
 	case EXPR_META:
