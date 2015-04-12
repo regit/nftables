@@ -273,23 +273,21 @@ static void netlink_gen_concat_data(const struct expr *expr,
 	const struct expr *i;
 	unsigned int len, offset;
 
-	len = 0;
-	list_for_each_entry(i, &expr->expressions, list)
-		len += i->len;
-
+	len = expr->len / BITS_PER_BYTE;
 	if (1) {
-		unsigned char data[len / BITS_PER_BYTE];
+		unsigned char data[len];
 
+		memset(data, 0, sizeof(data));
 		offset = 0;
 		list_for_each_entry(i, &expr->expressions, list) {
 			assert(i->ops->type == EXPR_VALUE);
 			mpz_export_data(data + offset, i->value, i->byteorder,
 					i->len / BITS_PER_BYTE);
-			offset += i->len / BITS_PER_BYTE;
+			offset += netlink_padded_len(i->len) / BITS_PER_BYTE;
 		}
 
-		memcpy(nld->value, data, len / BITS_PER_BYTE);
-		nld->len = len / BITS_PER_BYTE;
+		memcpy(nld->value, data, len);
+		nld->len = len;
 	}
 }
 

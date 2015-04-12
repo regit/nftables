@@ -23,6 +23,7 @@
 #include <expression.h>
 #include <gmputil.h>
 #include <erec.h>
+#include <netlink.h>
 
 #include <netinet/ip_icmp.h>
 #include <netinet/icmp6.h>
@@ -943,7 +944,7 @@ const struct datatype *concat_type_alloc(uint32_t type)
 		strncat(desc, i->desc, sizeof(desc) - strlen(desc) - 1);
 		strncat(name, i->name, sizeof(name) - strlen(name) - 1);
 
-		size += i->size;
+		size += netlink_padded_len(i->size);
 		subtypes++;
 	}
 	strncat(desc, ")", sizeof(desc) - strlen(desc) - 1);
