@@ -27,21 +27,54 @@ struct netlink_linearize_ctx {
 static void netlink_put_register(struct nft_rule_expr *nle,
 				 uint32_t attr, uint32_t reg)
 {
+	/* Convert to 128 bit register numbers if possible for compatibility */
+	if (reg != NFT_REG_VERDICT) {
+		reg -= NFT_REG_1;
+		if (reg % (NFT_REG_SIZE / NFT_REG32_SIZE) == 0)
+			reg = NFT_REG_1 + reg / (NFT_REG_SIZE / NFT_REG32_SIZE);
+		else
+			reg += NFT_REG32_00;
+	}
+
 	nft_rule_expr_set_u32(nle, attr, reg);
+}
+
+static enum nft_registers __get_register(struct netlink_linearize_ctx *ctx,
+					 unsigned int size)
+{
+	unsigned int reg, n;
+
+	n = netlink_register_space(size);
+	if (ctx->reg_low + n > NFT_REG_1 + NFT_REG32_15 - NFT_REG32_00 + 1)
+		BUG("register reg_low %u invalid\n", ctx->reg_low);
+
+	reg = ctx->reg_low;
+	ctx->reg_low += n;
+	return reg;
+}
+
+static void __release_register(struct netlink_linearize_ctx *ctx,
+			       unsigned int size)
+{
+	unsigned int n;
+
+	n = netlink_register_space(size);
+	if (ctx->reg_low < NFT_REG_1 + n)
+		BUG("register reg_low %u invalid\n", ctx->reg_low);
+
+	ctx->reg_low -= n;
 }
 
 static enum nft_registers get_register(struct netlink_linearize_ctx *ctx,
 				       const struct expr *expr)
 {
-	if (ctx->reg_low > NFT_REG_MAX)
-		BUG("register reg_low %u invalid\n", ctx->reg_low);
-	return ctx->reg_low++;
+	return __get_register(ctx, NFT_REG_SIZE * BITS_PER_BYTE);
 }
 
 static void release_register(struct netlink_linearize_ctx *ctx,
 			     const struct expr *expr)
 {
-	ctx->reg_low--;
+	__release_register(ctx, NFT_REG_SIZE * BITS_PER_BYTE);
 }
 
 static void netlink_gen_expr(struct netlink_linearize_ctx *ctx,
@@ -509,6 +542,8 @@ static void netlink_gen_expr(struct netlink_linearize_ctx *ctx,
 			     const struct expr *expr,
 			     enum nft_registers dreg)
 {
+	assert(dreg < ctx->reg_low);
+
 	switch (expr->ops->type) {
 	case EXPR_VERDICT:
 	case EXPR_VALUE:

@@ -53,6 +53,11 @@ struct nft_data_delinearize {
 	int		verdict;
 };
 
+static inline unsigned int netlink_register_space(unsigned int size)
+{
+	return div_round_up(size, NFT_REG32_SIZE * BITS_PER_BYTE);
+}
+
 extern void netlink_gen_data(const struct expr *expr,
 			     struct nft_data_linearize *data);
 extern void netlink_gen_raw_data(const mpz_t value, enum byteorder byteorder,
