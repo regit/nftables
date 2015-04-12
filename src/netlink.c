@@ -1383,6 +1383,36 @@ static int netlink_del_setelems_compat(struct netlink_ctx *ctx,
 	return err;
 }
 
+static struct expr *netlink_parse_concat_elem(const struct datatype *dtype,
+					      struct expr *data)
+{
+	const struct datatype *subtype;
+	struct expr *concat, *expr;
+	int off = dtype->subtypes;
+
+	concat = concat_expr_alloc(&data->location);
+	while (off > 0) {
+		subtype = concat_subtype_lookup(dtype->type, --off);
+
+		expr		= constant_expr_splice(data, subtype->size);
+		expr->dtype     = subtype;
+		expr->byteorder = subtype->byteorder;
+
+		if (expr->byteorder == BYTEORDER_HOST_ENDIAN)
+			mpz_switch_byteorder(expr->value, expr->len / BITS_PER_BYTE);
+
+		if (expr->dtype->basetype != NULL &&
+		    expr->dtype->basetype->type == TYPE_BITMASK)
+			expr = bitmask_expr_to_binops(expr);
+
+		compound_expr_add(concat, expr);
+		data->len -= netlink_padding_len(expr->len);
+	}
+	expr_free(data);
+
+	return concat;
+}
+
 static int netlink_delinearize_setelem(struct nft_set_elem *nlse,
 				       struct set *set)
 {
@@ -1398,6 +1428,8 @@ static int netlink_delinearize_setelem(struct nft_set_elem *nlse,
 	key = netlink_alloc_value(&netlink_location, &nld);
 	key->dtype	= set->keytype;
 	key->byteorder	= set->keytype->byteorder;
+	if (set->keytype->subtypes)
+		key = netlink_parse_concat_elem(set->keytype, key);
 
 	if (!(set->flags & SET_F_INTERVAL) &&
 	    key->byteorder == BYTEORDER_HOST_ENDIAN)
