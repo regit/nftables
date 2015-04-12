@@ -104,6 +104,63 @@ static void netlink_release_registers(struct netlink_parse_ctx *ctx)
 		expr_free(ctx->registers[i]);
 }
 
+static struct expr *netlink_parse_concat_expr(struct netlink_parse_ctx *ctx,
+					      const struct location *loc,
+					      unsigned int reg,
+					      unsigned int len)
+{
+	struct expr *concat, *expr;
+
+	concat = concat_expr_alloc(loc);
+	while (len > 0) {
+		expr = netlink_get_register(ctx, loc, reg);
+		if (expr == NULL) {
+			netlink_error(ctx, loc,
+				      "Relational expression size mismatch");
+			goto err;
+		}
+		compound_expr_add(concat, expr);
+
+		len -= netlink_padded_len(expr->len);
+		reg += netlink_register_space(expr->len);
+	}
+	return concat;
+
+err:
+	expr_free(concat);
+	return NULL;
+}
+
+static struct expr *netlink_parse_concat_data(struct netlink_parse_ctx *ctx,
+					      const struct location *loc,
+					      unsigned int reg,
+					      unsigned int len,
+					      struct expr *data)
+{
+	struct expr *concat, *expr, *i;
+
+	concat = concat_expr_alloc(loc);
+	while (len > 0) {
+		expr = netlink_get_register(ctx, loc, reg);
+		if (expr == NULL) {
+			netlink_error(ctx, loc,
+				      "Relational expression size mismatch");
+			goto err;
+		}
+		i = constant_expr_splice(data, expr->len);
+		data->len -= netlink_padding_len(expr->len);
+		compound_expr_add(concat, i);
+
+		len -= netlink_padded_len(expr->len);
+		reg += netlink_register_space(expr->len);
+	}
+	return concat;
+
+err:
+	expr_free(concat);
+	return NULL;
+}
+
 static void netlink_parse_immediate(struct netlink_parse_ctx *ctx,
 				    const struct location *loc,
 				    const struct nft_rule_expr *nle)
@@ -175,9 +232,18 @@ static void netlink_parse_cmp(struct netlink_parse_ctx *ctx,
 	nld.value = nft_rule_expr_get(nle, NFT_EXPR_CMP_DATA, &nld.len);
 	right = netlink_alloc_value(loc, &nld);
 
-	if (left->len != right->len)
-		return netlink_error(ctx, loc,
-				     "Relational expression size mismatch");
+	if (left->len != right->len) {
+		if (left->len > right->len)
+			return netlink_error(ctx, loc,
+					     "Relational expression size "
+					     "mismatch");
+		left = netlink_parse_concat_expr(ctx, loc, sreg, right->len);
+		if (left == NULL)
+			return;
+		right = netlink_parse_concat_data(ctx, loc, sreg, right->len, right);
+		if (right == NULL)
+			return;
+	}
 
 	expr = relational_expr_alloc(loc, op, left, right);
 	stmt = expr_stmt_alloc(loc, expr);
@@ -194,18 +260,24 @@ static void netlink_parse_lookup(struct netlink_parse_ctx *ctx,
 	struct expr *expr, *left, *right;
 	struct set *set;
 
-	sreg = netlink_parse_register(nle, NFT_EXPR_LOOKUP_SREG);
-	left = netlink_get_register(ctx, loc, sreg);
-	if (left == NULL)
-		return netlink_error(ctx, loc,
-				     "Lookup expression has no left hand side");
-
 	name = nft_rule_expr_get_str(nle, NFT_EXPR_LOOKUP_SET);
 	set  = set_lookup(ctx->table, name);
 	if (set == NULL)
 		return netlink_error(ctx, loc,
 				     "Unknown set '%s' in lookup expression",
 				     name);
+
+	sreg = netlink_parse_register(nle, NFT_EXPR_LOOKUP_SREG);
+	left = netlink_get_register(ctx, loc, sreg);
+	if (left == NULL)
+		return netlink_error(ctx, loc,
+				     "Lookup expression has no left hand side");
+
+	if (left->len < set->keylen) {
+		left = netlink_parse_concat_expr(ctx, loc, sreg, set->keylen);
+		if (left == NULL)
+			return;
+	}
 
 	right = set_ref_expr_alloc(loc, set);
 
@@ -724,6 +796,12 @@ static void netlink_parse_dynset(struct netlink_parse_ctx *ctx,
 		return netlink_error(ctx, loc,
 				     "Dynset statement has no key expression");
 
+	if (expr->len < set->keylen) {
+		expr = netlink_parse_concat_expr(ctx, loc, sreg, set->keylen);
+		if (expr == NULL)
+			return;
+	}
+
 	expr = set_elem_expr_alloc(&expr->location, expr);
 	expr->timeout = nft_rule_expr_get_u64(nle, NFT_EXPR_DYNSET_TIMEOUT);
 
@@ -1000,6 +1078,23 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 		list_for_each_entry(i, &expr->expressions, list)
 			expr_postprocess(ctx, stmt, &i);
 		break;
+	case EXPR_CONCAT: {
+		unsigned int type = expr->dtype->type, ntype = 0;
+		int off = expr->dtype->subtypes;
+		const struct datatype *dtype;
+
+		list_for_each_entry(i, &expr->expressions, list) {
+			if (type) {
+				dtype = concat_subtype_lookup(type, --off);
+				expr_set_type(i, dtype, dtype->byteorder);
+			}
+			expr_postprocess(ctx, stmt, &i);
+
+			ntype = concat_subtype_add(ntype, i->dtype->type);
+		}
+		expr->dtype = concat_type_alloc(ntype);
+		break;
+	}
 	case EXPR_UNARY:
 		expr_postprocess(ctx, stmt, &expr->arg);
 		expr_set_type(expr->arg, expr->arg->dtype, !expr->arg->byteorder);
