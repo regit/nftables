@@ -470,8 +470,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { expr_free($$); }	prefix_expr range_expr wildcard_expr
 %type <expr>			list_expr
 %destructor { expr_free($$); }	list_expr
-%type <expr>			concat_expr map_lhs_expr
-%destructor { expr_free($$); }	concat_expr map_lhs_expr
+%type <expr>			concat_expr
+%destructor { expr_free($$); }	concat_expr
 
 %type <expr>			map_expr
 %destructor { expr_free($$); }	map_expr
@@ -484,6 +484,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %type <expr>			set_expr set_list_expr set_list_member_expr
 %destructor { expr_free($$); }	set_expr set_list_expr set_list_member_expr
+%type <expr>			set_lhs_expr set_rhs_expr
+%destructor { expr_free($$); }	set_lhs_expr set_rhs_expr
 
 %type <expr>			expr initializer_expr
 %destructor { expr_free($$); }	expr initializer_expr
@@ -1297,12 +1299,11 @@ verdict_map_list_expr	:	verdict_map_list_member_expr
 			|	verdict_map_list_expr	COMMA	opt_newline
 			;
 
-verdict_map_list_member_expr:	opt_newline	map_lhs_expr	COLON	verdict_expr	opt_newline
+verdict_map_list_member_expr:	opt_newline	set_lhs_expr	COLON	verdict_expr	opt_newline
 			{
 				$$ = mapping_expr_alloc(&@$, $2, $4);
 			}
 			;
-
 
 counter_stmt		:	counter_stmt_alloc
 			|	counter_stmt_alloc	counter_args
@@ -1718,10 +1719,6 @@ multiton_expr		:	prefix_expr
 			|	wildcard_expr
 			;
 
-map_lhs_expr		:	multiton_expr
-			|	concat_expr
-			;
-
 map_expr		:	concat_expr	MAP	expr
 			{
 				$$ = map_expr_alloc(&@$, $1, $3);
@@ -1729,9 +1726,9 @@ map_expr		:	concat_expr	MAP	expr
 			;
 
 expr			:	concat_expr
+			|	multiton_expr
 			|	set_expr
 			|       map_expr
-			|	multiton_expr
 			;
 
 set_expr		:	'{'	set_list_expr		'}'
@@ -1754,18 +1751,26 @@ set_list_expr		:	set_list_member_expr
 			|	set_list_expr		COMMA	opt_newline
 			;
 
-set_list_member_expr	:	opt_newline	expr	opt_newline
+set_list_member_expr	:	opt_newline	set_expr	opt_newline
 			{
 				$$ = $2;
 			}
-			|	opt_newline	map_lhs_expr	COLON	concat_expr	opt_newline
+			|	opt_newline	set_lhs_expr	opt_newline
+			{
+				$$ = $2;
+			}
+			|	opt_newline	set_lhs_expr	COLON	set_rhs_expr	opt_newline
 			{
 				$$ = mapping_expr_alloc(&@$, $2, $4);
 			}
-			|	opt_newline	map_lhs_expr	COLON	verdict_expr	opt_newline
-			{
-				$$ = mapping_expr_alloc(&@$, $2, $4);
-			}
+			;
+
+set_lhs_expr		:	concat_expr
+			|	multiton_expr
+			;
+
+set_rhs_expr		:	concat_expr
+			|	verdict_expr
 			;
 
 initializer_expr	:	expr
