@@ -68,13 +68,19 @@ static void __release_register(struct netlink_linearize_ctx *ctx,
 static enum nft_registers get_register(struct netlink_linearize_ctx *ctx,
 				       const struct expr *expr)
 {
-	return __get_register(ctx, NFT_REG_SIZE * BITS_PER_BYTE);
+	if (expr && expr->ops->type == EXPR_CONCAT)
+		return __get_register(ctx, expr->len);
+	else
+		return __get_register(ctx, NFT_REG_SIZE * BITS_PER_BYTE);
 }
 
 static void release_register(struct netlink_linearize_ctx *ctx,
 			     const struct expr *expr)
 {
-	__release_register(ctx, NFT_REG_SIZE * BITS_PER_BYTE);
+	if (expr && expr->ops->type == EXPR_CONCAT)
+		__release_register(ctx, expr->len);
+	else
+		__release_register(ctx, NFT_REG_SIZE * BITS_PER_BYTE);
 }
 
 static void netlink_gen_expr(struct netlink_linearize_ctx *ctx,
@@ -87,8 +93,10 @@ static void netlink_gen_concat(struct netlink_linearize_ctx *ctx,
 {
 	const struct expr *i;
 
-	list_for_each_entry(i, &expr->expressions, list)
+	list_for_each_entry(i, &expr->expressions, list) {
 		netlink_gen_expr(ctx, i, dreg);
+		dreg += netlink_register_space(i->len);
+	}
 }
 
 static void netlink_gen_payload(struct netlink_linearize_ctx *ctx,
