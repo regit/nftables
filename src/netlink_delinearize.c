@@ -1082,18 +1082,18 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 	}
 }
 
-static void stmt_reject_postprocess(struct rule_pp_ctx rctx, struct stmt *stmt)
+static void stmt_reject_postprocess(struct rule_pp_ctx *rctx, struct stmt *stmt)
 {
 	const struct proto_desc *desc, *base;
 	int protocol;
 
-	switch (rctx.pctx.family) {
+	switch (rctx->pctx.family) {
 	case NFPROTO_IPV4:
-		stmt->reject.family = rctx.pctx.family;
+		stmt->reject.family = rctx->pctx.family;
 		stmt->reject.expr->dtype = &icmp_code_type;
 		break;
 	case NFPROTO_IPV6:
-		stmt->reject.family = rctx.pctx.family;
+		stmt->reject.family = rctx->pctx.family;
 		stmt->reject.expr->dtype = &icmpv6_code_type;
 		break;
 	case NFPROTO_INET:
@@ -1101,8 +1101,8 @@ static void stmt_reject_postprocess(struct rule_pp_ctx rctx, struct stmt *stmt)
 			stmt->reject.expr->dtype = &icmpx_code_type;
 			break;
 		}
-		base = rctx.pctx.protocol[PROTO_BASE_LL_HDR].desc;
-		desc = rctx.pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
+		base = rctx->pctx.protocol[PROTO_BASE_LL_HDR].desc;
+		desc = rctx->pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
 		protocol = proto_find_num(base, desc);
 		switch (protocol) {
 		case NFPROTO_IPV4:
@@ -1119,8 +1119,8 @@ static void stmt_reject_postprocess(struct rule_pp_ctx rctx, struct stmt *stmt)
 			stmt->reject.expr->dtype = &icmpx_code_type;
 			break;
 		}
-		base = rctx.pctx.protocol[PROTO_BASE_LL_HDR].desc;
-		desc = rctx.pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
+		base = rctx->pctx.protocol[PROTO_BASE_LL_HDR].desc;
+		desc = rctx->pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
 		protocol = proto_find_num(base, desc);
 		switch (protocol) {
 		case __constant_htons(ETH_P_IP):
@@ -1173,7 +1173,7 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 						 &stmt->redir.proto);
 			break;
 		case STMT_REJECT:
-			stmt_reject_postprocess(rctx, stmt);
+			stmt_reject_postprocess(&rctx, stmt);
 			break;
 		case STMT_SET:
 			expr_postprocess(&rctx, stmt, &stmt->set.key);
