@@ -829,49 +829,54 @@ static void integer_type_postprocess(struct expr *expr)
 	}
 }
 
-static void payload_match_postprocess(struct rule_pp_ctx *ctx,
-				      struct expr *expr)
+static void payload_match_expand(struct rule_pp_ctx *ctx, struct expr *expr)
 {
 	struct expr *left = expr->left, *right = expr->right, *tmp;
 	struct list_head list = LIST_HEAD_INIT(list);
 	struct stmt *nstmt;
 	struct expr *nexpr;
 
+	payload_expr_expand(&list, left, &ctx->pctx);
+	list_for_each_entry(left, &list, list) {
+		tmp = constant_expr_splice(right, left->len);
+		expr_set_type(tmp, left->dtype, left->byteorder);
+		if (tmp->byteorder == BYTEORDER_HOST_ENDIAN)
+			mpz_switch_byteorder(tmp->value, tmp->len / BITS_PER_BYTE);
+
+		nexpr = relational_expr_alloc(&expr->location, expr->op,
+					      left, tmp);
+		if (expr->op == OP_EQ)
+			left->ops->pctx_update(&ctx->pctx, nexpr);
+
+		nstmt = expr_stmt_alloc(&ctx->stmt->location, nexpr);
+		list_add_tail(&nstmt->list, &ctx->stmt->list);
+
+		/* Remember the first payload protocol expression to
+		 * kill it later on if made redundant by a higher layer
+		 * payload expression.
+		 */
+		if (ctx->pbase == PROTO_BASE_INVALID &&
+		    left->flags & EXPR_F_PROTOCOL)
+			payload_dependency_store(ctx, nstmt,
+						 left->payload.base);
+		else
+			payload_dependency_kill(ctx, nexpr->left);
+	}
+	list_del(&ctx->stmt->list);
+	stmt_free(ctx->stmt);
+	ctx->stmt = NULL;
+}
+
+static void payload_match_postprocess(struct rule_pp_ctx *ctx,
+				      struct expr *expr)
+{
 	switch (expr->op) {
 	case OP_EQ:
 	case OP_NEQ:
-		payload_expr_expand(&list, left, &ctx->pctx);
-		list_for_each_entry(left, &list, list) {
-			tmp = constant_expr_splice(right, left->len);
-			expr_set_type(tmp, left->dtype, left->byteorder);
-			if (tmp->byteorder == BYTEORDER_HOST_ENDIAN)
-				mpz_switch_byteorder(tmp->value, tmp->len / BITS_PER_BYTE);
-
-			nexpr = relational_expr_alloc(&expr->location, expr->op,
-						      left, tmp);
-			if (expr->op == OP_EQ)
-				left->ops->pctx_update(&ctx->pctx, nexpr);
-
-			nstmt = expr_stmt_alloc(&ctx->stmt->location, nexpr);
-			list_add_tail(&nstmt->list, &ctx->stmt->list);
-
-			/* Remember the first payload protocol expression to
-			 * kill it later on if made redundant by a higher layer
-			 * payload expression.
-			 */
-			if (ctx->pbase == PROTO_BASE_INVALID &&
-			    left->flags & EXPR_F_PROTOCOL)
-				payload_dependency_store(ctx, nstmt,
-							 left->payload.base);
-			else
-				payload_dependency_kill(ctx, nexpr->left);
-		}
-		list_del(&ctx->stmt->list);
-		stmt_free(ctx->stmt);
-		ctx->stmt = NULL;
+		payload_match_expand(ctx, expr);
 		break;
 	default:
-		payload_expr_complete(left, &ctx->pctx);
+		payload_expr_complete(expr->left, &ctx->pctx);
 		expr_set_type(expr->right, expr->left->dtype,
 			      expr->left->byteorder);
 		payload_dependency_kill(ctx, expr->left);
