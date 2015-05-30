@@ -44,26 +44,21 @@ class Colors:
         RED = ''
         ENDC = ''
 
-def print_error(reason, filename=None, lineno=None):
+def print_msg(reason, filename=None, lineno=None, color=None, errstr=None):
     '''
-    Prints an error with nice colors, indicating file and line number.
+    Prints a message with nice colors, indicating file and line number.
     '''
     if filename and lineno:
-        print (filename + ": " + Colors.RED + "ERROR:" +
+        print (filename + ": " + color + "ERROR:" +
                Colors.ENDC + " line %d: %s" % (lineno + 1, reason))
     else:
-        print (Colors.RED + "ERROR:" + Colors.ENDC + " %s" % (reason))
+        print (color + "ERROR:" + Colors.ENDC + " %s" % (reason))
 
+def print_error(reason, filename=None, lineno=None):
+    print_msg(reason, filename, lineno, Colors.RED, "ERROR:")
 
 def print_warning(reason, filename=None, lineno=None):
-    '''
-    Prints a warning with nice colors, indicating file and line number.
-    '''
-    if filename and lineno:
-        print (filename + ": " + Colors.YELLOW + "WARNING:" + \
-               Colors.ENDC + " line %d: %s" % (lineno + 1, reason))
-    else:
-        print (Colors.YELLOW + "WARNING:" + " %s" % (reason))
+    print_msg(reason, filename, lineno, Colors.YELLOW, "WARNING:")
 
 
 def print_differences_warning(filename, lineno, rule1, rule2, cmd):
