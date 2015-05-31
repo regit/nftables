@@ -41,5 +41,5 @@ ip saddr 10.1.1.1 redirect drop;fail
 
 # redirect with sets
 tcp dport { 1, 2, 3, 4, 5, 6, 7, 8, 101, 202, 303, 1001, 2002, 3003} redirect;ok
-ip daddr 10.0.0.0-10.2.3.4 udp dport 53 counter packets 0 bytes 0 redirect;ok;ip daddr >= 10.0.0.0 ip daddr <= 10.2.3.4 udp dport 53 counter packets 0 bytes 0 redirect
+ip daddr 10.0.0.0-10.2.3.4 udp dport 53 counter packets 0 bytes 0 redirect;ok
 iifname eth0 ct state new,established tcp dport vmap {22 : drop, 222 : drop } redirect;ok

@@ -44,10 +44,10 @@ ct mark and 0x3 != 0x1;ok;ct mark & 0x00000003 != 0x00000001
 ct mark xor 0x23 == 0x11;ok;ct mark 0x00000032
 ct mark xor 0x3 != 0x1;ok;ct mark != 0x00000002
 
-ct mark 0x32;ok;ct mark 0x00000032
-ct mark != 0x32;ok;ct mark != 0x00000032
-ct mark 0x32-0x45;ok
-ct mark != 0x32-0x43;ok
+ct mark 0x00000032;ok
+ct mark != 0x00000032;ok
+ct mark 0x00000032-0x00000045;ok
+ct mark != 0x00000032-0x00000045;ok
 ct mark {0x32, 0x2222, 0x42de3};ok;ct mark { 0x00042de3, 0x00002222, 0x00000032}
 - ct mark != {0x32, 0x2222, 0x42de3};ok
 
@@ -60,16 +60,14 @@ ct mark set 0x11333 and 0x11;ok;ct mark set 0x00000011
 ct mark set 0x12 or 0x11;ok;ct mark set 0x00000013
 ct mark set 0x11;ok;ct mark set 0x00000011
 
-ct expiration 30;ok
-ct expiration 22;ok
-ct expiration != 233;ok
-ct expiration 33-45;ok
-# BUG: ct expiration 33-45 and  ct expiration != 33-45
-# Broken output: ct expiration >= "33s" ct expiration <= "9709d53m20s"
-ct expiration != 33-45;ok
-ct expiration {33, 55, 67, 88};ok
-- ct expiration != {33, 55, 67, 88};ok
-ct expiration {33-55};ok
+ct expiration 30;ok;ct expiration 30s
+ct expiration 22;ok;ct expiration 22s
+ct expiration != 233;ok;ct expiration != 3m53s
+ct expiration 33-45;ok;ct expiration 33s-45s
+ct expiration != 33-45;ok;ct expiration != 33s-45s
+ct expiration {33, 55, 67, 88};ok;ct expiration { 1m7s, 33s, 55s, 1m28s}
+- ct expiration != {33, 55, 67, 88};ok;ct expiration { 1m7s, 33s, 55s, 1m28s}
+ct expiration {33-55};ok;ct expiration { 33s-55s}
 # BUG: ct expiration {33-55}
 # Broken output: ct expiration { "4271d23h25m52s"-"8738d3h11m59s" }
 - ct expiration != {33-55};ok
