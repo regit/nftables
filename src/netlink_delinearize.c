@@ -166,9 +166,7 @@ static void netlink_parse_cmp(struct netlink_parse_ctx *ctx,
 	nld.value = nft_rule_expr_get(nle, NFT_EXPR_CMP_DATA, &nld.len);
 	right = netlink_alloc_value(loc, &nld);
 
-	// FIXME
-	if (left->len && left->dtype && left->dtype->type != TYPE_STRING &&
-	    left->len != right->len)
+	if (left->len != right->len)
 		return netlink_error(ctx, loc,
 				     "Relational expression size mismatch");
 

@@ -203,6 +203,9 @@ static void netlink_gen_cmp(struct netlink_linearize_ctx *ctx,
 
 	assert(dreg == NFT_REG_VERDICT);
 
+	if (expr->right->ops->type == EXPR_RANGE)
+		return netlink_gen_range(ctx, expr, dreg);
+
 	sreg = get_register(ctx);
 	netlink_gen_expr(ctx, expr->left, sreg);
 
@@ -229,8 +232,6 @@ static void netlink_gen_cmp(struct netlink_linearize_ctx *ctx,
 		right = expr->right->prefix;
 		break;
 		}
-	case EXPR_RANGE:
-		return netlink_gen_range(ctx, expr, dreg);
 	default:
 		right = expr->right;
 	}
