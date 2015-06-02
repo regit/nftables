@@ -161,6 +161,10 @@ static void __init ct_label_table_init(void)
 	ct_label_tbl = rt_symbol_table_init("/etc/xtables/connlabel.conf");
 }
 
+#ifndef NF_CT_HELPER_NAME_LEN
+#define NF_CT_HELPER_NAME_LEN	16
+#endif
+
 static const struct ct_template ct_templates[] = {
 	[NFT_CT_STATE]		= CT_TEMPLATE("state",	    &ct_state_type,
 					      BYTEORDER_HOST_ENDIAN,
@@ -178,7 +182,8 @@ static const struct ct_template ct_templates[] = {
 					      BYTEORDER_HOST_ENDIAN,
 					      4 * BITS_PER_BYTE),
 	[NFT_CT_HELPER]		= CT_TEMPLATE("helper",	    &string_type,
-					      BYTEORDER_HOST_ENDIAN, 0),
+					      BYTEORDER_HOST_ENDIAN,
+					      NF_CT_HELPER_NAME_LEN * BITS_PER_BYTE),
 	[NFT_CT_L3PROTOCOL]	= CT_TEMPLATE("l3proto",    &invalid_type,
 					      BYTEORDER_INVALID,
 					      BITS_PER_BYTE),
