@@ -822,6 +822,10 @@ static void integer_type_postprocess(struct expr *expr)
 			integer_type_postprocess(i);
 		}
 		break;
+	case EXPR_SET_ELEM:
+		expr_set_type(expr->key, expr->dtype, expr->byteorder);
+		integer_type_postprocess(expr->key);
+		break;
 	default:
 		break;
 	}
