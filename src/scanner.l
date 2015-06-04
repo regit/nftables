@@ -233,6 +233,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "describe"		{ return DESCRIBE; }
 
 "hook"			{ return HOOK; }
+"device"		{ return DEVICE; }
 "table"			{ return TABLE; }
 "tables"		{ return TABLES; }
 "chain"			{ return CHAIN; }
@@ -255,6 +256,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "to"			{ return TO; }
 
 "inet"			{ return INET; }
+"netdev"		{ return NETDEV; }
 
 "add"			{ return ADD; }
 "update"		{ return UPDATE; }

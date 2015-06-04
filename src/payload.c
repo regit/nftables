@@ -215,6 +215,7 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 			}
 			break;
 		case NFPROTO_BRIDGE:
+		case NFPROTO_NETDEV:
 			switch (expr->payload.base) {
 			case PROTO_BASE_LL_HDR:
 				desc = &proto_eth;

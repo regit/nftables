@@ -555,6 +555,9 @@ static int netlink_add_chain_batch(struct netlink_ctx *ctx,
 		if (chain->policy != -1)
 			nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_POLICY,
 					       chain->policy);
+		if (chain->dev != NULL)
+			nft_chain_attr_set_str(nlc, NFT_CHAIN_ATTR_DEV,
+					       chain->dev);
 	}
 
 	netlink_dump_chain(nlc);
@@ -697,6 +700,10 @@ static struct chain *netlink_delinearize_chain(struct netlink_ctx *ctx,
 			xstrdup(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_TYPE));
 		chain->policy          =
 			nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_POLICY);
+		if (nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_DEV)) {
+			chain->dev	=
+				xstrdup(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_DEV));
+		}
 		chain->flags        |= CHAIN_F_BASECHAIN;
 	}
 
