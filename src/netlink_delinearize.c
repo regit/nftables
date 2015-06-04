@@ -692,6 +692,40 @@ static void netlink_parse_queue(struct netlink_parse_ctx *ctx,
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }
 
+static void netlink_parse_dynset(struct netlink_parse_ctx *ctx,
+				 const struct location *loc,
+				 const struct nft_rule_expr *nle)
+{
+	struct expr *expr;
+	struct stmt *stmt;
+	struct set *set;
+	enum nft_registers sreg;
+	const char *name;
+
+	name = nft_rule_expr_get_str(nle, NFT_EXPR_DYNSET_SET_NAME);
+	set  = set_lookup(ctx->table, name);
+	if (set == NULL)
+		return netlink_error(ctx, loc,
+				     "Unknown set '%s' in dynset statement",
+				     name);
+
+	sreg = netlink_parse_register(nle, NFT_EXPR_DYNSET_SREG_KEY);
+	expr = netlink_get_register(ctx, loc, sreg);
+	if (expr == NULL)
+		return netlink_error(ctx, loc,
+				     "Dynset statement has no key expression");
+
+	expr = set_elem_expr_alloc(&expr->location, expr);
+	expr->timeout = nft_rule_expr_get_u64(nle, NFT_EXPR_DYNSET_TIMEOUT);
+
+	stmt = set_stmt_alloc(loc);
+	stmt->set.set = set_ref_expr_alloc(loc, set);
+	stmt->set.op  = nft_rule_expr_get_u32(nle, NFT_EXPR_DYNSET_OP);
+	stmt->set.key = expr;
+
+	list_add_tail(&stmt->list, &ctx->rule->stmts);
+}
+
 static const struct {
 	const char	*name;
 	void		(*parse)(struct netlink_parse_ctx *ctx,
@@ -715,6 +749,7 @@ static const struct {
 	{ .name = "masq",	.parse = netlink_parse_masq },
 	{ .name = "redir",	.parse = netlink_parse_redir },
 	{ .name = "queue",	.parse = netlink_parse_queue },
+	{ .name = "dynset",	.parse = netlink_parse_dynset },
 };
 
 static int netlink_parse_expr(struct nft_rule_expr *nle, void *arg)
@@ -743,6 +778,7 @@ struct rule_pp_ctx {
 	struct proto_ctx	pctx;
 	enum proto_bases	pbase;
 	struct stmt		*pdep;
+	struct stmt		*stmt;
 };
 
 /*
@@ -791,48 +827,57 @@ static void integer_type_postprocess(struct expr *expr)
 	}
 }
 
-static void payload_match_postprocess(struct rule_pp_ctx *ctx,
-				      struct stmt *stmt, struct expr *expr)
+static void payload_match_expand(struct rule_pp_ctx *ctx, struct expr *expr)
 {
 	struct expr *left = expr->left, *right = expr->right, *tmp;
 	struct list_head list = LIST_HEAD_INIT(list);
 	struct stmt *nstmt;
 	struct expr *nexpr;
 
+	payload_expr_expand(&list, left, &ctx->pctx);
+	list_for_each_entry(left, &list, list) {
+		tmp = constant_expr_splice(right, left->len);
+		expr_set_type(tmp, left->dtype, left->byteorder);
+		if (tmp->byteorder == BYTEORDER_HOST_ENDIAN)
+			mpz_switch_byteorder(tmp->value, tmp->len / BITS_PER_BYTE);
+
+		nexpr = relational_expr_alloc(&expr->location, expr->op,
+					      left, tmp);
+		if (expr->op == OP_EQ)
+			left->ops->pctx_update(&ctx->pctx, nexpr);
+
+		nstmt = expr_stmt_alloc(&ctx->stmt->location, nexpr);
+		list_add_tail(&nstmt->list, &ctx->stmt->list);
+
+		/* Remember the first payload protocol expression to
+		 * kill it later on if made redundant by a higher layer
+		 * payload expression.
+		 */
+		if (ctx->pbase == PROTO_BASE_INVALID &&
+		    left->flags & EXPR_F_PROTOCOL)
+			payload_dependency_store(ctx, nstmt,
+						 left->payload.base);
+		else
+			payload_dependency_kill(ctx, nexpr->left);
+	}
+	list_del(&ctx->stmt->list);
+	stmt_free(ctx->stmt);
+	ctx->stmt = NULL;
+}
+
+static void payload_match_postprocess(struct rule_pp_ctx *ctx,
+				      struct expr *expr)
+{
 	switch (expr->op) {
 	case OP_EQ:
 	case OP_NEQ:
-		payload_expr_expand(&list, left, &ctx->pctx);
-		list_for_each_entry(left, &list, list) {
-			tmp = constant_expr_splice(right, left->len);
-			expr_set_type(tmp, left->dtype, left->byteorder);
-			if (tmp->byteorder == BYTEORDER_HOST_ENDIAN)
-				mpz_switch_byteorder(tmp->value, tmp->len / BITS_PER_BYTE);
-
-			nexpr = relational_expr_alloc(&expr->location, expr->op,
-						      left, tmp);
-			if (expr->op == OP_EQ)
-				left->ops->pctx_update(&ctx->pctx, nexpr);
-
-			nstmt = expr_stmt_alloc(&stmt->location, nexpr);
-			list_add_tail(&nstmt->list, &stmt->list);
-
-			/* Remember the first payload protocol expression to
-			 * kill it later on if made redundant by a higher layer
-			 * payload expression.
-			 */
-			if (ctx->pbase == PROTO_BASE_INVALID &&
-			    left->flags & EXPR_F_PROTOCOL)
-				payload_dependency_store(ctx, nstmt,
-							 left->payload.base);
-			else
-				payload_dependency_kill(ctx, nexpr->left);
+		if (expr->right->ops->type == EXPR_VALUE) {
+			payload_match_expand(ctx, expr);
+			break;
 		}
-		list_del(&stmt->list);
-		stmt_free(stmt);
-		break;
+		/* Fall through */
 	default:
-		payload_expr_complete(left, &ctx->pctx);
+		payload_expr_complete(expr->left, &ctx->pctx);
 		expr_set_type(expr->right, expr->left->dtype,
 			      expr->left->byteorder);
 		payload_dependency_kill(ctx, expr->left);
@@ -841,7 +886,6 @@ static void payload_match_postprocess(struct rule_pp_ctx *ctx,
 }
 
 static void meta_match_postprocess(struct rule_pp_ctx *ctx,
-				   struct stmt *stmt,
 				   const struct expr *expr)
 {
 	struct expr *left = expr->left;
@@ -852,7 +896,8 @@ static void meta_match_postprocess(struct rule_pp_ctx *ctx,
 
 		if (ctx->pbase == PROTO_BASE_INVALID &&
 		    left->flags & EXPR_F_PROTOCOL)
-			payload_dependency_store(ctx, stmt, left->meta.base);
+			payload_dependency_store(ctx, ctx->stmt,
+						 left->meta.base);
 		break;
 	case OP_LOOKUP:
 		expr_set_type(expr->right, expr->left->dtype,
@@ -936,8 +981,7 @@ static void relational_binop_postprocess(struct expr *expr)
 	}
 }
 
-static void expr_postprocess(struct rule_pp_ctx *ctx,
-			     struct stmt *stmt, struct expr **exprp)
+static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 {
 	struct expr *expr = *exprp, *i;
 
@@ -945,29 +989,29 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 
 	switch (expr->ops->type) {
 	case EXPR_MAP:
-		expr_postprocess(ctx, stmt, &expr->map);
-		expr_postprocess(ctx, stmt, &expr->mappings);
+		expr_postprocess(ctx, &expr->map);
+		expr_postprocess(ctx, &expr->mappings);
 		break;
 	case EXPR_MAPPING:
-		expr_postprocess(ctx, stmt, &expr->left);
-		expr_postprocess(ctx, stmt, &expr->right);
+		expr_postprocess(ctx, &expr->left);
+		expr_postprocess(ctx, &expr->right);
 		break;
 	case EXPR_SET:
 		list_for_each_entry(i, &expr->expressions, list)
-			expr_postprocess(ctx, stmt, &i);
+			expr_postprocess(ctx, &i);
 		break;
 	case EXPR_UNARY:
-		expr_postprocess(ctx, stmt, &expr->arg);
+		expr_postprocess(ctx, &expr->arg);
 		expr_set_type(expr->arg, expr->arg->dtype, !expr->arg->byteorder);
 
 		*exprp = expr_get(expr->arg);
 		expr_free(expr);
 		break;
 	case EXPR_BINOP:
-		expr_postprocess(ctx, stmt, &expr->left);
+		expr_postprocess(ctx, &expr->left);
 		expr_set_type(expr->right, expr->left->dtype,
 			      expr->left->byteorder);
-		expr_postprocess(ctx, stmt, &expr->right);
+		expr_postprocess(ctx, &expr->right);
 
 		expr_set_type(expr, expr->left->dtype,
 			      expr->left->byteorder);
@@ -975,19 +1019,19 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 	case EXPR_RELATIONAL:
 		switch (expr->left->ops->type) {
 		case EXPR_PAYLOAD:
-			payload_match_postprocess(ctx, stmt, expr);
+			payload_match_postprocess(ctx, expr);
 			return;
 		default:
-			expr_postprocess(ctx, stmt, &expr->left);
+			expr_postprocess(ctx, &expr->left);
 			break;
 		}
 
 		expr_set_type(expr->right, expr->left->dtype, expr->left->byteorder);
-		expr_postprocess(ctx, stmt, &expr->right);
+		expr_postprocess(ctx, &expr->right);
 
 		switch (expr->left->ops->type) {
 		case EXPR_META:
-			meta_match_postprocess(ctx, stmt, expr);
+			meta_match_postprocess(ctx, expr);
 			break;
 		case EXPR_BINOP:
 			relational_binop_postprocess(expr);
@@ -1028,8 +1072,11 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 
 		break;
 	case EXPR_RANGE:
-		expr_postprocess(ctx, stmt, &expr->left);
-		expr_postprocess(ctx, stmt, &expr->right);
+		expr_postprocess(ctx, &expr->left);
+		expr_postprocess(ctx, &expr->right);
+		break;
+	case EXPR_SET_ELEM:
+		expr_postprocess(ctx, &expr->key);
 		break;
 	case EXPR_SET_REF:
 	case EXPR_EXTHDR:
@@ -1042,18 +1089,19 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 	}
 }
 
-static void stmt_reject_postprocess(struct rule_pp_ctx rctx, struct stmt *stmt)
+static void stmt_reject_postprocess(struct rule_pp_ctx *rctx)
 {
 	const struct proto_desc *desc, *base;
+	struct stmt *stmt = rctx->stmt;
 	int protocol;
 
-	switch (rctx.pctx.family) {
+	switch (rctx->pctx.family) {
 	case NFPROTO_IPV4:
-		stmt->reject.family = rctx.pctx.family;
+		stmt->reject.family = rctx->pctx.family;
 		stmt->reject.expr->dtype = &icmp_code_type;
 		break;
 	case NFPROTO_IPV6:
-		stmt->reject.family = rctx.pctx.family;
+		stmt->reject.family = rctx->pctx.family;
 		stmt->reject.expr->dtype = &icmpv6_code_type;
 		break;
 	case NFPROTO_INET:
@@ -1061,8 +1109,8 @@ static void stmt_reject_postprocess(struct rule_pp_ctx rctx, struct stmt *stmt)
 			stmt->reject.expr->dtype = &icmpx_code_type;
 			break;
 		}
-		base = rctx.pctx.protocol[PROTO_BASE_LL_HDR].desc;
-		desc = rctx.pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
+		base = rctx->pctx.protocol[PROTO_BASE_LL_HDR].desc;
+		desc = rctx->pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
 		protocol = proto_find_num(base, desc);
 		switch (protocol) {
 		case NFPROTO_IPV4:
@@ -1079,8 +1127,8 @@ static void stmt_reject_postprocess(struct rule_pp_ctx rctx, struct stmt *stmt)
 			stmt->reject.expr->dtype = &icmpx_code_type;
 			break;
 		}
-		base = rctx.pctx.protocol[PROTO_BASE_LL_HDR].desc;
-		desc = rctx.pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
+		base = rctx->pctx.protocol[PROTO_BASE_LL_HDR].desc;
+		desc = rctx->pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
 		protocol = proto_find_num(base, desc);
 		switch (protocol) {
 		case __constant_htons(ETH_P_IP):
@@ -1100,44 +1148,119 @@ static void stmt_reject_postprocess(struct rule_pp_ctx rctx, struct stmt *stmt)
 	}
 }
 
+static bool expr_may_merge_range(struct expr *expr, struct expr *prev,
+				 enum ops *op)
+{
+	struct expr *left, *prev_left;
+
+	if (prev->ops->type == EXPR_RELATIONAL &&
+	    expr->ops->type == EXPR_RELATIONAL) {
+		/* ct and meta needs an unary to swap byteorder, in this case
+		 * we have to explore the inner branch in this tree.
+		 */
+		if (expr->left->ops->type == EXPR_UNARY)
+			left = expr->left->arg;
+		else
+			left = expr->left;
+
+		if (prev->left->ops->type == EXPR_UNARY)
+			prev_left = prev->left->arg;
+		else
+			prev_left = prev->left;
+
+		if (left->ops->type == prev_left->ops->type) {
+			if (expr->op == OP_LTE && prev->op == OP_GTE) {
+				*op = OP_EQ;
+				return true;
+			} else if (expr->op == OP_GT && prev->op == OP_LT) {
+				*op = OP_NEQ;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+static void expr_postprocess_range(struct rule_pp_ctx *ctx, struct stmt *prev,
+				   enum ops op)
+{
+	struct stmt *nstmt, *stmt = ctx->stmt;
+	struct expr *nexpr, *rel;
+
+	nexpr = range_expr_alloc(&prev->location, expr_clone(prev->expr->right),
+				 expr_clone(stmt->expr->right));
+	expr_set_type(nexpr, stmt->expr->right->dtype,
+		      stmt->expr->right->byteorder);
+
+	rel = relational_expr_alloc(&prev->location, op,
+				    expr_clone(stmt->expr->left), nexpr);
+
+	nstmt = expr_stmt_alloc(&stmt->location, rel);
+	list_add_tail(&nstmt->list, &stmt->list);
+
+	list_del(&prev->list);
+	stmt_free(prev);
+
+	list_del(&stmt->list);
+	stmt_free(stmt);
+	ctx->stmt = nstmt;
+}
+
+static void stmt_expr_postprocess(struct rule_pp_ctx *ctx, struct stmt *prev)
+{
+	enum ops op;
+
+	if (prev && ctx->stmt->ops->type == prev->ops->type &&
+	    expr_may_merge_range(ctx->stmt->expr, prev->expr, &op))
+		expr_postprocess_range(ctx, prev, op);
+
+	expr_postprocess(ctx, &ctx->stmt->expr);
+}
+
 static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *rule)
 {
 	struct rule_pp_ctx rctx;
-	struct stmt *stmt, *next;
+	struct stmt *stmt, *next, *prev = NULL;
 
 	memset(&rctx, 0, sizeof(rctx));
 	proto_ctx_init(&rctx.pctx, rule->handle.family);
 
 	list_for_each_entry_safe(stmt, next, &rule->stmts, list) {
+		rctx.stmt = stmt;
+
 		switch (stmt->ops->type) {
 		case STMT_EXPRESSION:
-			expr_postprocess(&rctx, stmt, &stmt->expr);
+			stmt_expr_postprocess(&rctx, prev);
 			break;
 		case STMT_META:
 			if (stmt->meta.expr != NULL)
-				expr_postprocess(&rctx, stmt, &stmt->meta.expr);
+				expr_postprocess(&rctx, &stmt->meta.expr);
 			break;
 		case STMT_CT:
 			if (stmt->ct.expr != NULL)
-				expr_postprocess(&rctx, stmt, &stmt->ct.expr);
+				expr_postprocess(&rctx, &stmt->ct.expr);
 			break;
 		case STMT_NAT:
 			if (stmt->nat.addr != NULL)
-				expr_postprocess(&rctx, stmt, &stmt->nat.addr);
+				expr_postprocess(&rctx, &stmt->nat.addr);
 			if (stmt->nat.proto != NULL)
-				expr_postprocess(&rctx, stmt, &stmt->nat.proto);
+				expr_postprocess(&rctx, &stmt->nat.proto);
 			break;
 		case STMT_REDIR:
 			if (stmt->redir.proto != NULL)
-				expr_postprocess(&rctx, stmt,
-						 &stmt->redir.proto);
+				expr_postprocess(&rctx, &stmt->redir.proto);
 			break;
 		case STMT_REJECT:
-			stmt_reject_postprocess(rctx, stmt);
+			stmt_reject_postprocess(&rctx);
+			break;
+		case STMT_SET:
+			expr_postprocess(&rctx, &stmt->set.key);
 			break;
 		default:
 			break;
 		}
+		prev = rctx.stmt;
 	}
 }
 

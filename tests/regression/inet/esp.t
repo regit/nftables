@@ -5,16 +5,16 @@
 
 esp spi 100;ok
 esp spi != 100;ok
-esp spi 111-222;ok;esp spi >= 111 esp spi <= 222
-esp spi != 111-222;ok;esp spi < 111 esp spi > 222
+esp spi 111-222;ok
+esp spi != 111-222;ok
 esp spi { 100, 102};ok
 - esp spi != { 100, 102};ok
 esp spi { 100-102};ok
 - esp spi {100-102};ok
 
 esp sequence 22;ok
-esp sequence 22-24;ok;esp sequence >= 22 esp sequence <= 24
-esp sequence != 22-24;ok;esp sequence < 22 esp sequence > 24
+esp sequence 22-24;ok
+esp sequence != 22-24;ok
 esp sequence { 22, 24};ok
 - esp sequence != { 22, 24};ok
 # BUG: invalid expression type set

@@ -4,8 +4,8 @@
 
 dst nexthdr 22;ok
 dst nexthdr != 233;ok
-dst nexthdr 33-45;ok;dst nexthdr >= 33 dst nexthdr <= 45
-dst nexthdr != 33-45;ok;dst nexthdr < 33 dst nexthdr > 45
+dst nexthdr 33-45;ok
+dst nexthdr != 33-45;ok
 dst nexthdr { 33, 55, 67, 88};ok
 - dst nexthdr != { 33, 55, 67, 88};ok
 dst nexthdr { 33-55};ok
@@ -17,8 +17,8 @@ dst nexthdr != icmp;ok;dst nexthdr != 1
 
 dst hdrlength 22;ok
 dst hdrlength != 233;ok
-dst hdrlength 33-45;ok;dst hdrlength >= 33 dst hdrlength <= 45
-dst hdrlength != 33-45;ok;dst hdrlength < 33 dst hdrlength > 45
+dst hdrlength 33-45;ok
+dst hdrlength != 33-45;ok
 dst hdrlength { 33, 55, 67, 88};ok
 - dst hdrlength != { 33, 55, 67, 88};ok
 dst hdrlength { 33-55};ok

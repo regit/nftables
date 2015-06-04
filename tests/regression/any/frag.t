@@ -14,9 +14,9 @@ frag nexthdr ah;ok;frag nexthdr 51
 
 frag reserved 22;ok
 frag reserved != 233;ok
-frag reserved 33-45;ok;frag reserved >= 33 frag reserved <= 45
-frag reserved != 33-45;ok;frag reserved < 33 frag reserved > 45
-frag reserved { 33, 55, 67, 88};ok;frag reserved { 88, 33, 67, 55}
+frag reserved 33-45;ok
+frag reserved != 33-45;ok
+frag reserved { 33, 55, 67, 88};ok
 - frag reserved != { 33, 55, 67, 88};ok
 frag reserved { 33-55};ok
 - frag reserved != { 33-55};ok
@@ -56,8 +56,8 @@ frag reserved { 33-55};ok
 frag id 1;ok
 frag id 22;ok
 frag id != 33;ok
-frag id 33-45;ok;frag id >= 33 frag id <= 45
-frag id != 33-45;ok;frag id < 33 frag id > 45
+frag id 33-45;ok
+frag id != 33-45;ok
 frag id { 33, 55, 67, 88};ok
 - frag id != { 33, 55, 67, 88};ok
 frag id { 33-55};ok

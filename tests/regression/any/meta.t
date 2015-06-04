@@ -27,8 +27,8 @@ meta nfproto {ipv4, ipv6};ok
 
 meta l4proto 22;ok
 meta l4proto != 233;ok
-meta l4proto 33-45;ok;meta l4proto >= 33 meta l4proto <= 45
-meta l4proto != 33-45;ok;meta l4proto < 33 meta l4proto > 45
+meta l4proto 33-45;ok
+meta l4proto != 33-45;ok
 meta l4proto { 33, 55, 67, 88};ok;meta l4proto { 33, 55, 67, 88}
 - meta l4proto != { 33, 55, 67, 88};ok
 meta l4proto { 33-55};ok
@@ -96,9 +96,9 @@ meta skuid != man;ok;skuid != 6
 meta skuid lt 3000 accept;ok;skuid < 3000 accept
 meta skuid gt 3000 accept;ok;skuid > 3000 accept
 meta skuid eq 3000 accept;ok;skuid 3000 accept
-meta skuid 3001-3005 accept;ok
-meta skuid != 2001-2005 accept;ok
-meta skuid { 2001-2005} accept;ok
+meta skuid 3001-3005 accept;ok;skuid 3001-3005 accept
+meta skuid != 2001-2005 accept;ok;skuid != 2001-2005 accept
+meta skuid { 2001-2005} accept;ok;skuid { 2001-2005} accept
 - meta skuid != { 2001-2005} accept;ok
 
 meta skgid {man, root, backup} accept;ok;skgid { 34, 12, 0} accept
@@ -108,10 +108,10 @@ meta skgid != man;ok;skgid != 12
 meta skgid lt 3000 accept;ok;skgid < 3000 accept
 meta skgid gt 3000 accept;ok;skgid > 3000 accept
 meta skgid eq 3000 accept;ok;skgid 3000 accept
-meta skgid 2001-2005 accept;ok
-meta skgid != 2001-2005 accept;ok
-meta skgid { 2001-2005} accept;ok
-- meta skgid != { 2001-2005} accept;ok
+meta skgid 2001-2005 accept;ok;skgid 2001-2005 accept
+meta skgid != 2001-2005 accept;ok;skgid != 2001-2005 accept
+meta skgid { 2001-2005} accept;ok;skgid { 2001-2005} accept
+- meta skgid != { 2001-2005} accept;ok;skgid != { 2001-2005} accept
 
 # BUG: meta nftrace 2 and meta nftrace 1
 # $ sudo nft add rule ip test input meta nftrace 2
@@ -153,11 +153,10 @@ meta pkttype { broadcast, multicast} accept;ok
 
 meta cpu 1;ok;cpu 1
 meta cpu != 1;ok;cpu != 1
-meta cpu 1-3;ok;cpu >= 1 cpu <= 3
-# BUG: there is not matching of packets with this rule.
-meta cpu != 1-2;ok;cpu < 1 cpu > 2
-meta cpu { 2,3};ok;cpu { 2, 3}
--meta cpu != { 2,3};ok
+meta cpu 1-3;ok;cpu 1-3
+meta cpu != 1-2;ok;cpu != 1-2
+meta cpu { 2,3};ok;cpu { 2,3}
+-meta cpu != { 2,3};ok; cpu != { 2,3}
 
 meta iifgroup 0;ok;iifgroup default
 meta iifgroup != 0;ok;iifgroup != default
@@ -180,11 +179,11 @@ meta oifgroup {11-33};ok
 - meta oifgroup != {11,33};ok
 - meta oifgroup != {11-33};ok
 
-meta cgroup 0x100001;ok;cgroup 1048577
-meta cgroup != 0x100001;ok;cgroup != 1048577
-meta cgroup { 0x100001, 0x100002};ok
-# meta cgroup != { 0x100001, 0x100002};ok
-meta cgroup 0x100001 - 0x100003;ok
-# meta cgroup != 0x100001 - 0x100003;ok
-meta cgroup {0x100001 - 0x100003};ok
-# meta cgroup != { 0x100001 - 0x100003};ok
+meta cgroup 1048577;ok;cgroup 1048577
+meta cgroup != 1048577;ok;cgroup != 1048577
+meta cgroup { 1048577, 1048578 };ok;cgroup { 1048577, 1048578}
+# meta cgroup != { 1048577, 1048578};ok;cgroup != { 1048577, 1048578}
+meta cgroup 1048577-1048578;ok;cgroup 1048577-1048578
+meta cgroup != 1048577-1048578;ok;cgroup != 1048577-1048578
+meta cgroup {1048577-1048578};ok;cgroup { 1048577-1048578}
+# meta cgroup != { 1048577-1048578};ok;cgroup != { 1048577-1048578}

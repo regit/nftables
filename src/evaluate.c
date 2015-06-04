@@ -614,7 +614,7 @@ static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 	struct expr *i, *next;
 
 	list_for_each_entry_safe(i, next, &(*expr)->expressions, list) {
-		if (dtype && off == 0)
+		if (expr_is_constant(*expr) && dtype && off == 0)
 			return expr_binary_error(ctx->msgs, i, *expr,
 						 "unexpected concat component, "
 						 "expecting %s",
@@ -672,6 +672,19 @@ static int expr_evaluate_list(struct eval_ctx *ctx, struct expr **expr)
 
 	expr_free(*expr);
 	*expr = new;
+	return 0;
+}
+
+static int expr_evaluate_set_elem(struct eval_ctx *ctx, struct expr **expr)
+{
+	struct expr *elem = *expr;
+
+	if (expr_evaluate(ctx, &elem->key) < 0)
+		return -1;
+
+	elem->dtype = elem->key->dtype;
+	elem->len   = elem->key->len;
+	elem->flags = elem->key->flags;
 	return 0;
 }
 
@@ -1100,6 +1113,8 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 		return expr_evaluate_list(ctx, expr);
 	case EXPR_SET:
 		return expr_evaluate_set(ctx, expr);
+	case EXPR_SET_ELEM:
+		return expr_evaluate_set_elem(ctx, expr);
 	case EXPR_MAP:
 		return expr_evaluate_map(ctx, expr);
 	case EXPR_MAPPING:
@@ -1646,6 +1661,30 @@ static int stmt_evaluate_log(struct eval_ctx *ctx, struct stmt *stmt)
 	return 0;
 }
 
+static int stmt_evaluate_set(struct eval_ctx *ctx, struct stmt *stmt)
+{
+	expr_set_context(&ctx->ectx, NULL, 0);
+	if (expr_evaluate(ctx, &stmt->set.set) < 0)
+		return -1;
+	if (stmt->set.set->ops->type != EXPR_SET_REF)
+		return expr_error(ctx->msgs, stmt->set.set,
+				  "Expression does not refer to a set");
+
+	if (stmt_evaluate_arg(ctx, stmt,
+			      stmt->set.set->set->keytype,
+			      stmt->set.set->set->keylen,
+			      &stmt->set.key) < 0)
+		return -1;
+	if (expr_is_constant(stmt->set.key))
+		return expr_error(ctx->msgs, stmt->set.key,
+				  "Key expression can not be constant");
+	if (stmt->set.key->comment != NULL)
+		return expr_error(ctx->msgs, stmt->set.key,
+				  "Key expression comments are not supported");
+
+	return 0;
+}
+
 int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 {
 #ifdef DEBUG
@@ -1680,6 +1719,8 @@ int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 		return stmt_evaluate_redir(ctx, stmt);
 	case STMT_QUEUE:
 		return stmt_evaluate_queue(ctx, stmt);
+	case STMT_SET:
+		return stmt_evaluate_set(ctx, stmt);
 	default:
 		BUG("unknown statement type %s\n", stmt->ops->name);
 	}
@@ -1721,6 +1762,10 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 		if (expr_evaluate(ctx, &set->init) < 0)
 			return -1;
 	}
+
+	/* Default timeout value implies timeout support */
+	if (set->timeout)
+		set->flags |= SET_F_TIMEOUT;
 
 	if (!(set->flags & SET_F_MAP))
 		return 0;

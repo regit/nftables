@@ -181,6 +181,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token INET			"inet"
 
 %token ADD			"add"
+%token UPDATE			"update"
 %token CREATE			"create"
 %token INSERT			"insert"
 %token DELETE			"delete"
@@ -201,6 +202,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %token CONSTANT			"constant"
 %token INTERVAL			"interval"
+%token TIMEOUT			"timeout"
+%token GC_INTERVAL		"gc-interval"
 %token ELEMENTS			"elements"
 
 %token POLICY			"policy"
@@ -396,6 +399,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <string>			identifier string comment_spec
 %destructor { xfree($$); }	identifier string comment_spec
 
+%type <val>			time_spec
+
 %type <val>			type_identifier
 %type <datatype>		data_type
 
@@ -452,6 +457,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <stmt>			queue_stmt queue_stmt_alloc
 %destructor { stmt_free($$); }	queue_stmt queue_stmt_alloc
 %type <val>			queue_stmt_flags queue_stmt_flag
+%type <stmt>			set_stmt
+%destructor { stmt_free($$); }	set_stmt
+%type <val>			set_stmt_op
 
 %type <expr>			symbol_expr verdict_expr integer_expr
 %destructor { expr_free($$); }	symbol_expr verdict_expr integer_expr
@@ -468,8 +476,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { expr_free($$); }	prefix_expr range_expr wildcard_expr
 %type <expr>			list_expr
 %destructor { expr_free($$); }	list_expr
-%type <expr>			concat_expr map_lhs_expr
-%destructor { expr_free($$); }	concat_expr map_lhs_expr
+%type <expr>			concat_expr
+%destructor { expr_free($$); }	concat_expr
 
 %type <expr>			map_expr
 %destructor { expr_free($$); }	map_expr
@@ -482,6 +490,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %type <expr>			set_expr set_list_expr set_list_member_expr
 %destructor { expr_free($$); }	set_expr set_list_expr set_list_member_expr
+%type <expr>			set_elem_expr set_elem_expr_alloc set_lhs_expr set_rhs_expr
+%destructor { expr_free($$); }	set_elem_expr set_elem_expr_alloc set_lhs_expr set_rhs_expr
 
 %type <expr>			expr initializer_expr
 %destructor { expr_free($$); }	expr initializer_expr
@@ -940,6 +950,16 @@ set_block		:	/* empty */	{ $$ = $<set>-1; }
 				$1->flags = $3;
 				$$ = $1;
 			}
+			|	set_block	TIMEOUT		time_spec	stmt_seperator
+			{
+				$1->timeout = $3 * 1000;
+				$$ = $1;
+			}
+			|	set_block	GC_INTERVAL	time_spec	stmt_seperator
+			{
+				$1->gc_int = $3 * 1000;
+				$$ = $1;
+			}
 			|	set_block	ELEMENTS	'='		set_expr
 			{
 				$1->init = $4;
@@ -957,6 +977,7 @@ set_flag_list		:	set_flag_list	COMMA		set_flag
 
 set_flag		:	CONSTANT	{ $$ = SET_F_CONSTANT; }
 			|	INTERVAL	{ $$ = SET_F_INTERVAL; }
+			|	TIMEOUT		{ $$ = SET_F_TIMEOUT; }
 			;
 
 map_block_alloc		:	/* empty */
@@ -1091,6 +1112,20 @@ identifier		:	STRING
 
 string			:	STRING
 			|	QUOTED_STRING
+			;
+
+time_spec		:	STRING
+			{
+				struct error_record *erec;
+				uint64_t res;
+
+				erec = time_parse(&@1, $1, &res);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+				$$ = res;
+			}
 			;
 
 family_spec		:	/* empty */		{ $$ = NFPROTO_IPV4; }
@@ -1236,6 +1271,7 @@ stmt			:	verdict_stmt
 			|	ct_stmt
 			|	masq_stmt
 			|	redir_stmt
+			|	set_stmt
 			;
 
 verdict_stmt		:	verdict_expr
@@ -1281,12 +1317,11 @@ verdict_map_list_expr	:	verdict_map_list_member_expr
 			|	verdict_map_list_expr	COMMA	opt_newline
 			;
 
-verdict_map_list_member_expr:	opt_newline	map_lhs_expr	COLON	verdict_expr	opt_newline
+verdict_map_list_member_expr:	opt_newline	set_elem_expr	COLON	verdict_expr	opt_newline
 			{
 				$$ = mapping_expr_alloc(&@$, $2, $4);
 			}
 			;
-
 
 counter_stmt		:	counter_stmt_alloc
 			|	counter_stmt_alloc	counter_args
@@ -1549,6 +1584,19 @@ queue_stmt_flag		:	BYPASS	{ $$ = NFT_QUEUE_FLAG_BYPASS; }
 			|	FANOUT	{ $$ = NFT_QUEUE_FLAG_CPU_FANOUT; }
 			;
 
+set_stmt		:	SET	set_stmt_op	set_elem_expr	symbol_expr
+			{
+				$$ = set_stmt_alloc(&@$);
+				$$->set.op  = $2;
+				$$->set.key = $3;
+				$$->set.set = $4;
+			}
+			;
+
+set_stmt_op		:	ADD	{ $$ = NFT_DYNSET_OP_ADD; }
+			|	UPDATE	{ $$ = NFT_DYNSET_OP_UPDATE; }
+			;
+
 match_stmt		:	relational_expr
 			{
 				$$ = expr_stmt_alloc(&@$, $1);
@@ -1702,10 +1750,6 @@ multiton_expr		:	prefix_expr
 			|	wildcard_expr
 			;
 
-map_lhs_expr		:	multiton_expr
-			|	concat_expr
-			;
-
 map_expr		:	concat_expr	MAP	expr
 			{
 				$$ = map_expr_alloc(&@$, $1, $3);
@@ -1713,9 +1757,9 @@ map_expr		:	concat_expr	MAP	expr
 			;
 
 expr			:	concat_expr
+			|	multiton_expr
 			|	set_expr
 			|       map_expr
-			|	multiton_expr
 			;
 
 set_expr		:	'{'	set_list_expr		'}'
@@ -1738,18 +1782,53 @@ set_list_expr		:	set_list_member_expr
 			|	set_list_expr		COMMA	opt_newline
 			;
 
-set_list_member_expr	:	opt_newline	expr	opt_newline
+set_list_member_expr	:	opt_newline	set_expr	opt_newline
 			{
 				$$ = $2;
 			}
-			|	opt_newline	map_lhs_expr	COLON	concat_expr	opt_newline
+			|	opt_newline	set_elem_expr	opt_newline
+			{
+				$$ = $2;
+			}
+			|	opt_newline	set_elem_expr	COLON	set_rhs_expr	opt_newline
 			{
 				$$ = mapping_expr_alloc(&@$, $2, $4);
 			}
-			|	opt_newline	map_lhs_expr	COLON	verdict_expr	opt_newline
+			;
+
+set_elem_expr		:	set_elem_expr_alloc
+			|	set_elem_expr_alloc		set_elem_options
+			;
+
+set_elem_expr_alloc	:	set_lhs_expr
 			{
-				$$ = mapping_expr_alloc(&@$, $2, $4);
+				$$ = set_elem_expr_alloc(&@1, $1);
 			}
+			;
+
+set_elem_options	:	set_elem_option
+			{
+				$<expr>$	= $<expr>0;
+			}
+			|	set_elem_options	set_elem_option
+			;
+
+set_elem_option		:	TIMEOUT			time_spec
+			{
+				$<expr>0->timeout = $2 * 1000;
+			}
+			|	COMMENT			string
+			{
+				$<expr>0->comment = $2;
+			}
+			;
+
+set_lhs_expr		:	concat_expr
+			|	multiton_expr
+			;
+
+set_rhs_expr		:	concat_expr
+			|	verdict_expr
 			;
 
 initializer_expr	:	expr

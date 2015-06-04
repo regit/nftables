@@ -231,4 +231,8 @@ concat_subtype_lookup(uint32_t type, unsigned int n)
 	return datatype_lookup(concat_subtype_id(type, n));
 }
 
+extern void time_print(uint64_t seconds);
+extern struct error_record *time_parse(const struct location *loc,
+				       const char *c, uint64_t *res);
+
 #endif /* NFTABLES_DATATYPE_H */

@@ -29,8 +29,8 @@ ip6 flowlabel { 33-55};ok
 
 ip6 length 22;ok
 ip6 length != 233;ok
-ip6 length 33-45;ok;ip6 length >= 33 ip6 length <= 45
-ip6 length != 33-45;ok;ip6 length < 33 ip6 length > 45
+ip6 length 33-45;ok
+ip6 length != 33-45;ok
 - ip6 length { 33, 55, 67, 88};ok
 - ip6 length != {33, 55, 67, 88};ok
 ip6 length { 33-55};ok
@@ -43,13 +43,13 @@ ip6 nexthdr esp;ok;ip6 nexthdr 50
 ip6 nexthdr != esp;ok;ip6 nexthdr != 50
 ip6 nexthdr { 33-44};ok
 - p6 nexthdr != { 33-44};ok
-ip6 nexthdr 33-44;ok;ip6 nexthdr >= 33 ip6 nexthdr <= 44
-ip6 nexthdr != 33-44;ok;ip6 nexthdr < 33 ip6 nexthdr > 44
+ip6 nexthdr 33-44;ok
+ip6 nexthdr != 33-44;ok
 
 ip6 hoplimit 1 log;ok
 ip6 hoplimit != 233;ok
-ip6 hoplimit 33-45;ok;ip6 hoplimit >= 33 ip6 hoplimit <= 45
-ip6 hoplimit != 33-45;ok;ip6 hoplimit < 33 ip6 hoplimit > 45
+ip6 hoplimit 33-45;ok
+ip6 hoplimit != 33-45;ok
 ip6 hoplimit {33, 55, 67, 88};ok
 - ip6 hoplimit != {33, 55, 67, 88};ok
 ip6 hoplimit {33-55};ok

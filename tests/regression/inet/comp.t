@@ -4,9 +4,9 @@
 
 :input;type filter hook input priority 0
 
-# BUG: Do no list table.
+# BUG: nft: payload.c:88: payload_expr_pctx_update: Assertion `left->payload.base + 1 <= (__PROTO_BASE_MAX - 1)' failed.
 - comp nexthdr esp;ok;comp nexthdr 50
-comp nexthdr != esp;ok
+comp nexthdr != esp;ok;comp nexthdr != 50
 
 - comp nexthdr {esp, ah, comp, udp, udplite, tcp, tcp, dccp, sctp};ok
 # comp flags ## 8-bit field.  Reserved for future use.  MUST be set to zero.
@@ -23,8 +23,8 @@ comp flags { 0x33-0x55};ok
 
 comp cpi 22;ok
 comp cpi != 233;ok
-comp cpi 33-45;ok;comp cpi >= 33 comp cpi <= 45
-comp cpi != 33-45;ok;comp cpi < 33 comp cpi > 45
+comp cpi 33-45;ok
+comp cpi != 33-45;ok
 comp cpi {33, 55, 67, 88};ok
 - comp cpi != {33, 55, 67, 88};ok
 comp cpi { 33-55};ok

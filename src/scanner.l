@@ -117,6 +117,8 @@ quotedstring	\"[^"]*\"
 comment		#.*$
 slash		\/
 
+timestring	([0-9]+d)?([0-9]+h)?([0-9]+m)?([0-9]+s)?
+
 hex4		([[:xdigit:]]{1,4})
 v680		(({hex4}:){7}{hex4})
 v670		((:)((:{hex4}){7}))
@@ -255,6 +257,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "inet"			{ return INET; }
 
 "add"			{ return ADD; }
+"update"		{ return UPDATE; }
 "create"		{ return CREATE; }
 "insert"		{ return INSERT; }
 "delete"		{ return DELETE; }
@@ -269,6 +272,8 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 "constant"		{ return CONSTANT; }
 "interval"		{ return INTERVAL; }
+"timeout"		{ return TIMEOUT; }
+"gc-interval"		{ return GC_INTERVAL; }
 "elements"		{ return ELEMENTS; }
 
 "policy"		{ return POLICY; }
@@ -453,6 +458,11 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "json"			{ return JSON; }
 
 {addrstring}		{
+				yylval->string = xstrdup(yytext);
+				return STRING;
+			}
+
+{timestring}		{
 				yylval->string = xstrdup(yytext);
 				return STRING;
 			}
