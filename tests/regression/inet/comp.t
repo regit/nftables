@@ -12,7 +12,7 @@ comp nexthdr != esp;ok;comp nexthdr != 50
 # comp flags ## 8-bit field.  Reserved for future use.  MUST be set to zero.
 
 # Bug comp flags: to list. List the decimal value.
-comp flags 0x00;ok
+comp flags 0x0;ok
 comp flags != 0x23;ok
 comp flags 0x33-0x45;ok
 comp flags != 0x33-0x45;ok

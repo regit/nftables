@@ -272,7 +272,7 @@ const struct proto_desc proto_comp = {
 	},
 	.templates	= {
 		[COMPHDR_NEXTHDR]	= INET_PROTOCOL("nexthdr", struct ip_comp_hdr, nexthdr),
-		[COMPHDR_FLAGS]		= COMPHDR_FIELD("flags", flags),
+		[COMPHDR_FLAGS]		= HDR_TEMPLATE("flags", &bitmask_type, struct ip_comp_hdr, flags),
 		[COMPHDR_CPI]		= COMPHDR_FIELD("cpi", cpi),
 	},
 };
