@@ -260,15 +260,22 @@ const struct datatype bitmask_type = {
 	.type		= TYPE_BITMASK,
 	.name		= "bitmask",
 	.desc		= "bitmask",
+	.basefmt	= "0x%Zx",
 	.basetype	= &integer_type,
 };
 
 static void integer_type_print(const struct expr *expr)
 {
+	const struct datatype *dtype = expr->dtype;
 	const char *fmt = "%Zu";
 
-	if (expr->dtype->basefmt != NULL)
-		fmt = expr->dtype->basefmt;
+	do {
+		if (dtype->basefmt != NULL) {
+			fmt = dtype->basefmt;
+			break;
+		}
+	} while ((dtype = dtype->basetype));
+
 	gmp_printf(fmt, expr->value);
 }
 
