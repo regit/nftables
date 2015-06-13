@@ -273,23 +273,21 @@ static void netlink_gen_concat_data(const struct expr *expr,
 	const struct expr *i;
 	unsigned int len, offset;
 
-	len = 0;
-	list_for_each_entry(i, &expr->expressions, list)
-		len += i->len;
-
+	len = expr->len / BITS_PER_BYTE;
 	if (1) {
-		unsigned char data[len / BITS_PER_BYTE];
+		unsigned char data[len];
 
+		memset(data, 0, sizeof(data));
 		offset = 0;
 		list_for_each_entry(i, &expr->expressions, list) {
 			assert(i->ops->type == EXPR_VALUE);
 			mpz_export_data(data + offset, i->value, i->byteorder,
 					i->len / BITS_PER_BYTE);
-			offset += i->len / BITS_PER_BYTE;
+			offset += netlink_padded_len(i->len) / BITS_PER_BYTE;
 		}
 
-		memcpy(nld->value, data, len / BITS_PER_BYTE);
-		nld->len = len / BITS_PER_BYTE;
+		memcpy(nld->value, data, len);
+		nld->len = len;
 	}
 }
 
@@ -1385,6 +1383,36 @@ static int netlink_del_setelems_compat(struct netlink_ctx *ctx,
 	return err;
 }
 
+static struct expr *netlink_parse_concat_elem(const struct datatype *dtype,
+					      struct expr *data)
+{
+	const struct datatype *subtype;
+	struct expr *concat, *expr;
+	int off = dtype->subtypes;
+
+	concat = concat_expr_alloc(&data->location);
+	while (off > 0) {
+		subtype = concat_subtype_lookup(dtype->type, --off);
+
+		expr		= constant_expr_splice(data, subtype->size);
+		expr->dtype     = subtype;
+		expr->byteorder = subtype->byteorder;
+
+		if (expr->byteorder == BYTEORDER_HOST_ENDIAN)
+			mpz_switch_byteorder(expr->value, expr->len / BITS_PER_BYTE);
+
+		if (expr->dtype->basetype != NULL &&
+		    expr->dtype->basetype->type == TYPE_BITMASK)
+			expr = bitmask_expr_to_binops(expr);
+
+		compound_expr_add(concat, expr);
+		data->len -= netlink_padding_len(expr->len);
+	}
+	expr_free(data);
+
+	return concat;
+}
+
 static int netlink_delinearize_setelem(struct nft_set_elem *nlse,
 				       struct set *set)
 {
@@ -1400,6 +1428,8 @@ static int netlink_delinearize_setelem(struct nft_set_elem *nlse,
 	key = netlink_alloc_value(&netlink_location, &nld);
 	key->dtype	= set->keytype;
 	key->byteorder	= set->keytype->byteorder;
+	if (set->keytype->subtypes)
+		key = netlink_parse_concat_elem(set->keytype, key);
 
 	if (!(set->flags & SET_F_INTERVAL) &&
 	    key->byteorder == BYTEORDER_HOST_ENDIAN)

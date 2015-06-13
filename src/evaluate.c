@@ -620,6 +620,13 @@ static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 						 "expecting %s",
 						 dtype->desc);
 
+		if (dtype == NULL && i->dtype->size == 0)
+			return expr_binary_error(ctx->msgs, i, *expr,
+						 "can not use variable sized "
+						 "data types (%s) in concat "
+						 "expressions",
+						 i->dtype->name);
+
 		tmp = concat_subtype_lookup(type, --off);
 		expr_set_context(&ctx->ectx, tmp, tmp->size);
 
