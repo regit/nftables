@@ -1101,7 +1101,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 				dtype = concat_subtype_lookup(type, --off);
 				expr_set_type(i, dtype, dtype->byteorder);
 			}
-			expr_postprocess(ctx, stmt, &i);
+			expr_postprocess(ctx, &i);
 
 			ntype = concat_subtype_add(ntype, i->dtype->type);
 		}
