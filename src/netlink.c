@@ -1982,14 +1982,15 @@ static void netlink_events_cache_deltable(struct netlink_mon_handler *monh,
 	nlt      = netlink_table_alloc(nlh);
 	h.family = nft_table_attr_get_u32(nlt, NFT_TABLE_ATTR_FAMILY);
 	h.table  = nft_table_attr_get_str(nlt, NFT_TABLE_ATTR_NAME);
-	nft_table_free(nlt);
 
 	t = table_lookup(&h);
 	if (t == NULL)
-		return;
+		goto out;
 
 	list_del(&t->list);
 	table_free(t);
+out:
+	nft_table_free(nlt);
 }
 
 static void netlink_events_cache_addset(struct netlink_mon_handler *monh,
