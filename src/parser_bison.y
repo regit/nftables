@@ -396,12 +396,12 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token XML			"xml"
 %token JSON			"json"
 
-%type <string>			identifier string comment_spec
-%destructor { xfree($$); }	identifier string comment_spec
+%type <string>			identifier type_identifier string comment_spec
+%destructor { xfree($$); }	identifier type_identifier string comment_spec
 
 %type <val>			time_spec
 
-%type <val>			type_identifier
+%type <val>			type_identifier_list
 %type <datatype>		data_type
 
 %type <cmd>			line
@@ -1025,7 +1025,7 @@ set_policy_spec		:	PERFORMANCE	{ $$ = NFT_SET_POL_PERFORMANCE; }
 			|	MEMORY		{ $$ = NFT_SET_POL_MEMORY; }
 			;
 
-data_type		:	type_identifier
+data_type		:	type_identifier_list
 			{
 				if ($1 & ~TYPE_MASK)
 					$$ = concat_type_alloc($1);
@@ -1034,7 +1034,7 @@ data_type		:	type_identifier
 			}
 			;
 
-type_identifier		:	identifier
+type_identifier_list	:	type_identifier
 			{
 				const struct datatype *dtype = datatype_lookup_byname($1);
 				if (dtype == NULL) {
@@ -1044,7 +1044,7 @@ type_identifier		:	identifier
 				}
 				$$ = dtype->type;
 			}
-			|	type_identifier	DOT		identifier
+			|	type_identifier_list	DOT	type_identifier
 			{
 				const struct datatype *dtype = datatype_lookup_byname($3);
 				if (dtype == NULL) {
@@ -1054,6 +1054,10 @@ type_identifier		:	identifier
 				}
 				$$ = concat_subtype_add($$, dtype->type);
 			}
+			;
+
+type_identifier		:	STRING	{ $$ = $1; }
+			|	MARK	{ $$ = xstrdup("mark"); }
 			;
 
 hook_spec		:	TYPE		STRING		HOOK		STRING		PRIORITY	NUM
