@@ -86,6 +86,7 @@ void erec_print(FILE *f, const struct error_record *erec)
 	char *pbuf = NULL;
 	unsigned int i, end;
 	int l, ret;
+	off_t orig_offset = 0;
 
 	switch (indesc->type) {
 	case INDESC_BUFFER:
@@ -94,11 +95,13 @@ void erec_print(FILE *f, const struct error_record *erec)
 		break;
 	case INDESC_FILE:
 		memset(buf, 0, sizeof(buf));
+		orig_offset = lseek(indesc->fd, 0, SEEK_CUR);
 		lseek(indesc->fd, loc->line_offset, SEEK_SET);
 		ret = read(indesc->fd, buf, sizeof(buf) - 1);
 		if (ret > 0)
 			*strchrnul(buf, '\n') = '\0';
 		line = buf;
+		lseek(indesc->fd, orig_offset, SEEK_SET);
 		break;
 	case INDESC_INTERNAL:
 	case INDESC_NETLINK:
