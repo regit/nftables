@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
 #include <netlink.h>
 #include <gmputil.h>
@@ -82,6 +83,7 @@ void erec_print(FILE *f, const struct error_record *erec)
 	const struct input_descriptor *indesc = loc->indesc, *tmp;
 	const char *line = NULL; /* silence gcc */
 	char buf[1024];
+	char *pbuf = NULL;
 	unsigned int i, end;
 	int l, ret;
 
@@ -141,17 +143,22 @@ void erec_print(FILE *f, const struct error_record *erec)
 		if (indesc->type != INDESC_INTERNAL)
 			fprintf(f, "%s\n", line);
 
-		memset(buf, ' ', sizeof(buf));
 		end = 0;
+		for (l = erec->num_locations - 1; l >= 0; l--) {
+			loc = &erec->locations[l];
+			end = max(end, loc->last_column);
+		}
+		pbuf = xmalloc(end + 1);
+		memset(pbuf, ' ', end + 1);
 		for (l = erec->num_locations - 1; l >= 0; l--) {
 			loc = &erec->locations[l];
 			for (i = loc->first_column ? loc->first_column - 1 : 0;
 			     i < loc->last_column; i++)
-				buf[i] = l ? '~' : '^';
-			end = max(end, loc->last_column);
+				pbuf[i] = l ? '~' : '^';
 		}
-		buf[end] = '\0';
-		fprintf(f, "%s", buf);
+		pbuf[end] = '\0';
+		fprintf(f, "%s", pbuf);
+		xfree(pbuf);
 	}
 	fprintf(f, "\n");
 }
