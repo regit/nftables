@@ -182,7 +182,6 @@ static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 	bool batch_supported = netlink_batch_supported();
 	int ret = 0;
 
-	netlink_genid_get();
 	mnl_batch_init();
 
 	batch_seqnum = mnl_batch_begin();
@@ -366,6 +365,7 @@ out:
 	scanner_destroy(scanner);
 	erec_print_list(stderr, &msgs);
 	xfree(buf);
+	cache_release();
 	iface_cache_release();
 
 	return rc;

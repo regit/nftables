@@ -383,4 +383,7 @@ extern struct error_record *rule_postprocess(struct rule *rule);
 struct netlink_ctx;
 extern int do_command(struct netlink_ctx *ctx, struct cmd *cmd);
 
+extern int cache_update(enum cmd_ops cmd, struct list_head *msgs);
+extern void cache_release(void);
+
 #endif /* NFTABLES_RULE_H */

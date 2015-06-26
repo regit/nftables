@@ -124,6 +124,7 @@ static void cli_complete(char *line)
 	nft_run(scanner, state, &msgs);
 	erec_print_list(stdout, &msgs);
 	xfree(line);
+	cache_release();
 	iface_cache_release();
 }
 
