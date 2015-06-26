@@ -67,6 +67,22 @@ static int cache_init_tables(struct netlink_ctx *ctx, struct handle *h)
 	return 0;
 }
 
+static int cache_init_objects(struct netlink_ctx *ctx)
+{
+	struct table *table;
+	int ret;
+
+	list_for_each_entry(table, &table_list, list) {
+		ret = netlink_list_sets(ctx, &table->handle,
+					&internal_location);
+		list_splice_tail_init(&ctx->list, &table->sets);
+
+		if (ret < 0)
+			return -1;
+	}
+	return 0;
+}
+
 static int cache_init(enum cmd_ops cmd, struct list_head *msgs)
 {
 	struct handle handle = {
@@ -80,6 +96,9 @@ static int cache_init(enum cmd_ops cmd, struct list_head *msgs)
 	ctx.msgs = msgs;
 
 	ret = cache_init_tables(&ctx, &handle);
+	if (ret < 0)
+		return ret;
+	ret = cache_init_objects(&ctx);
 	if (ret < 0)
 		return ret;
 
@@ -596,11 +615,14 @@ struct table *table_alloc(void)
 void table_free(struct table *table)
 {
 	struct chain *chain, *next;
+	struct set *set, *nset;
 
 	if (--table->refcnt > 0)
 		return;
 	list_for_each_entry_safe(chain, next, &table->chains, list)
 		chain_free(chain);
+	list_for_each_entry_safe(set, nset, &table->sets, list)
+		set_free(set);
 	handle_free(&table->handle);
 	scope_release(&table->scope);
 	xfree(table);
@@ -889,15 +911,11 @@ static int do_command_delete(struct netlink_ctx *ctx, struct cmd *cmd)
 static int do_list_sets(struct netlink_ctx *ctx, const struct location *loc,
 			struct table *table)
 {
-	struct set *set, *nset;
+	struct set *set;
 
-	if (netlink_list_sets(ctx, &table->handle, loc) < 0)
-		return -1;
-
-	list_for_each_entry_safe(set, nset, &ctx->list, list) {
+	list_for_each_entry(set, &table->sets, list) {
 		if (netlink_get_setelems(ctx, &set->handle, loc, set) < 0)
 			return -1;
-		list_move_tail(&set->list, &table->sets);
 	}
 	return 0;
 }
@@ -966,6 +984,23 @@ err:
 	return -1;
 }
 
+static int do_list_sets_global(struct netlink_ctx *ctx, struct cmd *cmd)
+{
+	struct table *table;
+	struct set *set;
+
+	list_for_each_entry(table, &table_list, list) {
+		list_for_each_entry(set, &table->sets, list) {
+			if (netlink_get_setelems(ctx, &set->handle,
+						 &cmd->location, set) < 0)
+				return -1;
+
+			set_print(set);
+		}
+	}
+	return 0;
+}
+
 static int do_list_ruleset(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	unsigned int family = cmd->handle.family;
@@ -998,10 +1033,25 @@ static int do_list_tables(struct netlink_ctx *ctx, struct cmd *cmd)
 	return 0;
 }
 
+static int do_list_set(struct netlink_ctx *ctx, struct cmd *cmd,
+		       struct table *table)
+{
+	struct set *set;
+
+	set = set_lookup(table, cmd->handle.set);
+	if (set == NULL)
+		return -1;
+
+	if (netlink_get_setelems(ctx, &cmd->handle, &cmd->location, set) < 0)
+		return -1;
+
+	set_print(set);
+	return 0;
+}
+
 static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	struct table *table = NULL;
-	struct set *set;
 
 	if (cmd->handle.table != NULL)
 		table = table_lookup(&cmd->handle);
@@ -1014,28 +1064,9 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_CHAIN:
 		return do_list_table(ctx, cmd, table);
 	case CMD_OBJ_SETS:
-		if (netlink_list_sets(ctx, &cmd->handle, &cmd->location) < 0)
-			return -1;
-
-		list_for_each_entry(set, &ctx->list, list){
-			if (netlink_get_setelems(ctx, &set->handle,
-						 &cmd->location, set) < 0) {
-				return -1;
-			}
-			set_print(set);
-		}
-		return 0;
+		return do_list_sets_global(ctx, cmd);
 	case CMD_OBJ_SET:
-		if (netlink_get_set(ctx, &cmd->handle, &cmd->location) < 0)
-			goto err;
-		list_for_each_entry(set, &ctx->list, list) {
-			if (netlink_get_setelems(ctx, &cmd->handle,
-						 &cmd->location, set) < 0) {
-				goto err;
-			}
-			set_print(set);
-		}
-		return 0;
+		return do_list_set(ctx, cmd, table);
 	case CMD_OBJ_RULESET:
 		return do_list_ruleset(ctx, cmd);
 	default:
@@ -1043,9 +1074,6 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	}
 
 	return 0;
-err:
-	table_cleanup(table);
-	return -1;
 }
 
 static int do_command_flush(struct netlink_ctx *ctx, struct cmd *cmd)
@@ -1088,10 +1116,7 @@ static int do_command_rename(struct netlink_ctx *ctx, struct cmd *cmd)
 static int do_command_monitor(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	struct table *t;
-	struct set *s, *ns;
-	struct netlink_ctx set_ctx;
-	LIST_HEAD(msgs);
-	struct handle set_handle;
+	struct set *s;
 	struct netlink_mon_handler monhandler;
 
 	/* cache only needed if monitoring:
@@ -1106,24 +1131,9 @@ static int do_command_monitor(struct netlink_ctx *ctx, struct cmd *cmd)
 		monhandler.cache_needed = false;
 
 	if (monhandler.cache_needed) {
-		memset(&set_ctx, 0, sizeof(set_ctx));
-		init_list_head(&msgs);
-		set_ctx.msgs = &msgs;
-
 		list_for_each_entry(t, &table_list, list) {
-			set_handle.family = t->handle.family;
-			set_handle.table = t->handle.table;
-
-			init_list_head(&set_ctx.list);
-
-			if (netlink_list_sets(&set_ctx, &set_handle,
-					      &cmd->location) < 0)
-				return -1;
-
-			list_for_each_entry_safe(s, ns, &set_ctx.list, list) {
+			list_for_each_entry(s, &t->sets, list)
 				s->init = set_expr_alloc(&cmd->location);
-				set_add_hash(s, t);
-			}
 		}
 	}
 

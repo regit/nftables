@@ -109,37 +109,6 @@ static struct expr *implicit_set_declaration(struct eval_ctx *ctx,
 	return set_ref_expr_alloc(&expr->location, set);
 }
 
-// FIXME
-#include <netlink.h>
-static struct set *get_set(struct eval_ctx *ctx, const struct handle *h,
-			   const char *identifier)
-{
-	struct netlink_ctx nctx = {
-		.msgs = ctx->msgs,
-	};
-	struct handle handle;
-	struct set *set;
-	int err;
-
-	if (ctx->table != NULL) {
-		set = set_lookup(ctx->table, identifier);
-		if (set != NULL)
-			return set;
-	}
-
-	init_list_head(&nctx.list);
-
-	memset(&handle, 0, sizeof(handle));
-	handle_merge(&handle, h);
-	handle.set = xstrdup(identifier);
-	err = netlink_get_set(&nctx, &handle, &internal_location);
-	handle_free(&handle);
-
-	if (err < 0)
-		return NULL;
-	return list_first_entry(&nctx.list, struct set, list);
-}
-
 static enum ops byteorder_conversion_op(struct expr *expr,
 					enum byteorder byteorder)
 {
@@ -192,6 +161,7 @@ static int expr_evaluate_symbol(struct eval_ctx *ctx, struct expr **expr)
 {
 	struct error_record *erec;
 	struct symbol *sym;
+	struct table *table;
 	struct set *set;
 	struct expr *new;
 
@@ -213,9 +183,15 @@ static int expr_evaluate_symbol(struct eval_ctx *ctx, struct expr **expr)
 		new = expr_clone(sym->expr);
 		break;
 	case SYMBOL_SET:
-		set = get_set(ctx, &ctx->cmd->handle, (*expr)->identifier);
+		table = table_lookup(&ctx->cmd->handle);
+		if (table == NULL)
+			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
+					 ctx->cmd->handle.table);
+
+		set = set_lookup(table, (*expr)->identifier);
 		if (set == NULL)
-			return -1;
+			return cmd_error(ctx, "Could not process rule: Set '%s' does not exist",
+					 (*expr)->identifier);
 		new = set_ref_expr_alloc(&(*expr)->location, set);
 		break;
 	}
@@ -1737,11 +1713,18 @@ int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 
 static int setelem_evaluate(struct eval_ctx *ctx, struct expr **expr)
 {
+	struct table *table;
 	struct set *set;
 
-	set = get_set(ctx, &ctx->cmd->handle, ctx->cmd->handle.set);
+	table = table_lookup(&ctx->cmd->handle);
+	if (table == NULL)
+		return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
+				 ctx->cmd->handle.table);
+
+	set = set_lookup(table, ctx->cmd->handle.set);
 	if (set == NULL)
-		return -1;
+		return cmd_error(ctx, "Could not process rule: Set '%s' does not exist",
+				 ctx->cmd->handle.set);
 
 	ctx->set = set;
 	expr_set_context(&ctx->ectx, set->keytype, set->keylen);
