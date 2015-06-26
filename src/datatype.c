@@ -156,13 +156,14 @@ out:
 void symbolic_constant_print(const struct symbol_table *tbl,
 			     const struct expr *expr)
 {
+	unsigned int len = div_round_up(expr->len, BITS_PER_BYTE);
 	const struct symbolic_constant *s;
 	uint64_t val = 0;
 
 	/* Export the data in the correct byteorder for comparison */
 	assert(expr->len / BITS_PER_BYTE <= sizeof(val));
 	mpz_export_data(constant_data_ptr(val, expr->len), expr->value,
-			expr->byteorder, expr->len / BITS_PER_BYTE);
+			expr->byteorder, len);
 
 	for (s = tbl->symbols; s->identifier != NULL; s++) {
 		if (val == s->value)
