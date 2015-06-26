@@ -204,11 +204,11 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 		switch (ctx->pctx.family) {
 		case NFPROTO_INET:
 			switch (expr->payload.base) {
-			case PROTO_BASE_TRANSPORT_HDR:
-				desc = &proto_inet_service;
-				break;
 			case PROTO_BASE_LL_HDR:
 				desc = &proto_inet;
+				break;
+			case PROTO_BASE_TRANSPORT_HDR:
+				desc = &proto_inet_service;
 				break;
 			default:
 				break;
