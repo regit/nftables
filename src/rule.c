@@ -139,12 +139,16 @@ void cache_release(void)
 	cache_initialized = false;
 }
 
+/* internal ID to uniquely identify a set in the batch */
+static uint32_t set_id;
+
 struct set *set_alloc(const struct location *loc)
 {
 	struct set *set;
 
 	set = xzalloc(sizeof(*set));
 	set->refcnt = 1;
+	set->handle.set_id = ++set_id;
 	if (loc != NULL)
 		set->location = *loc;
 	return set;

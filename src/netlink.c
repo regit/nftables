@@ -1128,9 +1128,6 @@ static int netlink_add_set_compat(struct netlink_ctx *ctx,
 	return err;
 }
 
-/* internal ID to uniquely identify a set in the batch */
-static uint32_t set_id;
-
 static int netlink_add_set_batch(struct netlink_ctx *ctx,
 				 const struct handle *h, struct set *set)
 {
@@ -1154,7 +1151,6 @@ static int netlink_add_set_batch(struct netlink_ctx *ctx,
 	if (set->gc_int)
 		nft_set_attr_set_u32(nls, NFT_SET_ATTR_GC_INTERVAL, set->gc_int);
 
-	set->handle.set_id = ++set_id;
 	nft_set_attr_set_u32(nls, NFT_SET_ATTR_ID, set->handle.set_id);
 
 	if (!(set->flags & (SET_F_CONSTANT))) {
