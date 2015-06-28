@@ -1885,6 +1885,19 @@ static int table_evaluate(struct eval_ctx *ctx, struct table *table)
 	struct chain *chain;
 	struct set *set;
 
+	if (table_lookup(&ctx->cmd->handle) == NULL) {
+		if (table == NULL) {
+			table = table_alloc();
+			handle_merge(&table->handle, &ctx->cmd->handle);
+			table_add_hash(table);
+		} else {
+			table_add_hash(table_get(table));
+		}
+	}
+
+	if (ctx->cmd->table == NULL)
+		return 0;
+
 	ctx->table = table;
 	list_for_each_entry(set, &table->sets, list) {
 		handle_merge(&set->handle, &table->handle);
@@ -1916,8 +1929,6 @@ static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 			return 0;
 		return chain_evaluate(ctx, cmd->chain);
 	case CMD_OBJ_TABLE:
-		if (cmd->data == NULL)
-			return 0;
 		return table_evaluate(ctx, cmd->table);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);

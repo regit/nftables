@@ -1003,15 +1003,8 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	struct table *table = NULL;
 	struct set *set;
 
-	/* No need to allocate the table object when listing all tables */
-	if (cmd->handle.table != NULL) {
+	if (cmd->handle.table != NULL)
 		table = table_lookup(&cmd->handle);
-		if (table == NULL) {
-			table = table_alloc();
-			handle_merge(&table->handle, &cmd->handle);
-			table_add_hash(table);
-		}
-	}
 
 	switch (cmd->obj) {
 	case CMD_OBJ_TABLE:
@@ -1072,13 +1065,9 @@ static int do_command_flush(struct netlink_ctx *ctx, struct cmd *cmd)
 
 static int do_command_rename(struct netlink_ctx *ctx, struct cmd *cmd)
 {
-	struct table *table;
+	struct table *table = table_lookup(&cmd->handle);
 	struct chain *chain;
 	int err;
-
-	table = table_alloc();
-	handle_merge(&table->handle, &cmd->handle);
-	table_add_hash(table);
 
 	switch (cmd->obj) {
 	case CMD_OBJ_CHAIN:
