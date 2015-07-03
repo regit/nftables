@@ -928,7 +928,9 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 				return -1;
 
 			list_for_each_entry(table, &ctx->list, list) {
-				printf("table %s\n", table->handle.table);
+				printf("table %s %s\n",
+				       family2str(table->handle.family),
+				       table->handle.table);
 			}
 			return 0;
 		}
