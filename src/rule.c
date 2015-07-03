@@ -408,7 +408,7 @@ const char *family2str(unsigned int family)
 	return "unknown";
 }
 
-static const char *hooknum2str(unsigned int family, unsigned int hooknum)
+const char *hooknum2str(unsigned int family, unsigned int hooknum)
 {
 	switch (family) {
 	case NFPROTO_IPV4:
@@ -466,8 +466,7 @@ static void chain_print(const struct chain *chain)
 	printf("\tchain %s {\n", chain->handle.chain);
 	if (chain->flags & CHAIN_F_BASECHAIN) {
 		printf("\t\ttype %s hook %s priority %d; policy %s;\n",
-		       chain->type,
-		       hooknum2str(chain->handle.family, chain->hooknum),
+		       chain->type, chain->hookstr,
 		       chain->priority, chain_policy2str(chain->policy));
 	}
 	list_for_each_entry(rule, &chain->rules, list) {
@@ -488,8 +487,7 @@ void chain_print_plain(const struct chain *chain)
 
 	if (chain->flags & CHAIN_F_BASECHAIN) {
 		printf(" { type %s hook %s priority %d; policy %s; }",
-		       chain->type,
-		       hooknum2str(chain->handle.family, chain->hooknum),
+		       chain->type, chain->hookstr,
 		       chain->priority, chain_policy2str(chain->policy));
 	}
 

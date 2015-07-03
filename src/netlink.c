@@ -691,6 +691,8 @@ static struct chain *netlink_delinearize_chain(struct netlink_ctx *ctx,
 	    nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_POLICY)) {
 		chain->hooknum       =
 			nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_HOOKNUM);
+		chain->hookstr       =
+			hooknum2str(chain->handle.family, chain->hooknum);
 		chain->priority      =
 			nft_chain_attr_get_s32(nlc, NFT_CHAIN_ATTR_PRIO);
 		chain->type          =

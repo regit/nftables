@@ -138,6 +138,7 @@ extern struct chain *chain_lookup(const struct table *table,
 				  const struct handle *h);
 
 extern const char *family2str(unsigned int family);
+extern const char *hooknum2str(unsigned int family, unsigned int hooknum);
 extern void chain_print_plain(const struct chain *chain);
 
 /**
