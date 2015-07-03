@@ -1736,7 +1736,16 @@ static int setelem_evaluate(struct eval_ctx *ctx, struct expr **expr)
 
 static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 {
+	struct table *table;
 	const char *type;
+
+	table = table_lookup(&ctx->cmd->handle);
+	if (table == NULL)
+		return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
+				 ctx->cmd->handle.table);
+
+	if (set_lookup(table, set->handle.set) == NULL)
+		set_add_hash(set_get(set), table);
 
 	type = set->flags & SET_F_MAP ? "map" : "set";
 
