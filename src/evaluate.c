@@ -1962,6 +1962,26 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 	}
 }
 
+static int cmd_evaluate_rename(struct eval_ctx *ctx, struct cmd *cmd)
+{
+	struct table *table;
+
+	switch (cmd->obj) {
+	case CMD_OBJ_CHAIN:
+		table = table_lookup(&ctx->cmd->handle);
+		if (table == NULL)
+			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
+					 ctx->cmd->handle.table);
+		if (chain_lookup(table, &ctx->cmd->handle) == NULL)
+			return cmd_error(ctx, "Could not process rule: Chain '%s' does not exist",
+					 ctx->cmd->handle.chain);
+		break;
+	default:
+		BUG("invalid command object type %u\n", cmd->obj);
+	}
+	return 0;
+}
+
 enum {
 	CMD_MONITOR_EVENT_ANY,
 	CMD_MONITOR_EVENT_NEW,
@@ -2055,7 +2075,9 @@ int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_LIST:
 		return cmd_evaluate_list(ctx, cmd);
 	case CMD_FLUSH:
+		return 0;
 	case CMD_RENAME:
+		return cmd_evaluate_rename(ctx, cmd);
 	case CMD_EXPORT:
 	case CMD_DESCRIBE:
 		return 0;
