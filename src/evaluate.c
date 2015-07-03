@@ -1854,7 +1854,25 @@ static uint32_t str2hooknum(uint32_t family, const char *hook)
 
 static int chain_evaluate(struct eval_ctx *ctx, struct chain *chain)
 {
+	struct table *table;
 	struct rule *rule;
+
+	table = table_lookup(&ctx->cmd->handle);
+	if (table == NULL)
+		return cmd_error(ctx, "Table '%s' does not exist",
+				 ctx->cmd->handle.table);
+
+	if (chain == NULL) {
+		if (chain_lookup(table, &ctx->cmd->handle) == NULL) {
+			chain = chain_alloc(NULL);
+			handle_merge(&chain->handle, &ctx->cmd->handle);
+			chain_add_hash(chain, table);
+		}
+		return 0;
+	} else {
+		if (chain_lookup(table, &chain->handle) == NULL)
+			chain_add_hash(chain_get(chain), table);
+	}
 
 	if (chain->flags & CHAIN_F_BASECHAIN) {
 		chain->hooknum = str2hooknum(chain->handle.family,
@@ -1917,8 +1935,6 @@ static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 		handle_merge(&cmd->rule->handle, &cmd->handle);
 		return rule_evaluate(ctx, cmd->rule);
 	case CMD_OBJ_CHAIN:
-		if (cmd->data == NULL)
-			return 0;
 		return chain_evaluate(ctx, cmd->chain);
 	case CMD_OBJ_TABLE:
 		return table_evaluate(ctx, cmd->table);
