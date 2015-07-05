@@ -69,6 +69,7 @@ struct proto_hdr_template {
  * @name:	protocol name
  * @base:	header base
  * @protocol_key: key of template containing upper layer protocol description
+ * @length:	total size of the header, in bits
  * @protocols:	link to upper layer protocol descriptions indexed by protocol value
  * @templates:	header templates
  */
@@ -76,6 +77,7 @@ struct proto_desc {
 	const char			*name;
 	enum proto_bases		base;
 	unsigned int			protocol_key;
+	unsigned int			length;
 	struct {
 		unsigned int			num;
 		const struct proto_desc		*desc;
@@ -122,6 +124,7 @@ extern const struct proto_desc *proto_dev_desc(uint16_t type);
  * @family:	hook family
  * @location:	location of the relational expression defining the context
  * @desc:	protocol description for this layer
+ * @offset:	offset from the base, for stacked headers (eg 8*14 for vlan on top of ether)
  *
  * The location of the context is the location of the relational expression
  * defining it, either directly through a protocol match or indirectly
@@ -132,6 +135,7 @@ struct proto_ctx {
 	struct {
 		struct location			location;
 		const struct proto_desc		*desc;
+		unsigned int			offset;
 	} protocol[PROTO_BASE_MAX + 1];
 };
 

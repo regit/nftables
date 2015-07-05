@@ -923,7 +923,9 @@ static void payload_match_expand(struct rule_pp_ctx *ctx, struct expr *expr)
 	struct expr *left = expr->left, *right = expr->right, *tmp;
 	struct list_head list = LIST_HEAD_INIT(list);
 	struct stmt *nstmt;
-	struct expr *nexpr;
+	struct expr *nexpr = NULL;
+	enum proto_bases base = left->payload.base;
+	const struct expr_ops *payload_ops = left->ops;
 
 	payload_expr_expand(&list, left, &ctx->pctx);
 	list_for_each_entry(left, &list, list) {
@@ -940,16 +942,37 @@ static void payload_match_expand(struct rule_pp_ctx *ctx, struct expr *expr)
 		nstmt = expr_stmt_alloc(&ctx->stmt->location, nexpr);
 		list_add_tail(&nstmt->list, &ctx->stmt->list);
 
+		assert(left->ops == payload_ops);
+		assert(left->payload.base);
+		assert(base == left->payload.base);
+
 		/* Remember the first payload protocol expression to
 		 * kill it later on if made redundant by a higher layer
 		 * payload expression.
 		 */
 		if (ctx->pbase == PROTO_BASE_INVALID &&
-		    left->flags & EXPR_F_PROTOCOL)
-			payload_dependency_store(ctx, nstmt,
-						 left->payload.base);
-		else
+		    left->flags & EXPR_F_PROTOCOL) {
+			unsigned int proto = mpz_get_be16(tmp->value);
+			const struct proto_desc *desc, *next;
+			bool stacked_header = false;
+
+			desc = ctx->pctx.protocol[base].desc;
+			assert(desc);
+			if (desc) {
+				next = proto_find_upper(desc, proto);
+				stacked_header = next && next->base == base;
+			}
+
+			if (stacked_header) {
+				ctx->pctx.protocol[base].desc = next;
+				ctx->pctx.protocol[base].offset += desc->length;
+				payload_dependency_store(ctx, nstmt, base - 1);
+			} else {
+				payload_dependency_store(ctx, nstmt, base);
+			}
+		} else {
 			payload_dependency_kill(ctx, nexpr->left);
+		}
 	}
 	list_del(&ctx->stmt->list);
 	stmt_free(ctx->stmt);
@@ -959,6 +982,12 @@ static void payload_match_expand(struct rule_pp_ctx *ctx, struct expr *expr)
 static void payload_match_postprocess(struct rule_pp_ctx *ctx,
 				      struct expr *expr)
 {
+	enum proto_bases base = expr->left->payload.base;
+	struct expr *payload = expr->left;
+
+	assert(payload->payload.offset >= ctx->pctx.protocol[base].offset);
+	payload->payload.offset -= ctx->pctx.protocol[base].offset;
+
 	switch (expr->op) {
 	case OP_EQ:
 	case OP_NEQ:
@@ -968,10 +997,10 @@ static void payload_match_postprocess(struct rule_pp_ctx *ctx,
 		}
 		/* Fall through */
 	default:
-		payload_expr_complete(expr->left, &ctx->pctx);
-		expr_set_type(expr->right, expr->left->dtype,
-			      expr->left->byteorder);
-		payload_dependency_kill(ctx, expr->left);
+		payload_expr_complete(payload, &ctx->pctx);
+		expr_set_type(expr->right, payload->dtype,
+			      payload->byteorder);
+		payload_dependency_kill(ctx, payload);
 		break;
 	}
 }

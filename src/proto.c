@@ -714,6 +714,7 @@ const struct proto_desc proto_vlan = {
 	.name		= "vlan",
 	.base		= PROTO_BASE_LL_HDR,
 	.protocol_key	= VLANHDR_TYPE,
+	.length		= sizeof(struct vlan_hdr) * BITS_PER_BYTE,
 	.protocols	= {
 		PROTO_LINK(__constant_htons(ETH_P_IP),		&proto_ip),
 		PROTO_LINK(__constant_htons(ETH_P_ARP),		&proto_arp),
@@ -783,6 +784,7 @@ const struct proto_desc proto_eth = {
 	.name		= "ether",
 	.base		= PROTO_BASE_LL_HDR,
 	.protocol_key	= ETHHDR_TYPE,
+	.length		= sizeof(struct ether_header) * BITS_PER_BYTE,
 	.protocols	= {
 		PROTO_LINK(__constant_htons(ETH_P_IP),		&proto_ip),
 		PROTO_LINK(__constant_htons(ETH_P_ARP),		&proto_arp),

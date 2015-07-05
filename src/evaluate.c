@@ -249,6 +249,82 @@ static int expr_evaluate_primary(struct eval_ctx *ctx, struct expr **expr)
 	return 0;
 }
 
+static int
+conflict_resolution_gen_dependency(struct eval_ctx *ctx, int protocol,
+				   const struct expr *expr,
+				   struct stmt **res)
+{
+	enum proto_bases base = expr->payload.base;
+	const struct proto_hdr_template *tmpl;
+	const struct proto_desc *desc = NULL;
+	struct expr *dep, *left, *right;
+	struct stmt *stmt;
+
+	assert(expr->payload.base == PROTO_BASE_LL_HDR);
+
+	desc = ctx->pctx.protocol[base].desc;
+	tmpl = &desc->templates[desc->protocol_key];
+	left = payload_expr_alloc(&expr->location, desc, desc->protocol_key);
+
+	right = constant_expr_alloc(&expr->location, tmpl->dtype,
+				    tmpl->dtype->byteorder, tmpl->len,
+				    constant_data_ptr(protocol, tmpl->len));
+
+	dep = relational_expr_alloc(&expr->location, OP_EQ, left, right);
+	stmt = expr_stmt_alloc(&dep->location, dep);
+	if (stmt_evaluate(ctx, stmt) < 0)
+		return expr_error(ctx->msgs, expr,
+					  "dependency statement is invalid");
+
+	ctx->pctx.protocol[base].desc = expr->payload.desc;
+	assert(ctx->pctx.protocol[base].offset == 0);
+
+	assert(desc->length);
+	ctx->pctx.protocol[base].offset += desc->length;
+
+	*res = stmt;
+	return 0;
+}
+
+static bool resolve_protocol_conflict(struct eval_ctx *ctx,
+				      struct expr *payload)
+{
+	const struct hook_proto_desc *h = &hook_proto_desc[ctx->pctx.family];
+	enum proto_bases base = payload->payload.base;
+	const struct proto_desc *desc;
+	struct stmt *nstmt = NULL;
+	int link;
+
+	desc = ctx->pctx.protocol[base].desc;
+
+	if (desc == payload->payload.desc) {
+		payload->payload.offset += ctx->pctx.protocol[base].offset;
+		return true;
+	}
+
+	if (payload->payload.base != h->base)
+		return false;
+
+	assert(desc->length);
+	if (base < PROTO_BASE_MAX) {
+		const struct proto_desc *next = ctx->pctx.protocol[base + 1].desc;
+
+		if (payload->payload.desc == next) {
+			payload->payload.offset += desc->length;
+			return true;
+		}
+	}
+
+	link = proto_find_num(desc, payload->payload.desc);
+	if (link < 0 || conflict_resolution_gen_dependency(ctx, link, payload, &nstmt) < 0)
+		return false;
+
+	payload->payload.offset += ctx->pctx.protocol[base].offset;
+	list_add_tail(&nstmt->list, &ctx->stmt->list);
+
+	return true;
+}
+
 /*
  * Payload expression: check whether dependencies are fulfilled, otherwise
  * generate the necessary relational expression and prepend it to the current
@@ -264,7 +340,7 @@ static int expr_evaluate_payload(struct eval_ctx *ctx, struct expr **expr)
 		if (payload_gen_dependency(ctx, payload, &nstmt) < 0)
 			return -1;
 		list_add_tail(&nstmt->list, &ctx->stmt->list);
-	} else if (ctx->pctx.protocol[base].desc != payload->payload.desc)
+	} else if (!resolve_protocol_conflict(ctx, payload))
 		return expr_error(ctx->msgs, payload,
 				  "conflicting protocols specified: %s vs. %s",
 				  ctx->pctx.protocol[base].desc->name,
