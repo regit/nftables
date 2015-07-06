@@ -70,6 +70,8 @@ static int cache_init_tables(struct netlink_ctx *ctx, struct handle *h)
 static int cache_init_objects(struct netlink_ctx *ctx, enum cmd_ops cmd)
 {
 	struct table *table;
+	struct chain *chain;
+	struct rule *rule, *nrule;
 	int ret;
 
 	list_for_each_entry(table, &table_list, list) {
@@ -91,6 +93,16 @@ static int cache_init_objects(struct netlink_ctx *ctx, enum cmd_ops cmd)
 		 */
 		if (cmd != CMD_LIST)
 			continue;
+
+		ret = netlink_list_table(ctx, &table->handle,
+					 &internal_location);
+		list_for_each_entry_safe(rule, nrule, &ctx->list, list) {
+			chain = chain_lookup(table, &rule->handle);
+			list_move_tail(&rule->list, &chain->rules);
+		}
+
+		if (ret < 0)
+			return -1;
 	}
 	return 0;
 }
@@ -963,18 +975,8 @@ static int do_command_export(struct netlink_ctx *ctx, struct cmd *cmd)
 static int do_list_table(struct netlink_ctx *ctx, struct cmd *cmd,
 			 struct table *table)
 {
-	struct rule *rule, *nrule;
-	struct chain *chain;
-
 	if (do_list_sets(ctx, &cmd->location, table) < 0)
 		return -1;
-	if (netlink_list_table(ctx, &cmd->handle, &cmd->location) < 0)
-		return -1;
-
-	list_for_each_entry_safe(rule, nrule, &ctx->list, list) {
-		chain = chain_lookup(table, &rule->handle);
-		list_move_tail(&rule->list, &chain->rules);
-	}
 	table_print(table);
 	return 0;
 }
