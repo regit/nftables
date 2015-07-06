@@ -72,6 +72,7 @@ static int cache_init_objects(struct netlink_ctx *ctx, enum cmd_ops cmd)
 	struct table *table;
 	struct chain *chain;
 	struct rule *rule, *nrule;
+	struct set *set;
 	int ret;
 
 	list_for_each_entry(table, &table_list, list) {
@@ -81,6 +82,13 @@ static int cache_init_objects(struct netlink_ctx *ctx, enum cmd_ops cmd)
 
 		if (ret < 0)
 			return -1;
+
+		list_for_each_entry(set, &table->sets, list) {
+			ret = netlink_get_setelems(ctx, &set->handle,
+						   &internal_location, set);
+			if (ret < 0)
+				return -1;
+		}
 
 		ret = netlink_list_chains(ctx, &table->handle,
 					  &internal_location);
@@ -945,18 +953,6 @@ static int do_command_delete(struct netlink_ctx *ctx, struct cmd *cmd)
 	}
 }
 
-static int do_list_sets(struct netlink_ctx *ctx, const struct location *loc,
-			struct table *table)
-{
-	struct set *set;
-
-	list_for_each_entry(set, &table->sets, list) {
-		if (netlink_get_setelems(ctx, &set->handle, loc, set) < 0)
-			return -1;
-	}
-	return 0;
-}
-
 static int do_command_export(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	struct nft_ruleset *rs = netlink_dump_ruleset(ctx, &cmd->handle,
@@ -975,25 +971,18 @@ static int do_command_export(struct netlink_ctx *ctx, struct cmd *cmd)
 static int do_list_table(struct netlink_ctx *ctx, struct cmd *cmd,
 			 struct table *table)
 {
-	if (do_list_sets(ctx, &cmd->location, table) < 0)
-		return -1;
 	table_print(table);
 	return 0;
 }
 
-static int do_list_sets_global(struct netlink_ctx *ctx, struct cmd *cmd)
+static int do_list_sets(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	struct table *table;
 	struct set *set;
 
 	list_for_each_entry(table, &table_list, list) {
-		list_for_each_entry(set, &table->sets, list) {
-			if (netlink_get_setelems(ctx, &set->handle,
-						 &cmd->location, set) < 0)
-				return -1;
-
+		list_for_each_entry(set, &table->sets, list)
 			set_print(set);
-		}
 	}
 	return 0;
 }
@@ -1039,9 +1028,6 @@ static int do_list_set(struct netlink_ctx *ctx, struct cmd *cmd,
 	if (set == NULL)
 		return -1;
 
-	if (netlink_get_setelems(ctx, &cmd->handle, &cmd->location, set) < 0)
-		return -1;
-
 	set_print(set);
 	return 0;
 }
@@ -1061,7 +1047,7 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_CHAIN:
 		return do_list_table(ctx, cmd, table);
 	case CMD_OBJ_SETS:
-		return do_list_sets_global(ctx, cmd);
+		return do_list_sets(ctx, cmd);
 	case CMD_OBJ_SET:
 		return do_list_set(ctx, cmd, table);
 	case CMD_OBJ_RULESET:
