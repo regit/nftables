@@ -62,6 +62,8 @@ static int __fmtstring(4, 5) __stmt_binary_error(struct eval_ctx *ctx,
 	__stmt_binary_error(ctx, &(s1)->location, NULL, fmt, ## args)
 #define monitor_error(ctx, s1, fmt, args...) \
 	__stmt_binary_error(ctx, &(s1)->location, NULL, fmt, ## args)
+#define cmd_error(ctx, fmt, args...) \
+	__stmt_binary_error(ctx, &(ctx->cmd)->location, NULL, fmt, ## args)
 
 static int __fmtstring(3, 4) set_error(struct eval_ctx *ctx,
 				       const struct set *set,
@@ -1937,6 +1939,26 @@ static int cmd_evaluate_delete(struct eval_ctx *ctx, struct cmd *cmd)
 	}
 }
 
+static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
+{
+	switch (cmd->obj) {
+	case CMD_OBJ_TABLE:
+		if (cmd->handle.table == NULL)
+			return 0;
+	case CMD_OBJ_CHAIN:
+	case CMD_OBJ_SET:
+		if (table_lookup(&cmd->handle) == NULL)
+			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
+					 cmd->handle.table);
+		return 0;
+	case CMD_OBJ_SETS:
+	case CMD_OBJ_RULESET:
+		return 0;
+	default:
+		BUG("invalid command object type %u\n", cmd->obj);
+	}
+}
+
 enum {
 	CMD_MONITOR_EVENT_ANY,
 	CMD_MONITOR_EVENT_NEW,
@@ -2028,6 +2050,7 @@ int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_DELETE:
 		return cmd_evaluate_delete(ctx, cmd);
 	case CMD_LIST:
+		return cmd_evaluate_list(ctx, cmd);
 	case CMD_FLUSH:
 	case CMD_RENAME:
 	case CMD_EXPORT:
