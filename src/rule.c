@@ -444,6 +444,7 @@ struct chain *chain_alloc(const char *name)
 	struct chain *chain;
 
 	chain = xzalloc(sizeof(*chain));
+	chain->refcnt = 1;
 	init_list_head(&chain->rules);
 	init_list_head(&chain->scope.symbols);
 	if (name != NULL)
@@ -453,10 +454,18 @@ struct chain *chain_alloc(const char *name)
 	return chain;
 }
 
+struct chain *chain_get(struct chain *chain)
+{
+	chain->refcnt++;
+	return chain;
+}
+
 void chain_free(struct chain *chain)
 {
 	struct rule *rule, *next;
 
+	if (--chain->refcnt > 0)
+		return;
 	list_for_each_entry_safe(rule, next, &chain->rules, list)
 		rule_free(rule);
 	handle_free(&chain->handle);

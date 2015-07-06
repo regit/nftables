@@ -110,6 +110,7 @@ enum chain_flags {
  * @list:	list node in table list
  * @handle:	chain handle
  * @location:	location the chain was defined at
+ * @refcnt:	reference counter
  * @flags:	chain flags
  * @hookstr:	unified and human readable hook name (base chains)
  * @hooknum:	hook number (base chains)
@@ -123,6 +124,7 @@ struct chain {
 	struct list_head	list;
 	struct handle		handle;
 	struct location		location;
+	unsigned int		refcnt;
 	uint32_t		flags;
 	const char		*hookstr;
 	unsigned int		hooknum;
@@ -137,6 +139,7 @@ struct chain {
 extern const char *chain_type_name_lookup(const char *name);
 extern const char *chain_hookname_lookup(const char *name);
 extern struct chain *chain_alloc(const char *name);
+extern struct chain *chain_get(struct chain *chain);
 extern void chain_free(struct chain *chain);
 extern void chain_add_hash(struct chain *chain, struct table *table);
 extern struct chain *chain_lookup(const struct table *table,
