@@ -900,6 +900,21 @@ static int do_list_ruleset(struct netlink_ctx *ctx, struct cmd *cmd)
 	return 0;
 }
 
+static int do_list_tables(struct netlink_ctx *ctx, struct cmd *cmd)
+{
+	struct table *table;
+
+	if (netlink_list_tables(ctx, &cmd->handle, &cmd->location) < 0)
+		return -1;
+
+	list_for_each_entry(table, &table_list, list)
+		printf("table %s %s\n",
+		       family2str(table->handle.family),
+		       table->handle.table);
+
+	return 0;
+}
+
 static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	struct table *table = NULL;
@@ -917,21 +932,8 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 
 	switch (cmd->obj) {
 	case CMD_OBJ_TABLE:
-		if (!cmd->handle.table) {
-			/* List all existing tables */
-			struct table *table;
-
-			if (netlink_list_tables(ctx, &cmd->handle,
-						&cmd->location) < 0)
-				return -1;
-
-			list_for_each_entry(table, &ctx->list, list) {
-				printf("table %s %s\n",
-				       family2str(table->handle.family),
-				       table->handle.table);
-			}
-			return 0;
-		}
+		if (!cmd->handle.table)
+			return do_list_tables(ctx, cmd);
 		return do_list_table(ctx, cmd, table);
 	case CMD_OBJ_CHAIN:
 		return do_list_table(ctx, cmd, table);
