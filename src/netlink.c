@@ -974,7 +974,7 @@ int netlink_get_table(struct netlink_ctx *ctx, const struct handle *h,
 
 	ntable = netlink_delinearize_table(ctx, nlt);
 	table->flags = ntable->flags;
-	xfree(ntable);
+	table_free(ntable);
 out:
 	nft_table_free(nlt);
 	return err;
