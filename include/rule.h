@@ -76,6 +76,7 @@ enum table_flags {
  * @chains:	chains contained in the table
  * @sets:	sets contained in the table
  * @flags:	table flags
+ * @refcnt:	table reference counter
  */
 struct table {
 	struct list_head	list;
@@ -85,9 +86,11 @@ struct table {
 	struct list_head	chains;
 	struct list_head	sets;
 	enum table_flags 	flags;
+	unsigned int		refcnt;
 };
 
 extern struct table *table_alloc(void);
+extern struct table *table_get(struct table *table);
 extern void table_free(struct table *table);
 extern void table_add_hash(struct table *table);
 extern struct table *table_lookup(const struct handle *h);

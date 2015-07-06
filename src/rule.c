@@ -588,6 +588,8 @@ struct table *table_alloc(void)
 	init_list_head(&table->chains);
 	init_list_head(&table->sets);
 	init_list_head(&table->scope.symbols);
+	table->refcnt = 1;
+
 	return table;
 }
 
@@ -595,11 +597,19 @@ void table_free(struct table *table)
 {
 	struct chain *chain, *next;
 
+	if (--table->refcnt > 0)
+		return;
 	list_for_each_entry_safe(chain, next, &table->chains, list)
 		chain_free(chain);
 	handle_free(&table->handle);
 	scope_release(&table->scope);
 	xfree(table);
+}
+
+struct table *table_get(struct table *table)
+{
+	table->refcnt++;
+	return table;
 }
 
 void table_add_hash(struct table *table)
