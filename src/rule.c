@@ -955,11 +955,13 @@ static int do_command_delete(struct netlink_ctx *ctx, struct cmd *cmd)
 
 static int do_command_export(struct netlink_ctx *ctx, struct cmd *cmd)
 {
-	struct nft_ruleset *rs = netlink_dump_ruleset(ctx, &cmd->handle,
-						      &cmd->location);
+	struct nft_ruleset *rs;
 
-	if (rs == NULL)
-		return -1;
+	do {
+		rs = netlink_dump_ruleset(ctx, &cmd->handle, &cmd->location);
+		if (rs == NULL && errno != EINTR)
+			return -1;
+	} while (rs == NULL);
 
 	nft_ruleset_fprintf(stdout, rs, cmd->export->format, 0);
 	fprintf(stdout, "\n");
