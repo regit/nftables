@@ -230,15 +230,17 @@ int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs)
 	int ret;
 
 	ret = nft_parse(scanner, state);
-	if (ret != 0 || state->nerrs > 0)
-		return -1;
+	if (ret != 0 || state->nerrs > 0) {
+		ret = -1;
+		goto err1;
+	}
 retry:
 	ret = nft_netlink(state, msgs);
 	if (ret < 0 && errno == EINTR) {
 		netlink_restart();
 		goto retry;
 	}
-
+err1:
 	list_for_each_entry_safe(cmd, next, &state->cmds, list) {
 		list_del(&cmd->list);
 		cmd_free(cmd);
