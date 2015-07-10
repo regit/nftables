@@ -1,0 +1,14 @@
+# ip saddr @set1 drop
+set1 test-ip4 0
+ip test-ip4 input
+  [ payload load 4b @ network header + 12 => reg 1 ]
+  [ lookup reg 1 set set1 ]
+  [ immediate reg 0 drop ]
+
+# ip saddr @set2 drop
+set2 test-ip4 0
+ip test-ip4 input
+  [ payload load 4b @ network header + 12 => reg 1 ]
+  [ lookup reg 1 set set2 ]
+  [ immediate reg 0 drop ]
+

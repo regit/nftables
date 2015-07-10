@@ -1,0 +1,7 @@
+# ip6 saddr @set2 drop
+set2 test-ip6 0
+ip6 test-ip6 input
+  [ payload load 16b @ network header + 8 => reg 1 ]
+  [ lookup reg 1 set set2 ]
+  [ immediate reg 0 drop ]
+

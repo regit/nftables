@@ -1,0 +1,20 @@
+# limit rate 400/minute
+ip test-ip4 output
+  [ limit rate 400/minute ]
+
+# limit rate 20/second
+ip test-ip4 output
+  [ limit rate 20/second ]
+
+# limit rate 400/hour
+ip test-ip4 output
+  [ limit rate 400/hour ]
+
+# limit rate 400/week
+ip test-ip4 output
+  [ limit rate 400/week ]
+
+# limit rate 40/day
+ip test-ip4 output
+  [ limit rate 40/day ]
+

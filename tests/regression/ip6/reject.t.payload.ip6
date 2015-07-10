@@ -1,0 +1,26 @@
+# reject
+ip6 test-ip6 output
+  [ reject type 0 code 4 ]
+
+# reject with icmpv6 type no-route
+ip6 test-ip6 output
+  [ reject type 0 code 0 ]
+
+# reject with icmpv6 type admin-prohibited
+ip6 test-ip6 output
+  [ reject type 0 code 1 ]
+
+# reject with icmpv6 type addr-unreachable
+ip6 test-ip6 output
+  [ reject type 0 code 3 ]
+
+# reject with icmpv6 type port-unreachable
+ip6 test-ip6 output
+  [ reject type 0 code 4 ]
+
+# reject with tcp reset
+ip6 test-ip6 output
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ reject type 1 code 0 ]
+

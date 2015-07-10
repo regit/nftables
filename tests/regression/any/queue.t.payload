@@ -1,0 +1,24 @@
+# queue
+ip test-ip4 output
+  [ queue num 0]
+
+# queue num 2
+ip test-ip4 output
+  [ queue num 2]
+
+# queue num 2-3
+ip test-ip4 output
+  [ queue num 2-3]
+
+# queue num 4-5 fanout bypass
+ip test-ip4 output
+  [ queue num 4-5 bypass fanout]
+
+# queue num 4-5 fanout
+ip test-ip4 output
+  [ queue num 4-5 fanout]
+
+# queue num 4-5 bypass
+ip test-ip4 output
+  [ queue num 4-5 bypass]
+
