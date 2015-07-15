@@ -509,7 +509,7 @@ def rule_add(rule, table_list, chain_list, filename, lineno,
 
                             warning += 1
                             print_differences_warning(filename, lineno,
-                                                      rule[0], rule_output,
+                                                      teoric_exit.rstrip(), rule_output,
                                                       cmd)
 
                             if not force_all_family_option:

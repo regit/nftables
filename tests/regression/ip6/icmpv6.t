@@ -1,4 +1,4 @@
-*ip6;test-ip4
+*ip6;test-ip6
 # BUG: There is a bug with icmpv6 and inet tables
 - *inet;test-inet
 :input;type filter hook input priority 0
@@ -23,7 +23,7 @@ icmpv6 type {mld-listener-query, time-exceeded, nd-router-advert} accept;ok
 - icmpv6 type != {mld-listener-query, time-exceeded, nd-router-advert} accept;ok
 
 icmpv6 code 4;ok
-icmpv6 code 3-66;ok;icmpv6 code >= 3 icmpv6 code <= 66
+icmpv6 code 3-66;ok
 icmpv6 code {5, 6, 7} accept;ok
 - icmpv6 code != {3, 66, 34};ok
 icmpv6 code { 3-66};ok
@@ -31,7 +31,7 @@ icmpv6 code { 3-66};ok
 
 icmpv6 checksum 2222 log;ok
 icmpv6 checksum != 2222 log;ok
-icmpv6 checksum 222-226;ok;icmpv6 checksum >= 222 icmpv6 checksum <= 226
+icmpv6 checksum 222-226;ok
 icmpv6 checksum != 2222 log;ok
 icmpv6 checksum { 222, 226};ok
 - icmpv6 checksum != { 222, 226};ok
@@ -81,8 +81,8 @@ icmpv6 sequence {3, 4, 5, 6, 7} accept;ok
 
 icmpv6 sequence {2, 4};ok
 - icmpv6 sequence != {2, 4};ok
-icmpv6 sequence 2-4;ok;icmpv6 sequence >= 2 icmpv6 sequence <= 4
-icmpv6 sequence != 2-4;ok;icmpv6 sequence < 2 icmpv6 sequence > 4
+icmpv6 sequence 2-4;ok
+icmpv6 sequence != 2-4;ok
 icmpv6 sequence { 2-4};ok
 - icmpv6 sequence != {2-4};ok
 

@@ -33,7 +33,7 @@ tcp sport 8080 drop;ok
 tcp sport 1024 tcp dport 22;ok
 tcp sport 1024 tcp dport 22 tcp sequence 0;ok
 
-tcp sequence 0 tcp sport 1024 tcp dport 22;ok
+tcp sequence 0 tcp sport 1024 tcp dport 22;ok;tcp sport 1024 tcp dport 22 tcp sequence 0
 tcp sequence 0 tcp sport { 1024, 1022} tcp dport 22;ok
 
 tcp sequence 22;ok
