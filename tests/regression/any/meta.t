@@ -89,10 +89,10 @@ meta oiftype {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
 meta oiftype != ether;ok;oiftype != ether
 meta oiftype ether;ok;oiftype ether
 
-meta skuid {man, root, backup} accept;ok;skuid { 0, 6, 34} accept
-- meta skuid != {man, root, backup} accept;ok
-meta skuid man;ok;skuid 6
-meta skuid != man;ok;skuid != 6
+meta skuid {bin, root, daemon} accept;ok;skuid { 0, 1, 2} accept
+- meta skuid != {bin, root, daemon} accept;ok
+meta skuid root;ok;skuid 0
+meta skuid != root;ok;skuid != 0
 meta skuid lt 3000 accept;ok;skuid < 3000 accept
 meta skuid gt 3000 accept;ok;skuid > 3000 accept
 meta skuid eq 3000 accept;ok;skuid 3000 accept
@@ -101,10 +101,10 @@ meta skuid != 2001-2005 accept;ok;skuid != 2001-2005 accept
 meta skuid { 2001-2005} accept;ok;skuid { 2001-2005} accept
 - meta skuid != { 2001-2005} accept;ok
 
-meta skgid {man, root, backup} accept;ok;skgid { 34, 12, 0} accept
-- meta skgid != {man, root, backup} accept;ok
-meta skgid man;ok;skgid 12
-meta skgid != man;ok;skgid != 12
+meta skgid {bin, root, daemon} accept;ok;skgid { 0, 1, 2} accept
+- meta skgid != {bin, root, daemon} accept;ok
+meta skgid root;ok;skgid 0
+meta skgid != root;ok;skgid != 0
 meta skgid lt 3000 accept;ok;skgid < 3000 accept
 meta skgid gt 3000 accept;ok;skgid > 3000 accept
 meta skgid eq 3000 accept;ok;skgid 3000 accept
