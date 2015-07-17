@@ -983,6 +983,9 @@ static void meta_match_postprocess(struct rule_pp_ctx *ctx,
 
 	switch (expr->op) {
 	case OP_EQ:
+		if (expr->right->ops->type == EXPR_RANGE)
+			break;
+
 		expr->left->ops->pctx_update(&ctx->pctx, expr);
 
 		if (ctx->pbase == PROTO_BASE_INVALID &&
