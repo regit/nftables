@@ -364,6 +364,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %token LIMIT			"limit"
 %token RATE			"rate"
+%token BURST			"burst"
 
 %token NANOSECOND		"nanosecond"
 %token MICROSECOND		"microsecond"
@@ -450,7 +451,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <val>			level_type
 %type <stmt>			limit_stmt
 %destructor { stmt_free($$); }	limit_stmt
-%type <val>			time_unit
+%type <val>			limit_burst time_unit
 %type <stmt>			reject_stmt reject_stmt_alloc
 %destructor { stmt_free($$); }	reject_stmt reject_stmt_alloc
 %type <stmt>			nat_stmt nat_stmt_alloc masq_stmt masq_stmt_alloc redir_stmt redir_stmt_alloc
@@ -1441,14 +1442,15 @@ level_type		:	LEVEL_EMERG	{ $$ = LOG_EMERG; }
 			|	LEVEL_DEBUG	{ $$ = LOG_DEBUG; }
 			;
 
-limit_stmt		:	LIMIT	RATE	NUM	SLASH	time_unit
+limit_stmt		:	LIMIT	RATE	NUM	SLASH	time_unit	limit_burst
 	    		{
 				$$ = limit_stmt_alloc(&@$);
 				$$->limit.rate	= $3;
 				$$->limit.unit	= $5;
+				$$->limit.burst	= $6;
 				$$->limit.type	= NFT_LIMIT_PKTS;
 			}
-			|	LIMIT RATE	NUM	STRING
+			|	LIMIT RATE	NUM	STRING	limit_burst
 			{
 				struct error_record *erec;
 				uint64_t rate, unit;
@@ -1462,7 +1464,25 @@ limit_stmt		:	LIMIT	RATE	NUM	SLASH	time_unit
 				$$ = limit_stmt_alloc(&@$);
 				$$->limit.rate	= rate * $3;
 				$$->limit.unit	= unit;
+				$$->limit.burst	= $5;
 				$$->limit.type	= NFT_LIMIT_PKT_BYTES;
+			}
+			;
+
+limit_burst		:	/* empty */			{ $$ = 0; }
+			|	BURST	NUM	PACKETS		{ $$ = $2; }
+			|	BURST	NUM	BYTES		{ $$ = $2; }
+			|	BURST	NUM	STRING
+			{
+				struct error_record *erec;
+				uint64_t rate;
+
+				erec = data_unit_parse(&@$, $3, &rate);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+				$$ = $2 * rate;
 			}
 			;
 

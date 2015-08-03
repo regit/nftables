@@ -239,4 +239,7 @@ extern struct error_record *rate_parse(const struct location *loc,
 				       const char *str, uint64_t *rate,
 				       uint64_t *unit);
 
+extern struct error_record *data_unit_parse(const struct location *loc,
+					    const char *str, uint64_t *rate);
+
 #endif /* NFTABLES_DATATYPE_H */

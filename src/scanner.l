@@ -309,6 +309,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 "limit"			{ return LIMIT; }
 "rate"			{ return RATE; }
+"burst"			{ return BURST; }
 
 "nanosecond"		{ return NANOSECOND; }
 "microsecond"		{ return MICROSECOND; }

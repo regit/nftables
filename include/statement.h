@@ -52,6 +52,7 @@ struct limit_stmt {
 	uint64_t		rate;
 	uint64_t		unit;
 	enum nft_limit_type	type;
+	uint32_t		burst;
 };
 
 extern struct stmt *limit_stmt_alloc(const struct location *loc);

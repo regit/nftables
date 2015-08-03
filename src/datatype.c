@@ -996,8 +996,8 @@ static struct error_record *time_unit_parse(const struct location *loc,
 	return NULL;
 }
 
-static struct error_record *data_unit_parse(const struct location *loc,
-					    const char *str, uint64_t *rate)
+struct error_record *data_unit_parse(const struct location *loc,
+				     const char *str, uint64_t *rate)
 {
 	if (strncmp(str, "bytes", strlen("bytes")) == 0)
 		*rate = 1ULL;

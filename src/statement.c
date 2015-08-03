@@ -220,12 +220,20 @@ static void limit_stmt_print(const struct stmt *stmt)
 	case NFT_LIMIT_PKTS:
 		printf("limit rate %" PRIu64 "/%s",
 		       stmt->limit.rate, get_unit(stmt->limit.unit));
+		if (stmt->limit.burst > 0)
+			printf(" burst %u packets", stmt->limit.burst);
 		break;
 	case NFT_LIMIT_PKT_BYTES:
 		data_unit = get_rate(stmt->limit.rate, &rate);
 
 		printf("limit rate %" PRIu64 " %s/%s",
 		       rate, data_unit, get_unit(stmt->limit.unit));
+		if (stmt->limit.burst > 0) {
+			uint64_t burst;
+
+			data_unit = get_rate(stmt->limit.burst, &burst);
+			printf(" burst %"PRIu64" %s", burst, data_unit);
+		}
 		break;
 	}
 }
