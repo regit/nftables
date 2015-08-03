@@ -907,7 +907,7 @@ static int do_list_tables(struct netlink_ctx *ctx, struct cmd *cmd)
 	if (netlink_list_tables(ctx, &cmd->handle, &cmd->location) < 0)
 		return -1;
 
-	list_for_each_entry(table, &table_list, list)
+	list_for_each_entry(table, &ctx->list, list)
 		printf("table %s %s\n",
 		       family2str(table->handle.family),
 		       table->handle.table);
