@@ -51,6 +51,7 @@ extern struct stmt *log_stmt_alloc(const struct location *loc);
 struct limit_stmt {
 	uint64_t		rate;
 	uint64_t		unit;
+	enum nft_limit_type	type;
 };
 
 extern struct stmt *limit_stmt_alloc(const struct location *loc);

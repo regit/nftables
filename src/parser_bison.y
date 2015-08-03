@@ -1446,6 +1446,23 @@ limit_stmt		:	LIMIT	RATE	NUM	SLASH	time_unit
 				$$ = limit_stmt_alloc(&@$);
 				$$->limit.rate	= $3;
 				$$->limit.unit	= $5;
+				$$->limit.type	= NFT_LIMIT_PKTS;
+			}
+			|	LIMIT RATE	NUM	STRING
+			{
+				struct error_record *erec;
+				uint64_t rate, unit;
+
+				erec = rate_parse(&@$, $4, &rate, &unit);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+
+				$$ = limit_stmt_alloc(&@$);
+				$$->limit.rate	= rate * $3;
+				$$->limit.unit	= unit;
+				$$->limit.type	= NFT_LIMIT_PKT_BYTES;
 			}
 			;
 

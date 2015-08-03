@@ -976,3 +976,58 @@ void concat_type_destroy(const struct datatype *dtype)
 		xfree(dtype);
 	}
 }
+
+static struct error_record *time_unit_parse(const struct location *loc,
+					    const char *str, uint64_t *unit)
+{
+	if (strcmp(str, "second") == 0)
+		*unit = 1ULL;
+	else if (strcmp(str, "minute") == 0)
+		*unit = 1ULL * 60;
+	else if (strcmp(str, "hour") == 0)
+		*unit = 1ULL * 60 * 60;
+	else if (strcmp(str, "day") == 0)
+		*unit = 1ULL * 60 * 60 * 24;
+	else if (strcmp(str, "week") == 0)
+		*unit = 1ULL * 60 * 60 * 24 * 7;
+	else
+		return error(loc, "Wrong rate format");
+
+	return NULL;
+}
+
+static struct error_record *data_unit_parse(const struct location *loc,
+					    const char *str, uint64_t *rate)
+{
+	if (strncmp(str, "bytes", strlen("bytes")) == 0)
+		*rate = 1ULL;
+	else if (strncmp(str, "kbytes", strlen("kbytes")) == 0)
+		*rate = 1024;
+	else if (strncmp(str, "mbytes", strlen("mbytes")) == 0)
+		*rate = 1024 * 1024;
+	else
+		return error(loc, "Wrong rate format");
+
+	return NULL;
+}
+
+struct error_record *rate_parse(const struct location *loc, const char *str,
+				uint64_t *rate, uint64_t *unit)
+{
+	struct error_record *erec;
+	const char *slash;
+
+	slash = strchr(str, '/');
+	if (!slash)
+		return error(loc, "wrong rate format");
+
+	erec = data_unit_parse(loc, str, rate);
+	if (erec != NULL)
+		return erec;
+
+	erec = time_unit_parse(loc, slash + 1, unit);
+	if (erec != NULL)
+		return erec;
+
+	return NULL;
+}

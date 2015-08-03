@@ -235,4 +235,8 @@ extern void time_print(uint64_t seconds);
 extern struct error_record *time_parse(const struct location *loc,
 				       const char *c, uint64_t *res);
 
+extern struct error_record *rate_parse(const struct location *loc,
+				       const char *str, uint64_t *rate,
+				       uint64_t *unit);
+
 #endif /* NFTABLES_DATATYPE_H */

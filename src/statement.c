@@ -185,10 +185,49 @@ static const char *get_unit(uint64_t u)
 	return "error";
 }
 
+static const char *data_unit[] = {
+	"bytes",
+	"kbytes",
+	"mbytes",
+	NULL
+};
+
+static const char *get_rate(uint64_t byte_rate, uint64_t *rate)
+{
+	uint64_t res, prev, rest;
+	int i;
+
+	res = prev = byte_rate;
+	for (i = 0;; i++) {
+		rest = res % 1024;
+		res /= 1024;
+		if (res <= 1 && rest != 0)
+			break;
+		if (data_unit[i + 1] == NULL)
+			break;
+		prev = res;
+	}
+	*rate = prev;
+	return data_unit[i];
+}
+
 static void limit_stmt_print(const struct stmt *stmt)
 {
-	printf("limit rate %" PRIu64 "/%s",
-	       stmt->limit.rate, get_unit(stmt->limit.unit));
+	const char *data_unit;
+	uint64_t rate;
+
+	switch (stmt->limit.type) {
+	case NFT_LIMIT_PKTS:
+		printf("limit rate %" PRIu64 "/%s",
+		       stmt->limit.rate, get_unit(stmt->limit.unit));
+		break;
+	case NFT_LIMIT_PKT_BYTES:
+		data_unit = get_rate(stmt->limit.rate, &rate);
+
+		printf("limit rate %" PRIu64 " %s/%s",
+		       rate, data_unit, get_unit(stmt->limit.unit));
+		break;
+	}
 }
 
 static const struct stmt_ops limit_stmt_ops = {

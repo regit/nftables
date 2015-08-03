@@ -708,6 +708,7 @@ static void netlink_gen_limit_stmt(struct netlink_linearize_ctx *ctx,
 	nle = alloc_nft_expr("limit");
 	nftnl_expr_set_u64(nle, NFTNL_EXPR_LIMIT_RATE, stmt->limit.rate);
 	nftnl_expr_set_u64(nle, NFTNL_EXPR_LIMIT_UNIT, stmt->limit.unit);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_LIMIT_TYPE, stmt->limit.type);
 	nftnl_rule_add_expr(ctx->nlr, nle);
 }
 
