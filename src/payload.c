@@ -357,6 +357,10 @@ raw:
  */
 bool payload_is_adjacent(const struct expr *e1, const struct expr *e2)
 {
+	if (e1->payload.offset % BITS_PER_BYTE || e1->len % BITS_PER_BYTE ||
+	    e2->payload.offset % BITS_PER_BYTE || e2->len % BITS_PER_BYTE)
+		return false;
+
 	if (e1->payload.base		 == e2->payload.base &&
 	    e1->payload.offset + e1->len == e2->payload.offset)
 		return true;
