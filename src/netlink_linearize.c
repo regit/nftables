@@ -277,6 +277,15 @@ static void netlink_gen_range(struct netlink_linearize_ctx *ctx,
 			      const struct expr *expr,
 			      enum nft_registers dreg);
 
+static void payload_shift_value(const struct expr *left, struct expr *right)
+{
+	if (right->ops->type != EXPR_VALUE ||
+	    left->ops->type != EXPR_PAYLOAD)
+		return;
+
+	mpz_lshift_ui(right->value, left->payload.offset % BITS_PER_BYTE);
+}
+
 static void netlink_gen_cmp(struct netlink_linearize_ctx *ctx,
 			    const struct expr *expr,
 			    enum nft_registers dreg)
@@ -325,6 +334,7 @@ static void netlink_gen_cmp(struct netlink_linearize_ctx *ctx,
 	netlink_put_register(nle, NFTNL_EXPR_CMP_SREG, sreg);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_CMP_OP,
 			      netlink_gen_cmp_op(expr->op));
+	payload_shift_value(expr->left, right);
 	netlink_gen_data(right, &nld);
 	nftnl_expr_set(nle, NFTNL_EXPR_CMP_DATA, nld.value, nld.len);
 	release_register(ctx, expr->left);
