@@ -108,3 +108,6 @@ ip daddr 192.168.0.2 log;ok
 
 ip saddr \& 0xff == 1;ok;ip saddr & 0.0.0.255 == 0.0.0.1
 ip saddr \& 0.0.0.255 \< 0.0.0.127;ok;ip saddr & 0.0.0.255 < 0.0.0.127
+
+ip saddr \& 0xffff0000 == 0xffff0000;ok;ip saddr 255.255.0.0/16
+

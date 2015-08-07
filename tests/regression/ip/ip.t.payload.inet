@@ -457,3 +457,11 @@ inet test-inet input
   [ bitwise reg 1 = (reg=1 & 0xff000000 ) ^ 0x00000000 ]
   [ cmp lt reg 1 0x7f000000 ]
 
+# ip saddr \& 0xffff0000 == 0xffff0000
+inet test-inet input
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x00000002 ]
+  [ payload load 4b @ network header + 12 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x0000ffff ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x0000ffff ]
+
