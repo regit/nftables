@@ -297,12 +297,87 @@ void payload_expr_complete(struct expr *expr, const struct proto_ctx *ctx)
 	}
 }
 
+static unsigned int mask_to_offset(const struct expr *mask)
+{
+	return mask ? mpz_scan1(mask->value, 0) : 0;
+}
+
+static unsigned int mask_length(const struct expr *mask)
+{
+	unsigned long off;
+
+        off = mask_to_offset(mask);
+
+	return mpz_scan0(mask->value, off + 1);
+}
+
+/**
+ * payload_expr_trim - trim payload expression according to mask
+ *
+ * @expr:	the payload expression
+ * @mask:	mask to use when searching templates
+ * @ctx:	protocol context
+ *
+ * Walk the template list and determine if a match can be found without
+ * using the provided mask.
+ *
+ * If the mask has to be used, trim the mask length accordingly
+ * and return true to let the caller know that the mask is a dependency.
+ */
+bool payload_expr_trim(struct expr *expr, struct expr *mask,
+		       const struct proto_ctx *ctx)
+{
+	unsigned int payload_offset = expr->payload.offset + mask_to_offset(mask);
+	unsigned int mask_len = mask_length(mask);
+	const struct proto_hdr_template *tmpl;
+	unsigned int payload_len = expr->len;
+	const struct proto_desc *desc;
+	unsigned int i, matched_len = mask_to_offset(mask);
+
+	assert(expr->ops->type == EXPR_PAYLOAD);
+
+	desc = ctx->protocol[expr->payload.base].desc;
+	if (desc == NULL)
+		return false;
+
+	assert(desc->base == expr->payload.base);
+
+	if (ctx->protocol[expr->payload.base].offset) {
+		assert(payload_offset >= ctx->protocol[expr->payload.base].offset);
+		payload_offset -= ctx->protocol[expr->payload.base].offset;
+	}
+
+	for (i = 1; i < array_size(desc->templates); i++) {
+		tmpl = &desc->templates[i];
+		if (tmpl->offset != payload_offset)
+			continue;
+
+		if (tmpl->len > payload_len)
+			return false;
+
+		payload_len -= tmpl->len;
+		matched_len += tmpl->len;
+		payload_offset += tmpl->len;
+		if (payload_len == 0)
+			return false;
+
+		if (matched_len == mask_len) {
+			assert(mask->len >= mask_len);
+			mask->len = mask_len;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 /**
  * payload_expr_expand - expand raw merged adjacent payload expressions into its
  * 			 original components
  *
  * @list:	list to append expanded payload expressions to
  * @expr:	the payload expression to expand
+ * @mask:	optional/implicit mask to use when searching templates
  * @ctx:	protocol context
  *
  * Expand a merged adjacent payload expression into its original components
@@ -312,14 +387,16 @@ void payload_expr_complete(struct expr *expr, const struct proto_ctx *ctx)
  * 	 offset order.
  */
 void payload_expr_expand(struct list_head *list, struct expr *expr,
-			 const struct proto_ctx *ctx)
+			 struct expr *mask, const struct proto_ctx *ctx)
 {
-	const struct proto_desc *desc;
+	unsigned int off = mask_to_offset(mask);
 	const struct proto_hdr_template *tmpl;
+	const struct proto_desc *desc;
 	struct expr *new;
 	unsigned int i;
 
 	assert(expr->ops->type == EXPR_PAYLOAD);
+	assert(!mask || mask->len != 0);
 
 	desc = ctx->protocol[expr->payload.base].desc;
 	if (desc == NULL)
@@ -336,7 +413,7 @@ void payload_expr_expand(struct list_head *list, struct expr *expr,
 			list_add_tail(&new->list, list);
 			expr->len	     -= tmpl->len;
 			expr->payload.offset += tmpl->len;
-			if (expr->len == 0)
+			if (expr->len == off)
 				return;
 		} else
 			break;

@@ -918,16 +918,20 @@ static void integer_type_postprocess(struct expr *expr)
 	}
 }
 
-static void payload_match_expand(struct rule_pp_ctx *ctx, struct expr *expr)
+static void payload_match_expand(struct rule_pp_ctx *ctx,
+				 struct expr *expr,
+				 struct expr *payload,
+				 struct expr *mask)
 {
-	struct expr *left = expr->left, *right = expr->right, *tmp;
+	struct expr *left = payload, *right = expr->right, *tmp;
 	struct list_head list = LIST_HEAD_INIT(list);
 	struct stmt *nstmt;
 	struct expr *nexpr = NULL;
 	enum proto_bases base = left->payload.base;
 	const struct expr_ops *payload_ops = left->ops;
 
-	payload_expr_expand(&list, left, &ctx->pctx);
+	payload_expr_expand(&list, left, mask, &ctx->pctx);
+
 	list_for_each_entry(left, &list, list) {
 		tmp = constant_expr_splice(right, left->len);
 		expr_set_type(tmp, left->dtype, left->byteorder);
@@ -980,10 +984,11 @@ static void payload_match_expand(struct rule_pp_ctx *ctx, struct expr *expr)
 }
 
 static void payload_match_postprocess(struct rule_pp_ctx *ctx,
-				      struct expr *expr)
+				      struct expr *expr,
+				      struct expr *payload,
+				      struct expr *mask)
 {
-	enum proto_bases base = expr->left->payload.base;
-	struct expr *payload = expr->left;
+	enum proto_bases base = payload->payload.base;
 
 	assert(payload->payload.offset >= ctx->pctx.protocol[base].offset);
 	payload->payload.offset -= ctx->pctx.protocol[base].offset;
@@ -992,7 +997,7 @@ static void payload_match_postprocess(struct rule_pp_ctx *ctx,
 	case OP_EQ:
 	case OP_NEQ:
 		if (expr->right->ops->type == EXPR_VALUE) {
-			payload_match_expand(ctx, expr);
+			payload_match_expand(ctx, expr, payload, mask);
 			break;
 		}
 		/* Fall through */
@@ -1073,7 +1078,7 @@ static struct expr *binop_tree_to_list(struct expr *list, struct expr *expr)
 	return list;
 }
 
-static void relational_binop_postprocess(struct expr *expr)
+static void relational_binop_postprocess(struct rule_pp_ctx *ctx, struct expr *expr)
 {
 	struct expr *binop = expr->left, *value = expr->right;
 
@@ -1101,6 +1106,61 @@ static void relational_binop_postprocess(struct expr *expr)
 						expr_mask_to_prefix(binop->right));
 		expr_free(value);
 		expr_free(binop);
+	} else if (binop->op == OP_AND &&
+		   binop->left->ops->type == EXPR_PAYLOAD &&
+		   binop->right->ops->type == EXPR_VALUE) {
+		struct expr *payload = expr->left->left;
+		struct expr *mask = expr->left->right;
+
+		/*
+		 * This *might* be a payload match testing header fields that
+		 * have non byte divisible offsets and/or bit lengths.
+		 *
+		 * Thus we need to deal with two different cases.
+		 *
+		 * 1 the simple version:
+		 *        relation
+		 * payload        value|setlookup
+		 *
+		 * expr: relation, left: payload, right: value, e.g.  tcp dport == 22.
+		 *
+		 * 2. The '&' version (this is what we're looking at now).
+		 *            relation
+		 *     binop          value1|setlookup
+		 * payload  value2
+		 *
+		 * expr: relation, left: binop, right: value, e.g.
+		 * ip saddr 10.0.0.0/8
+		 *
+		 * payload_expr_trim will figure out if the mask is needed to match
+		 * templates.
+		 */
+		if (payload_expr_trim(payload, mask, &ctx->pctx)) {
+			/* mask is implicit, binop needs to be removed.
+			 *
+			 * Fix all values of the expression according to the mask
+			 * and then process the payload instruction using the real
+			 * sizes and offsets we're interested in.
+			 *
+			 * Finally, convert the expression to 1) by replacing
+			 * the binop with the binop payload expr.
+			 */
+			if (value->ops->type == EXPR_VALUE) {
+				assert(value->len >= expr->left->right->len);
+				value->len = mask->len;
+			}
+
+			payload->len = mask->len;
+			payload->payload.offset += mpz_scan1(mask->value, 0);
+
+			payload_match_postprocess(ctx, expr, payload, mask);
+
+			assert(expr->left->ops->type == EXPR_BINOP);
+
+			assert(binop->left == payload);
+			expr->left = payload;
+			expr_free(binop);
+		}
 	}
 }
 
@@ -1159,7 +1219,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 	case EXPR_RELATIONAL:
 		switch (expr->left->ops->type) {
 		case EXPR_PAYLOAD:
-			payload_match_postprocess(ctx, expr);
+			payload_match_postprocess(ctx, expr, expr->left, NULL);
 			return;
 		default:
 			expr_postprocess(ctx, &expr->left);
@@ -1174,7 +1234,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 			meta_match_postprocess(ctx, expr);
 			break;
 		case EXPR_BINOP:
-			relational_binop_postprocess(expr);
+			relational_binop_postprocess(ctx, expr);
 			break;
 		default:
 			break;

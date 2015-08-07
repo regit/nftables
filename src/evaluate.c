@@ -310,8 +310,13 @@ static bool resolve_protocol_conflict(struct eval_ctx *ctx,
 		const struct proto_desc *next = ctx->pctx.protocol[base + 1].desc;
 
 		if (payload->payload.desc == next) {
+			ctx->pctx.protocol[base + 1].desc = NULL;
+			ctx->pctx.protocol[base].desc = next;
+			ctx->pctx.protocol[base].offset += desc->length;
 			payload->payload.offset += desc->length;
 			return true;
+		} else if (next) {
+			return false;
 		}
 	}
 
@@ -321,6 +326,7 @@ static bool resolve_protocol_conflict(struct eval_ctx *ctx,
 
 	payload->payload.offset += ctx->pctx.protocol[base].offset;
 	list_add_tail(&nstmt->list, &ctx->stmt->list);
+	ctx->pctx.protocol[base + 1].desc = NULL;
 
 	return true;
 }
