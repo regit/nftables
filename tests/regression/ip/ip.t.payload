@@ -335,3 +335,15 @@ ip test-ip4 input
   [ cmp eq reg 1 0x0200a8c0 ]
   [ log prefix (null) ]
 
+# ip saddr \& 0xff == 1
+ip test-ip4 input
+  [ payload load 4b @ network header + 12 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0xff000000 ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x01000000 ]
+
+# ip saddr \& 0.0.0.255 \< 0.0.0.127
+ip test-ip4 input
+  [ payload load 4b @ network header + 12 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0xff000000 ) ^ 0x00000000 ]
+  [ cmp lt reg 1 0x7f000000 ]
+

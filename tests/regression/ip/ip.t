@@ -105,3 +105,6 @@ ip saddr != 192.168.1.3-192.168.33.55;ok
 ip daddr 192.168.0.1;ok
 ip daddr 192.168.0.1 drop;ok
 ip daddr 192.168.0.2 log;ok
+
+ip saddr \& 0xff == 1;ok;ip saddr & 0.0.0.255 == 0.0.0.1
+ip saddr \& 0.0.0.255 \< 0.0.0.127;ok;ip saddr & 0.0.0.255 < 0.0.0.127
