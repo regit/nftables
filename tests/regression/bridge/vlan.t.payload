@@ -25,6 +25,17 @@ bridge test-bridge input
   [ bitwise reg 1 = (reg=1 & 0x00000010 ) ^ 0x00000000 ]
   [ cmp eq reg 1 0x00000000 ]
 
+# vlan id 4094 vlan cfi != 1
+bridge test-bridge input
+  [ payload load 2b @ link header + 12 => reg 1 ]
+  [ cmp eq reg 1 0x00000081 ]
+  [ payload load 2b @ link header + 14 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x0000ff0f ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x0000fe0f ]
+  [ payload load 1b @ link header + 15 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x00000010 ) ^ 0x00000000 ]
+  [ cmp neq reg 1 0x00000010 ]
+
 # vlan id 4094 vlan cfi 1
 bridge test-bridge input
   [ payload load 2b @ link header + 12 => reg 1 ]

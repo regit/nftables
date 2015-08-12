@@ -1083,6 +1083,7 @@ static void relational_binop_postprocess(struct rule_pp_ctx *ctx, struct expr *e
 	struct expr *binop = expr->left, *value = expr->right;
 
 	if (binop->op == OP_AND && expr->op == OP_NEQ &&
+	    value->dtype->basetype &&
 	    value->dtype->basetype->type == TYPE_BITMASK &&
 	    !mpz_cmp_ui(value->value, 0)) {
 		/* Flag comparison: data & flags != 0

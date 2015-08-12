@@ -6,6 +6,7 @@ vlan id 0;ok
 # bad vlan id
 vlan id 4096;fail
 vlan id 4094 vlan cfi 0;ok
+vlan id 4094 vlan cfi != 1;ok
 vlan id 4094 vlan cfi 1;ok
 # bad cfi
 vlan id 4094 vlan cfi 2;fail
