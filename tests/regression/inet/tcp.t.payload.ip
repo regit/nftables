@@ -498,3 +498,11 @@ ip test-ip4 input
   [ payload load 2b @ transport header + 18 => reg 1 ]
   [ lookup reg 1 set set%d ]
 
+# tcp doff 8
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ transport header + 12 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x000000f0 ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x00000080 ]
+

@@ -101,3 +101,5 @@ tcp urgptr { 33, 55, 67, 88};ok
 - tcp urgptr != { 33, 55, 67, 88};ok
 tcp urgptr { 33-55};ok
 - tcp urgptr != { 33-55};ok
+
+tcp doff 8;ok

@@ -111,3 +111,7 @@ ip saddr \& 0.0.0.255 \< 0.0.0.127;ok;ip saddr & 0.0.0.255 < 0.0.0.127
 
 ip saddr \& 0xffff0000 == 0xffff0000;ok;ip saddr 255.255.0.0/16
 
+ip version 4 ip hdrlength 5;ok
+ip hdrlength 0;ok
+ip hdrlength 15;ok
+ip hdrlength 16;fail

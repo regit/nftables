@@ -363,3 +363,24 @@ ip test-ip input
   [ payload load 1b @ network header + 9 => reg 10 ]
   [ lookup reg 1 set set%d ]
 
+# ip version 4 ip hdrlength 5
+ip test-ip4 input
+  [ payload load 1b @ network header + 0 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x000000f0 ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x00000040 ]
+  [ payload load 1b @ network header + 0 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x0000000f ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x00000005 ]
+
+# ip hdrlength 0
+ip test-ip4 input
+  [ payload load 1b @ network header + 0 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x0000000f ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x00000000 ]
+
+# ip hdrlength 15
+ip test-ip4 input
+  [ payload load 1b @ network header + 0 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x0000000f ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x0000000f ]
+
