@@ -1960,15 +1960,25 @@ static int cmd_evaluate_delete(struct eval_ctx *ctx, struct cmd *cmd)
 
 static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 {
+	struct table *table;
+
 	switch (cmd->obj) {
 	case CMD_OBJ_TABLE:
 		if (cmd->handle.table == NULL)
 			return 0;
-	case CMD_OBJ_CHAIN:
 	case CMD_OBJ_SET:
 		if (table_lookup(&cmd->handle) == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
+		return 0;
+	case CMD_OBJ_CHAIN:
+		table = table_lookup(&cmd->handle);
+		if (table == NULL)
+			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
+					 cmd->handle.table);
+		if (chain_lookup(table, &cmd->handle) == NULL)
+			return cmd_error(ctx, "Could not process rule: Chain '%s' does not exist",
+					 cmd->handle.chain);
 		return 0;
 	case CMD_OBJ_SETS:
 	case CMD_OBJ_RULESET:
