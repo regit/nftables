@@ -920,7 +920,6 @@ static struct table *netlink_delinearize_table(struct netlink_ctx *ctx,
 {
 	struct table *table;
 
-	netlink_dump_table(nlt);
 	table = table_alloc();
 	table->handle.family =
 		nft_table_attr_get_u32(nlt, NFT_TABLE_ATTR_FAMILY);
@@ -1233,7 +1232,6 @@ static int list_set_cb(struct nft_set *nls, void *arg)
 	struct netlink_ctx *ctx = arg;
 	struct set *set;
 
-	netlink_dump_set(nls);
 	set = netlink_delinearize_set(ctx, nls);
 	if (set == NULL)
 		return -1;
@@ -1270,7 +1268,6 @@ int netlink_get_set(struct netlink_ctx *ctx, const struct handle *h,
 	int err;
 
 	nls = alloc_nft_set(h);
-	netlink_dump_set(nls);
 	err = mnl_nft_set_get(nf_sock, nls);
 	if (err < 0) {
 		nft_set_free(nls);
@@ -1511,7 +1508,6 @@ int netlink_get_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	int err;
 
 	nls = alloc_nft_set(h);
-	netlink_dump_set(nls);
 
 	err = mnl_nft_setelem_get(nf_sock, nls);
 	if (err < 0) {
