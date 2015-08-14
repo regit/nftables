@@ -1106,7 +1106,7 @@ static int netlink_add_set_compat(struct netlink_ctx *ctx,
 	nftnl_set_set_u32(nls, NFTNL_SET_KEY_TYPE,
 			     dtype_map_to_kernel(set->keytype));
 	nftnl_set_set_u32(nls, NFTNL_SET_KEY_LEN,
-			     set->keylen / BITS_PER_BYTE);
+			     div_round_up(set->keylen, BITS_PER_BYTE));
 	if (set->flags & NFT_SET_MAP) {
 		nftnl_set_set_u32(nls, NFTNL_SET_DATA_TYPE,
 				     dtype_map_to_kernel(set->datatype));
@@ -1138,7 +1138,7 @@ static int netlink_add_set_batch(struct netlink_ctx *ctx,
 	nftnl_set_set_u32(nls, NFTNL_SET_KEY_TYPE,
 			     dtype_map_to_kernel(set->keytype));
 	nftnl_set_set_u32(nls, NFTNL_SET_KEY_LEN,
-			     set->keylen / BITS_PER_BYTE);
+			     div_round_up(set->keylen, BITS_PER_BYTE));
 	if (set->flags & NFT_SET_MAP) {
 		nftnl_set_set_u32(nls, NFTNL_SET_DATA_TYPE,
 				     dtype_map_to_kernel(set->datatype));
