@@ -333,6 +333,7 @@ static const char *chain_hookname_str_array[] = {
 	"forward",
 	"postrouting",
 	"output",
+	"ingress",
 	NULL,
 };
 
@@ -398,6 +399,8 @@ const char *family2str(unsigned int family)
 			return "ip6";
 		case NFPROTO_INET:
 			return "inet";
+		case NFPROTO_NETDEV:
+			return "netdev";
 		case NFPROTO_ARP:
 			return "arp";
 		case NFPROTO_BRIDGE:
@@ -441,6 +444,13 @@ const char *hooknum2str(unsigned int family, unsigned int hooknum)
 		default:
 			break;
 		}
+		break;
+	case NFPROTO_NETDEV:
+		switch (hooknum) {
+		case NF_NETDEV_INGRESS:
+			return "ingress";
+		}
+		break;
 	default:
 		break;
 	};
@@ -465,9 +475,18 @@ static void chain_print(const struct chain *chain)
 
 	printf("\tchain %s {\n", chain->handle.chain);
 	if (chain->flags & CHAIN_F_BASECHAIN) {
-		printf("\t\ttype %s hook %s priority %d; policy %s;\n",
-		       chain->type, chain->hookstr,
-		       chain->priority, chain_policy2str(chain->policy));
+		if (chain->dev != NULL) {
+			printf("\t\ttype %s hook %s device %s priority %d; policy %s;\n",
+			       chain->type,
+			       hooknum2str(chain->handle.family, chain->hooknum),
+			       chain->dev, chain->priority,
+			       chain_policy2str(chain->policy));
+		} else {
+			printf("\t\ttype %s hook %s priority %d; policy %s;\n",
+			       chain->type,
+			       hooknum2str(chain->handle.family, chain->hooknum),
+			       chain->priority, chain_policy2str(chain->policy));
+		}
 	}
 	list_for_each_entry(rule, &chain->rules, list) {
 		printf("\t\t");

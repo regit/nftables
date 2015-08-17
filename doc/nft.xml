@@ -267,6 +267,14 @@ filter input iif $int_ifs accept
 						</para>
 					</listitem>
 				</varlistentry>
+				<varlistentry>
+					<term><option>netdev</option></term>
+					<listitem>
+						<para>
+							Netdev address family, handling packets from ingress.
+						</para>
+					</listitem>
+				</varlistentry>
 			</variablelist>
 		</para>
 		<para>
@@ -373,6 +381,38 @@ filter input iif $int_ifs accept
 				The bridge address family handles ethernet packets traversing bridge devices.
 			</para>
 		</refsect2>
+		<refsect2>
+			<title>Netdev address family</title>
+			<para>
+				The Netdev address family handles packets from ingress.
+			</para>
+			<para>
+				<table frame="all">
+					<title>Netdev address family hooks</title>
+					<tgroup cols='2' align='left' colsep='1' rowsep='1' pgwide="1">
+						<colspec colname='c1' colwidth="1*"/>
+						<colspec colname='c2' colwidth="5*"/>
+						<thead>
+							<row>
+								<entry>Hook</entry>
+								<entry>Description</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry>ingress</entry>
+								<entry>
+									All packets entering the system are processed by this hook. It is invoked
+									before layer 3 protocol handlers and it can be used for early filtering and
+									policing.
+								</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</table>
+			</para>
+		</refsect2>
+
 	</refsect1>
 
 	<refsect1>
@@ -401,6 +441,7 @@ filter input iif $int_ifs accept
 				<member><literal>inet</literal></member>
 				<member><literal>arp</literal></member>
 				<member><literal>bridge</literal></member>
+				<member><literal>netdev</literal></member>
 			</simplelist>.
 
 			The <literal>inet</literal> address family is a dummy family which is used to create
@@ -457,6 +498,7 @@ filter input iif $int_ifs accept
 				<arg choice="req"><replaceable>hook</replaceable></arg>
 				<arg choice="req"><replaceable>priority</replaceable></arg>
 				<arg choice="req"><replaceable>policy</replaceable></arg>
+				<arg choice="req"><replaceable>device</replaceable></arg>
 			</cmdsynopsis>
 			<cmdsynopsis>
 				<group choice="req">

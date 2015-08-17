@@ -1847,6 +1847,10 @@ static uint32_t str2hooknum(uint32_t family, const char *hook)
 		else if (!strcmp(hook, "output"))
 			return NF_ARP_OUT;
 		break;
+	case NFPROTO_NETDEV:
+		if (!strcmp(hook, "ingress"))
+			return NF_NETDEV_INGRESS;
+		break;
 	default:
 		break;
 	}

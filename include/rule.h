@@ -113,6 +113,7 @@ enum chain_flags {
  * @priority:	hook priority (base chains)
  * @policy:	default chain policy (base chains)
  * @type:	chain type
+ * @dev:	device (if any)
  * @rules:	rules contained in the chain
  */
 struct chain {
@@ -125,6 +126,7 @@ struct chain {
 	int			priority;
 	int			policy;
 	const char		*type;
+	const char		*dev;
 	struct scope		scope;
 	struct list_head	rules;
 };

@@ -165,6 +165,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token DEFINE			"define"
 
 %token HOOK			"hook"
+%token DEVICE			"device"
 %token TABLE			"table"
 %token TABLES			"tables"
 %token CHAIN			"chain"
@@ -179,6 +180,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token RULESET			"ruleset"
 
 %token INET			"inet"
+%token NETDEV			"netdev"
 
 %token ADD			"add"
 %token UPDATE			"update"
@@ -1094,6 +1096,37 @@ hook_spec		:	TYPE		STRING		HOOK		STRING		PRIORITY	NUM
 				$<chain>0->priority	= -$7;
 				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
 			}
+			|	TYPE		STRING		HOOK		STRING		DEVICE	STRING	PRIORITY	NUM
+			{
+				$<chain>0->type		= chain_type_name_lookup($2);
+				if ($<chain>0->type == NULL) {
+					erec_queue(error(&@2, "unknown chain type %s", $2),
+						   state->msgs);
+					YYERROR;
+				}
+				$<chain>0->hookstr	= chain_hookname_lookup($4);
+				if ($<chain>0->hookstr == NULL) {
+					erec_queue(error(&@4, "unknown chain hook %s", $4),
+						   state->msgs);
+					YYERROR;
+				}
+				$<chain>0->dev		= $6;
+				$<chain>0->priority	= $8;
+				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
+			}
+			|	TYPE		STRING		HOOK		STRING		DEVICE	STRING	PRIORITY	DASH	NUM
+			{
+				$<chain>0->type		= chain_type_name_lookup($2);
+				if ($<chain>0->type == NULL) {
+					erec_queue(error(&@2, "unknown type name %s", $2),
+						   state->msgs);
+					YYERROR;
+				}
+				$<chain>0->hookstr	= chain_hookname_lookup($4);
+				$<chain>0->dev		= $6;
+				$<chain>0->priority	= -$9;
+				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
+			}
 			;
 
 policy_spec		:	POLICY		chain_policy
@@ -1141,6 +1174,7 @@ family_spec_explicit	:	IP		{ $$ = NFPROTO_IPV4; }
 			|	INET		{ $$ = NFPROTO_INET; }
 			|	ARP		{ $$ = NFPROTO_ARP; }
 			|	BRIDGE		{ $$ = NFPROTO_BRIDGE; }
+			|	NETDEV		{ $$ = NFPROTO_NETDEV; }
 			;
 
 table_spec		:	family_spec	identifier
