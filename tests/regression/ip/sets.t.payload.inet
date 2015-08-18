@@ -1,5 +1,4 @@
 # ip saddr @set1 drop
-set1 test-inet 0
 inet test-inet input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x00000002 ]
@@ -8,7 +7,6 @@ inet test-inet input
   [ immediate reg 0 drop ]
 
 # ip saddr @set2 drop
-set2 test-inet 0
 inet test-inet input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x00000002 ]

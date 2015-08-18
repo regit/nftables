@@ -1,5 +1,4 @@
 # ip6 saddr @set2 drop
-set2 test-inet 0
 inet test-inet input 
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x0000000a ]
