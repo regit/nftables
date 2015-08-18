@@ -12,7 +12,7 @@ ip test-ip4 output
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
-  [ redir ]
+  [ redir flags 0x4 ]
 
 # udp dport 53 redirect random,persistent
 ip test-ip4 output
@@ -20,7 +20,7 @@ ip test-ip4 output
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
-  [ redir ]
+  [ redir flags 0xc ]
 
 # udp dport 53 redirect random,persistent,fully-random
 ip test-ip4 output
@@ -28,7 +28,7 @@ ip test-ip4 output
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
-  [ redir ]
+  [ redir flags 0x1c ]
 
 # udp dport 53 redirect random,fully-random
 ip test-ip4 output
@@ -36,7 +36,7 @@ ip test-ip4 output
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
-  [ redir ]
+  [ redir flags 0x14 ]
 
 # udp dport 53 redirect random,fully-random,persistent
 ip test-ip4 output
@@ -44,7 +44,7 @@ ip test-ip4 output
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
-  [ redir ]
+  [ redir flags 0x1c ]
 
 # udp dport 53 redirect persistent
 ip test-ip4 output
@@ -52,7 +52,7 @@ ip test-ip4 output
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
-  [ redir ]
+  [ redir flags 0x8 ]
 
 # udp dport 53 redirect persistent,random
 ip test-ip4 output
@@ -60,7 +60,7 @@ ip test-ip4 output
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
-  [ redir ]
+  [ redir flags 0xc ]
 
 # udp dport 53 redirect persistent,random,fully-random
 ip test-ip4 output
@@ -68,7 +68,7 @@ ip test-ip4 output
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
-  [ redir ]
+  [ redir flags 0x1c ]
 
 # udp dport 53 redirect persistent,fully-random
 ip test-ip4 output
@@ -76,7 +76,7 @@ ip test-ip4 output
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
-  [ redir ]
+  [ redir flags 0x18 ]
 
 # udp dport 53 redirect persistent,fully-random,random
 ip test-ip4 output
@@ -84,7 +84,7 @@ ip test-ip4 output
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
-  [ redir ]
+  [ redir flags 0x1c ]
 
 # tcp dport 22 redirect to 22
 ip test-ip4 output
@@ -93,7 +93,7 @@ ip test-ip4 output
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00001600 ]
   [ immediate reg 1 0x00001600 ]
-  [ redir ]
+  [ redir proto_min reg 1 ]
 
 # udp dport 1234 redirect to 4321
 ip test-ip4 output
@@ -102,7 +102,7 @@ ip test-ip4 output
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x0000d204 ]
   [ immediate reg 1 0x0000e110 ]
-  [ redir ]
+  [ redir proto_min reg 1 ]
 
 # ip daddr 172.16.0.1 udp dport 9998 redirect to 6515
 ip test-ip4 output
@@ -113,7 +113,7 @@ ip test-ip4 output
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00000e27 ]
   [ immediate reg 1 0x00007319 ]
-  [ redir ]
+  [ redir proto_min reg 1 ]
 
 # tcp dport 39128 redirect to 993
 ip test-ip4 output
@@ -122,7 +122,7 @@ ip test-ip4 output
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x0000d898 ]
   [ immediate reg 1 0x0000e103 ]
-  [ redir ]
+  [ redir proto_min reg 1 ]
 
 # tcp dport 9128 redirect to 993 random
 ip test-ip4 output
@@ -131,7 +131,7 @@ ip test-ip4 output
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x0000a823 ]
   [ immediate reg 1 0x0000e103 ]
-  [ redir ]
+  [ redir proto_min reg 1 flags 0x4 ]
 
 # tcp dport 9128 redirect to 993 fully-random
 ip test-ip4 output
@@ -140,7 +140,7 @@ ip test-ip4 output
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x0000a823 ]
   [ immediate reg 1 0x0000e103 ]
-  [ redir ]
+  [ redir proto_min reg 1 flags 0x10 ]
 
 # tcp dport 9128 redirect to 123 persistent
 ip test-ip4 output
@@ -149,7 +149,7 @@ ip test-ip4 output
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x0000a823 ]
   [ immediate reg 1 0x00007b00 ]
-  [ redir ]
+  [ redir proto_min reg 1 flags 0x8 ]
 
 # tcp dport 9128 redirect to 123 random,persistent
 ip test-ip4 output
@@ -158,7 +158,7 @@ ip test-ip4 output
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x0000a823 ]
   [ immediate reg 1 0x00007b00 ]
-  [ redir ]
+  [ redir proto_min reg 1 flags 0xc ]
 
 # tcp dport { 1, 2, 3, 4, 5, 6, 7, 8, 101, 202, 303, 1001, 2002, 3003} redirect
 set%d test-ip4 3
