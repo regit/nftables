@@ -879,6 +879,11 @@ def main():
         print "You need to be root to run this, sorry"
         return
 
+    if not os.path.isdir("tests/regression/"):
+        print "You have to run nft-test.py from the repository root directory, eg.\n\n" + \
+            "	nftables# python tests/regression/nft-test.py\n"
+        return
+
     test_files = files_ok = run_total = 0
     tests = passed = warnings = errors = 0
     global log_file
