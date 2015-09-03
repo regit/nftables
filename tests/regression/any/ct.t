@@ -105,3 +105,8 @@ ct helper "12345678901234567";fail
 # <cmdline>:1:37-39: Error: datatype mismatch, expected invalid, expression has type Internet protocol
 # add rule ip test input ct proto-dst udp
 #                        ~~~~~~~~~~~~ ^^^
+
+ct state . ct mark { new . 0x12345678};ok
+ct state . ct mark { new . 0x12345678, new . 0x34127856, established . 0x12785634};ok
+ct direction . ct mark { original . 0x12345678};ok
+ct state . ct mark vmap { new . 0x12345678 : drop};ok

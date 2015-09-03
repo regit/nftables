@@ -48,3 +48,22 @@ ip test-ip4 prerouting
   [ immediate reg 1 0x0203a8c0 ]
   [ nat dnat ip addr_min reg 1 addr_max reg 0 ]
 
+# dnat ct mark map { 0x00000014 : 1.2.3.4}
+map%d test-ip4 b
+map%d test-ip4 0
+	element 00000014  : 04030201 0 [end]
+ip test-ip4 prerouting
+  [ ct load mark => reg 1 ]
+  [ lookup reg 1 set map%d dreg 1 ]
+  [ nat dnat ip addr_min reg 1 addr_max reg 0 ]
+
+# dnat ct mark . ip daddr map { 0x00000014 . 1.1.1.1 : 1.2.3.4}
+map%d test-ip4 b
+map%d test-ip4 0
+	element 00000014 01010101  : 04030201 0 [end]
+ip test-ip4 output
+  [ ct load mark => reg 1 ]
+  [ payload load 4b @ network header + 16 => reg 9 ]
+  [ lookup reg 1 set map%d dreg 1 ]
+  [ nat dnat ip addr_min reg 1 addr_max reg 0 ]
+

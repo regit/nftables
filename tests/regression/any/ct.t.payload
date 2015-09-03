@@ -237,3 +237,39 @@ ip test-ip4 output
   [ ct load helper => reg 1 ]
   [ cmp eq reg 1 0x00707466 0x00000000 0x00000000 0x00000000 ]
 
+# ct state . ct mark { new . 0x12345678}
+set%d test 3
+set%d test 0
+	element 00000008 12345678  : 0 [end]
+ip test-ip4 output
+  [ ct load state => reg 1 ]
+  [ ct load mark => reg 9 ]
+  [ lookup reg 1 set set%d ]
+
+# ct state . ct mark { new . 0x12345678, new . 0x34127856, established . 0x12785634}
+set%d test-ip4 3
+set%d test-ip4 0
+	element 00000008 12345678  : 0 [end]	element 00000008 34127856  : 0 [end]	element 00000002 12785634  : 0 [end]
+ip test-ip4 output
+  [ ct load state => reg 1 ]
+  [ ct load mark => reg 9 ]
+  [ lookup reg 1 set set%d ]
+
+# ct direction . ct mark { original . 0x12345678}
+set%d test 3
+set%d test 0
+	element 00000000 12345678  : 0 [end]
+ip test-ip4 output
+  [ ct load direction => reg 1 ]
+  [ ct load mark => reg 9 ]
+  [ lookup reg 1 set set%d ]
+
+# ct state . ct mark vmap { new . 0x12345678 : drop}
+map%d test-ip4 b
+map%d test-ip4 0
+        element 00000008 12345678  : 0 [end]
+ip test-ip4 output
+  [ ct load state => reg 1 ]
+  [ ct load mark => reg 9 ]
+  [ lookup reg 1 set map%d dreg 0 ]
+

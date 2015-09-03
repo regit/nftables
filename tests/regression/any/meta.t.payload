@@ -705,3 +705,32 @@ ip test-ip4 input
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
   [ lookup reg 1 set set%d ]
 
+
+# meta iif . meta oif { lo . eth0 }
+set%d test-ip4 3
+set%d test-ip4 0
+	element 00000001 00000002  : 0 [end]
+ip test-ip4 output
+  [ meta load iif => reg 1 ]
+  [ meta load oif => reg 9 ]
+  [ lookup reg 1 set set%d ]
+
+# meta iif . meta oif . meta mark { lo . eth0 . 0x0000000a }
+set%d test-ip4 3
+set%d test-ip4 0
+	element 00000001 00000002 0000000a  : 0 [end]
+ip test-ip4 output
+  [ meta load iif => reg 1 ]
+  [ meta load oif => reg 9 ]
+  [ meta load mark => reg 10 ]
+  [ lookup reg 1 set set%d ]
+
+# meta iif . meta oif vmap { lo . eth0 : drop }
+map%d test-ip4 b
+map%d test-ip4 0
+	element 00000001 00000002  : 0 [end]
+ip test-ip4 output
+  [ meta load iif => reg 1 ]
+  [ meta load oif => reg 9 ]
+  [ lookup reg 1 set map%d dreg 0 ]
+
