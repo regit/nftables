@@ -23,6 +23,7 @@
 
 #include <mnl.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <errno.h>
 #include <utils.h>
@@ -966,11 +967,46 @@ err:
 /*
  * events
  */
+#define NFTABLES_NLEVENT_BUFSIZ	(1 << 24)
+
 int mnl_nft_event_listener(struct mnl_socket *nf_sock,
 			   int (*cb)(const struct nlmsghdr *nlh, void *data),
 			   void *cb_data)
 {
-	return nft_mnl_recv(nf_sock, 0, 0, cb, cb_data);
+	/* Set netlink socket buffer size to 16 Mbytes to reduce chances of
+ 	 * message loss due to ENOBUFS.
+	 */
+	unsigned int bufsiz = NFTABLES_NLEVENT_BUFSIZ;
+	char buf[NFT_NLMSG_MAXSIZE];
+	int ret;
+
+	ret = setsockopt(mnl_socket_get_fd(nf_sock), SOL_SOCKET, SO_RCVBUFFORCE,
+			 &bufsiz, sizeof(socklen_t));
+        if (ret < 0) {
+		/* If this doesn't work, try to reach the system wide maximum
+		 * (or whatever the user requested).
+		 */
+                ret = setsockopt(mnl_socket_get_fd(nf_sock), SOL_SOCKET,
+				 SO_RCVBUF, &bufsiz, sizeof(socklen_t));
+		printf("# Cannot set up netlink socket buffer size to %u bytes, falling back to %u bytes\n",
+		       NFTABLES_NLEVENT_BUFSIZ, bufsiz);
+	}
+
+	while (1) {
+		ret = mnl_socket_recvfrom(nf_sock, buf, sizeof(buf));
+		if (ret < 0) {
+			if (errno == ENOBUFS) {
+				printf("# ERROR: We lost some netlink events!\n");
+				continue;
+			}
+			fprintf(stdout, "# ERROR: %s\n", strerror(errno));
+			break;
+		}
+		ret = mnl_cb_run(buf, ret, 0, 0, cb, cb_data);
+		if (ret <= 0)
+			break;
+	}
+	return ret;
 }
 
 static void nft_mnl_batch_put(char *buf, uint16_t type, uint32_t seq)
