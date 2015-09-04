@@ -2143,6 +2143,7 @@ static int netlink_events_cb(const struct nlmsghdr *nlh, void *data)
 		ret = netlink_events_rule_cb(nlh, type, monh);
 		break;
 	}
+	fflush(stdout);
 
 	return ret;
 }
