@@ -234,8 +234,8 @@ static ssize_t mnl_nft_socket_sendmsg(const struct mnl_socket *nl)
 					  iov[i].iov_base, iov[i].iov_len,
 					  sizeof(struct nfgenmsg));
 		}
-#endif
 	}
+#endif
 
 	return sendmsg(mnl_socket_get_fd(nl), &msg, 0);
 }
