@@ -1711,12 +1711,26 @@ int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 	}
 }
 
+static struct table *table_lookup_global(struct eval_ctx *ctx)
+{
+	struct table *table;
+
+	if (ctx->table != NULL)
+		return ctx->cmd->table;
+
+	table = table_lookup(&ctx->cmd->handle);
+	if (table == NULL)
+		return NULL;
+
+	return table;
+}
+
 static int setelem_evaluate(struct eval_ctx *ctx, struct expr **expr)
 {
 	struct table *table;
 	struct set *set;
 
-	table = table_lookup(&ctx->cmd->handle);
+	table = table_lookup_global(ctx);
 	if (table == NULL)
 		return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 				 ctx->cmd->handle.table);
@@ -1739,7 +1753,7 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 	struct table *table;
 	const char *type;
 
-	table = table_lookup(&ctx->cmd->handle);
+	table = table_lookup_global(ctx);
 	if (table == NULL)
 		return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 				 ctx->cmd->handle.table);
@@ -1857,9 +1871,9 @@ static int chain_evaluate(struct eval_ctx *ctx, struct chain *chain)
 	struct table *table;
 	struct rule *rule;
 
-	table = table_lookup(&ctx->cmd->handle);
+	table = table_lookup_global(ctx);
 	if (table == NULL)
-		return cmd_error(ctx, "Table '%s' does not exist",
+		return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 				 ctx->cmd->handle.table);
 
 	if (chain == NULL) {
