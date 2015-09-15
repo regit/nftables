@@ -842,12 +842,12 @@ monitor_object		:	/* empty */	{ $$ = CMD_MONITOR_OBJ_ANY; }
 			|	ELEMENTS	{ $$ = CMD_MONITOR_OBJ_ELEMS; }
 			;
 
-monitor_format		:	/* empty */	{ $$ = NFT_OUTPUT_DEFAULT; }
+monitor_format		:	/* empty */	{ $$ = NFTNL_OUTPUT_DEFAULT; }
 			|	export_format
 			;
 
-export_format		: 	XML 		{ $$ = NFT_OUTPUT_XML; }
-			|	JSON		{ $$ = NFT_OUTPUT_JSON; }
+export_format		: 	XML 		{ $$ = NFTNL_OUTPUT_XML; }
+			|	JSON		{ $$ = NFTNL_OUTPUT_JSON; }
 			;
 
 describe_cmd		:	primary_expr

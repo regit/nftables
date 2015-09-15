@@ -955,7 +955,7 @@ static int do_command_delete(struct netlink_ctx *ctx, struct cmd *cmd)
 
 static int do_command_export(struct netlink_ctx *ctx, struct cmd *cmd)
 {
-	struct nft_ruleset *rs;
+	struct nftnl_ruleset *rs;
 
 	do {
 		rs = netlink_dump_ruleset(ctx, &cmd->handle, &cmd->location);
@@ -963,10 +963,10 @@ static int do_command_export(struct netlink_ctx *ctx, struct cmd *cmd)
 			return -1;
 	} while (rs == NULL);
 
-	nft_ruleset_fprintf(stdout, rs, cmd->export->format, 0);
+	nftnl_ruleset_fprintf(stdout, rs, cmd->export->format, 0);
 	fprintf(stdout, "\n");
 
-	nft_ruleset_free(rs);
+	nftnl_ruleset_free(rs);
 	return 0;
 }
 
@@ -1104,7 +1104,7 @@ static int do_command_monitor(struct netlink_ctx *ctx, struct cmd *cmd)
 	 *  - new elements
 	 */
 	if (((cmd->monitor->flags & (1 << NFT_MSG_NEWRULE)) &&
-	    (cmd->monitor->format == NFT_OUTPUT_DEFAULT)) ||
+	    (cmd->monitor->format == NFTNL_OUTPUT_DEFAULT)) ||
 	    (cmd->monitor->flags & (1 << NFT_MSG_NEWSETELEM)))
 		monhandler.cache_needed = true;
 	else

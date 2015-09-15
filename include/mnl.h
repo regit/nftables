@@ -22,67 +22,67 @@ void mnl_batch_reset(void);
 uint32_t mnl_batch_begin(void);
 void mnl_batch_end(void);
 int mnl_batch_talk(struct mnl_socket *nl, struct list_head *err_list);
-int mnl_nft_rule_batch_add(struct nft_rule *nlr, unsigned int flags,
+int mnl_nft_rule_batch_add(struct nftnl_rule *nlr, unsigned int flags,
 			   uint32_t seqnum);
-int mnl_nft_rule_batch_del(struct nft_rule *nlr, unsigned int flags,
+int mnl_nft_rule_batch_del(struct nftnl_rule *nlr, unsigned int flags,
 			   uint32_t seqnum);
 
-int mnl_nft_rule_add(struct mnl_socket *nf_sock, struct nft_rule *r,
+int mnl_nft_rule_add(struct mnl_socket *nf_sock, struct nftnl_rule *r,
 		     unsigned int flags);
-int mnl_nft_rule_delete(struct mnl_socket *nf_sock, struct nft_rule *r,
+int mnl_nft_rule_delete(struct mnl_socket *nf_sock, struct nftnl_rule *r,
 			unsigned int flags);
-struct nft_rule_list *mnl_nft_rule_dump(struct mnl_socket *nf_sock,
+struct nftnl_rule_list *mnl_nft_rule_dump(struct mnl_socket *nf_sock,
 					int family);
 
-int mnl_nft_chain_add(struct mnl_socket *nf_sock, struct nft_chain *nlc,
+int mnl_nft_chain_add(struct mnl_socket *nf_sock, struct nftnl_chain *nlc,
 		      unsigned int flags);
-int mnl_nft_chain_batch_add(struct nft_chain *nlc,
+int mnl_nft_chain_batch_add(struct nftnl_chain *nlc,
 			    unsigned int flags, uint32_t seq);
-int mnl_nft_chain_delete(struct mnl_socket *nf_sock, struct nft_chain *nlc,
+int mnl_nft_chain_delete(struct mnl_socket *nf_sock, struct nftnl_chain *nlc,
                          unsigned int flags);
-int mnl_nft_chain_batch_del(struct nft_chain *nlc,
+int mnl_nft_chain_batch_del(struct nftnl_chain *nlc,
 			    unsigned int flags, uint32_t seq);
-struct nft_chain_list *mnl_nft_chain_dump(struct mnl_socket *nf_sock,
+struct nftnl_chain_list *mnl_nft_chain_dump(struct mnl_socket *nf_sock,
 					  int family);
-int mnl_nft_chain_get(struct mnl_socket *nf_sock, struct nft_chain *nlc,
+int mnl_nft_chain_get(struct mnl_socket *nf_sock, struct nftnl_chain *nlc,
 		      unsigned int flags);
 
-int mnl_nft_table_add(struct mnl_socket *nf_sock, struct nft_table *nlt,
+int mnl_nft_table_add(struct mnl_socket *nf_sock, struct nftnl_table *nlt,
 		      unsigned int flags);
-int mnl_nft_table_batch_add(struct nft_table *nlt,
+int mnl_nft_table_batch_add(struct nftnl_table *nlt,
 			    unsigned int flags, uint32_t seq);
-int mnl_nft_table_delete(struct mnl_socket *nf_sock, struct nft_table *nlt,
+int mnl_nft_table_delete(struct mnl_socket *nf_sock, struct nftnl_table *nlt,
 			 unsigned int flags);
-int mnl_nft_table_batch_del(struct nft_table *nlt,
+int mnl_nft_table_batch_del(struct nftnl_table *nlt,
 			    unsigned int flags, uint32_t seq);
-struct nft_table_list *mnl_nft_table_dump(struct mnl_socket *nf_sock,
+struct nftnl_table_list *mnl_nft_table_dump(struct mnl_socket *nf_sock,
 					  int family);
-int mnl_nft_table_get(struct mnl_socket *nf_sock, struct nft_table *nlt,
+int mnl_nft_table_get(struct mnl_socket *nf_sock, struct nftnl_table *nlt,
 		      unsigned int flags);
 
-int mnl_nft_set_add(struct mnl_socket *nf_sock, struct nft_set *nls,
+int mnl_nft_set_add(struct mnl_socket *nf_sock, struct nftnl_set *nls,
 		    unsigned int flags);
-int mnl_nft_set_batch_add(struct nft_set *nls,
+int mnl_nft_set_batch_add(struct nftnl_set *nls,
 			  unsigned int flags, uint32_t seq);
-int mnl_nft_set_delete(struct mnl_socket *nf_sock, struct nft_set *nls,
+int mnl_nft_set_delete(struct mnl_socket *nf_sock, struct nftnl_set *nls,
 		       unsigned int flags);
-int mnl_nft_set_batch_del(struct nft_set *nls,
+int mnl_nft_set_batch_del(struct nftnl_set *nls,
 			  unsigned int flags, uint32_t seq);
-struct nft_set_list *mnl_nft_set_dump(struct mnl_socket *nf_sock, int family,
+struct nftnl_set_list *mnl_nft_set_dump(struct mnl_socket *nf_sock, int family,
 				      const char *table);
-int mnl_nft_set_get(struct mnl_socket *nf_sock, struct nft_set *nls);
+int mnl_nft_set_get(struct mnl_socket *nf_sock, struct nftnl_set *nls);
 
-int mnl_nft_setelem_add(struct mnl_socket *nf_sock, struct nft_set *nls,
+int mnl_nft_setelem_add(struct mnl_socket *nf_sock, struct nftnl_set *nls,
 			unsigned int flags);
-int mnl_nft_setelem_batch_add(struct nft_set *nls,
+int mnl_nft_setelem_batch_add(struct nftnl_set *nls,
 			      unsigned int flags, uint32_t seq);
-int mnl_nft_setelem_delete(struct mnl_socket *nf_sock, struct nft_set *nls,
+int mnl_nft_setelem_delete(struct mnl_socket *nf_sock, struct nftnl_set *nls,
 			   unsigned int flags);
-int mnl_nft_setelem_batch_del(struct nft_set *nls,
+int mnl_nft_setelem_batch_del(struct nftnl_set *nls,
 			      unsigned int flags, uint32_t seq);
-int mnl_nft_setelem_get(struct mnl_socket *nf_sock, struct nft_set *nls);
+int mnl_nft_setelem_get(struct mnl_socket *nf_sock, struct nftnl_set *nls);
 
-struct nft_ruleset *mnl_nft_ruleset_dump(struct mnl_socket *nf_sock,
+struct nftnl_ruleset *mnl_nft_ruleset_dump(struct mnl_socket *nf_sock,
 					 uint32_t family);
 int mnl_nft_event_listener(struct mnl_socket *nf_sock,
 			   int (*cb)(const struct nlmsghdr *nlh, void *data),

@@ -71,7 +71,7 @@ AM_CONDITIONAL([BUILD_PDF], [test "$DBLATEX" == "found"])
 
 # Checks for libraries.
 PKG_CHECK_MODULES([LIBMNL], [libmnl >= 1.0.3])
-PKG_CHECK_MODULES([LIBNFTNL], [libnftnl >= 1.0.2])
+PKG_CHECK_MODULES([LIBNFTNL], [libnftnl >= 1.0.5])
 
 AC_ARG_WITH([mini-gmp], [AS_HELP_STRING([--with-mini-gmp],
             [Use builtin mini-gmp (for embedded builds)])], [],
