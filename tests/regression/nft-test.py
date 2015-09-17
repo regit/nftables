@@ -424,6 +424,32 @@ def output_clean(pre_output, chain):
         return ""
     return rule
 
+def payload_check_elems_to_set(elems):
+    newset = set()
+
+    for n, line in enumerate(elems.split('[end]')):
+        e = line.strip()
+        if e in newset:
+            print_error("duplicate", e, n)
+            return newset
+
+        newset.add(e)
+
+    return newset
+
+def payload_check_set_elems(want, got):
+
+    if want.find('element') < 0 or want.find('[end]') < 0:
+        return 0
+
+    if got.find('element') < 0 or got.find('[end]') < 0:
+        return 0
+
+    set_want = payload_check_elems_to_set(want)
+    set_got = payload_check_elems_to_set(got)
+
+    return set_want == set_got
+
 def payload_check(payload_buffer, file, cmd):
 
     file.seek(0, 0)
@@ -441,6 +467,9 @@ def payload_check(payload_buffer, file, cmd):
         if want_line.find('[') < 0 and line.find('[') < 0:
             continue
         if want_line.find(']') < 0 and line.find(']') < 0:
+            continue
+
+        if payload_check_set_elems(want_line, line):
             continue
 
         print_differences_warning(file.name, lineno, want_line.strip(), line.strip(), cmd);

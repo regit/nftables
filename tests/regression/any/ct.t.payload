@@ -267,7 +267,7 @@ ip test-ip4 output
 # ct state . ct mark vmap { new . 0x12345678 : drop}
 map%d test-ip4 b
 map%d test-ip4 0
-        element 00000008 12345678  : 0 [end]
+	element 00000008 12345678  : 0 [end]
 ip test-ip4 output
   [ ct load state => reg 1 ]
   [ ct load mark => reg 9 ]
