@@ -1013,10 +1013,15 @@ static int do_list_tables(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	struct table *table;
 
-	list_for_each_entry(table, &table_list, list)
+	list_for_each_entry(table, &table_list, list) {
+		if (cmd->handle.family != NFPROTO_UNSPEC &&
+		    cmd->handle.family != table->handle.family)
+			continue;
+
 		printf("table %s %s\n",
 		       family2str(table->handle.family),
 		       table->handle.table);
+	}
 
 	return 0;
 }
