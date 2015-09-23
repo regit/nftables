@@ -604,10 +604,8 @@ static const char *chain_policy2str(uint32_t policy)
 	return "unknown";
 }
 
-static void chain_print(const struct chain *chain)
+static void chain_print_declaration(const struct chain *chain)
 {
-	struct rule *rule;
-
 	printf("\tchain %s {\n", chain->handle.chain);
 	if (chain->flags & CHAIN_F_BASECHAIN) {
 		if (chain->dev != NULL) {
@@ -623,6 +621,14 @@ static void chain_print(const struct chain *chain)
 			       chain->priority, chain_policy2str(chain->policy));
 		}
 	}
+}
+
+static void chain_print(const struct chain *chain)
+{
+	struct rule *rule;
+
+	chain_print_declaration(chain);
+
 	list_for_each_entry(rule, &chain->rules, list) {
 		printf("\t\t");
 		rule_print(rule);
@@ -1037,6 +1043,30 @@ static int do_list_tables(struct netlink_ctx *ctx, struct cmd *cmd)
 	return 0;
 }
 
+static int do_list_chains(struct netlink_ctx *ctx, struct cmd *cmd)
+{
+	struct table *table;
+	struct chain *chain;
+
+	list_for_each_entry(table, &table_list, list) {
+		if (cmd->handle.family != NFPROTO_UNSPEC &&
+		    cmd->handle.family != table->handle.family)
+			continue;
+
+		printf("table %s %s {\n",
+		       family2str(table->handle.family),
+		       table->handle.table);
+
+		list_for_each_entry(chain, &table->chains, list) {
+			chain_print_declaration(chain);
+			printf("\t}\n");
+		}
+		printf("}\n");
+	}
+
+	return 0;
+}
+
 static int do_list_set(struct netlink_ctx *ctx, struct cmd *cmd,
 		       struct table *table)
 {
@@ -1064,6 +1094,8 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 		return do_list_table(ctx, cmd, table);
 	case CMD_OBJ_CHAIN:
 		return do_list_table(ctx, cmd, table);
+	case CMD_OBJ_CHAINS:
+		return do_list_chains(ctx, cmd);
 	case CMD_OBJ_SETS:
 		return do_list_sets(ctx, cmd);
 	case CMD_OBJ_SET:

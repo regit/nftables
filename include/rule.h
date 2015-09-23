@@ -270,6 +270,7 @@ enum cmd_ops {
  * @CMD_OBJ_SETS:	multiple sets
  * @CMD_OBJ_RULE:	rule
  * @CMD_OBJ_CHAIN:	chain
+ * @CMD_OBJ_CHAINS:	multiple chains
  * @CMD_OBJ_TABLE:	table
  * @CMD_OBJ_RULESET:	ruleset
  * @CMD_OBJ_EXPR:	expression
@@ -283,6 +284,7 @@ enum cmd_obj {
 	CMD_OBJ_SETS,
 	CMD_OBJ_RULE,
 	CMD_OBJ_CHAIN,
+	CMD_OBJ_CHAINS,
 	CMD_OBJ_TABLE,
 	CMD_OBJ_RULESET,
 	CMD_OBJ_EXPR,
