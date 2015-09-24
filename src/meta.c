@@ -19,6 +19,8 @@
 #include <net/if_arp.h>
 #include <pwd.h>
 #include <grp.h>
+#include <arpa/inet.h>
+#include <linux/netfilter.h>
 #include <linux/pkt_sched.h>
 #include <linux/if_packet.h>
 
@@ -468,7 +470,7 @@ static void meta_expr_pctx_update(struct proto_ctx *ctx,
 
 	switch (left->meta.key) {
 	case NFT_META_IIFTYPE:
-		if (h->base < PROTO_BASE_NETWORK_HDR)
+		if (h->base < PROTO_BASE_NETWORK_HDR && ctx->family != NFPROTO_INET)
 			return;
 
 		desc = proto_dev_desc(mpz_get_uint16(right->value));
@@ -571,4 +573,24 @@ static void __init meta_init(void)
 	datatype_register(&gid_type);
 	datatype_register(&devgroup_type);
 	datatype_register(&pkttype_type);
+}
+
+/*
+ * @expr:	payload expression
+ * @res:	dependency expression
+ *
+ * Generate a NFT_META_IIFTYPE expression to check for ethernet frames.
+ * Only works on input path.
+ */
+struct stmt *meta_stmt_meta_iiftype(const struct location *loc, uint16_t type)
+{
+	struct expr *dep, *left, *right;
+
+	left = meta_expr_alloc(loc, NFT_META_IIFTYPE);
+	right = constant_expr_alloc(loc, &arphrd_type,
+				    BYTEORDER_HOST_ENDIAN,
+				    2 * BITS_PER_BYTE, &type);
+
+	dep = relational_expr_alloc(loc, OP_EQ, left, right);
+	return expr_stmt_alloc(&dep->location, dep);
 }

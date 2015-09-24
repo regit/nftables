@@ -332,6 +332,34 @@ conflict_resolution_gen_dependency(struct eval_ctx *ctx, int protocol,
 	return 0;
 }
 
+/* dependency supersede.
+ *
+ * 'inet' is a 'phony' l2 dependeny used by NFPROTO_INET to fulfill network
+ * header dependency, i.e. ensure that 'ip saddr 1.2.3.4' only sees ip headers.
+ *
+ * If a match expression that depends on a particular L2 header, e.g. ethernet,
+ * is used, we thus get a conflict since we already have a l2 header dependency.
+ *
+ * But in the inet case we can just ignore the conflict since only another
+ * restriction is added, and these are not mutually exclusive.
+ *
+ * Example: inet filter in ip saddr 1.2.3.4 ether saddr a:b:c:d:e:f
+ *
+ * ip saddr adds meta dependency on ipv4 packets
+ * ether saddr adds another dependeny on ethernet frames.
+ */
+static bool supersede_dep(const struct proto_desc *have,
+			  struct expr *payload)
+{
+	if (payload->payload.base != PROTO_BASE_LL_HDR || have->length)
+		return false;
+
+	if (have != &proto_inet)
+		return false;
+
+	return true;
+}
+
 static bool resolve_protocol_conflict(struct eval_ctx *ctx,
 				      struct expr *payload)
 {
@@ -351,7 +379,24 @@ static bool resolve_protocol_conflict(struct eval_ctx *ctx,
 	if (payload->payload.base != h->base)
 		return false;
 
-	assert(desc->length);
+	if (supersede_dep(desc, payload)) {
+		uint16_t type;
+
+		if (proto_dev_type(payload->payload.desc, &type) < 0)
+			return expr_error(ctx->msgs, payload,
+					  "protocol specification is invalid "
+					  "for this family");
+
+		nstmt = meta_stmt_meta_iiftype(&payload->location, type);
+		if (stmt_evaluate(ctx, nstmt) < 0)
+			return expr_error(ctx->msgs, payload,
+					  "dependency statement is invalid");
+
+		list_add_tail(&nstmt->list, &ctx->stmt->list);
+		ctx->pctx.protocol[base].desc = payload->payload.desc;
+		return true;
+	}
+
 	if (base < PROTO_BASE_MAX) {
 		const struct proto_desc *next = ctx->pctx.protocol[base + 1].desc;
 

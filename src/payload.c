@@ -183,13 +183,7 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 					  "protocol specification is invalid "
 					  "for this family");
 
-		left = meta_expr_alloc(&expr->location, NFT_META_IIFTYPE);
-		right = constant_expr_alloc(&expr->location, &arphrd_type,
-					    BYTEORDER_HOST_ENDIAN,
-					    2 * BITS_PER_BYTE, &type);
-
-		dep = relational_expr_alloc(&expr->location, OP_EQ, left, right);
-		stmt = expr_stmt_alloc(&dep->location, dep);
+		stmt = meta_stmt_meta_iiftype(&expr->location, type);
 		if (stmt_evaluate(ctx, stmt) < 0) {
 			return expr_error(ctx->msgs, expr,
 					  "dependency statement is invalid");
