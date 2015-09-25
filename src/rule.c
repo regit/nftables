@@ -1043,6 +1043,13 @@ static int do_list_tables(struct netlink_ctx *ctx, struct cmd *cmd)
 	return 0;
 }
 
+static void table_print_declaration(struct table *table)
+{
+	printf("table %s %s {\n",
+		family2str(table->handle.family),
+		table->handle.table);
+}
+
 static int do_list_chains(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	struct table *table;
@@ -1053,9 +1060,7 @@ static int do_list_chains(struct netlink_ctx *ctx, struct cmd *cmd)
 		    cmd->handle.family != table->handle.family)
 			continue;
 
-		printf("table %s %s {\n",
-		       family2str(table->handle.family),
-		       table->handle.table);
+		table_print_declaration(table);
 
 		list_for_each_entry(chain, &table->chains, list) {
 			chain_print_declaration(chain);
@@ -1076,7 +1081,10 @@ static int do_list_set(struct netlink_ctx *ctx, struct cmd *cmd,
 	if (set == NULL)
 		return -1;
 
+	table_print_declaration(table);
 	set_print(set);
+	printf("}\n");
+
 	return 0;
 }
 
