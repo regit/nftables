@@ -984,8 +984,18 @@ static int do_list_sets(struct netlink_ctx *ctx, struct cmd *cmd)
 	struct set *set;
 
 	list_for_each_entry(table, &table_list, list) {
+		if (cmd->handle.family != NFPROTO_UNSPEC &&
+		    cmd->handle.family != table->handle.family)
+			continue;
+
+		printf("table %s %s {\n",
+		       family2str(table->handle.family),
+		       table->handle.table);
+
 		list_for_each_entry(set, &table->sets, list)
 			set_print(set);
+
+		printf("}\n");
 	}
 	return 0;
 }
