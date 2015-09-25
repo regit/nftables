@@ -2091,10 +2091,20 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_TABLE:
 		if (cmd->handle.table == NULL)
 			return 0;
-	case CMD_OBJ_SET:
-		if (table_lookup(&cmd->handle) == NULL)
+
+		table = table_lookup(&cmd->handle);
+		if (table == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
+		return 0;
+	case CMD_OBJ_SET:
+		table = table_lookup(&cmd->handle);
+		if (table == NULL)
+			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
+					 cmd->handle.table);
+		if (set_lookup(table, cmd->handle.set) == NULL)
+			return cmd_error(ctx, "Could not process rule: Set '%s' does not exist",
+					 cmd->handle.set);
 		return 0;
 	case CMD_OBJ_CHAIN:
 		table = table_lookup(&cmd->handle);
