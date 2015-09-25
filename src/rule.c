@@ -1277,30 +1277,65 @@ static int payload_match_stmt_cmp(const void *p1, const void *p2)
 
 static void payload_do_merge(struct stmt *sa[], unsigned int n)
 {
-	struct expr *last, *this, *expr;
+	struct expr *last, *this, *expr1, *expr2;
 	struct stmt *stmt;
-	unsigned int i;
+	unsigned int i, j;
 
 	qsort(sa, n, sizeof(sa[0]), payload_match_stmt_cmp);
 
 	last = sa[0]->expr;
-	for (i = 1; i < n; i++) {
+	for (j = 0, i = 1; i < n; i++) {
 		stmt = sa[i];
 		this = stmt->expr;
 
 		if (!payload_is_adjacent(last->left, this->left) ||
 		    last->op != this->op) {
 			last = this;
+			j = i;
 			continue;
 		}
 
-		expr = payload_expr_join(last->left, this->left);
-		expr_free(last->left);
-		last->left = expr;
+		expr1 = payload_expr_join(last->left, this->left);
+		expr2 = constant_expr_join(last->right, this->right);
 
-		expr = constant_expr_join(last->right, this->right);
+		/* We can merge last into this, but we can't replace
+		 * the statement associated with this if it does contain
+		 * a higher level protocol.
+		 *
+		 * ether type ip ip saddr X ether saddr Y
+		 * ... can be changed to
+		 * ether type ip ether saddr Y ip saddr X
+		 * ... but not
+		 * ip saddr X ether type ip ether saddr Y
+		 *
+		 * The latter form means we perform ip saddr test before
+		 * ensuring ip dependency, plus it makes decoding harder
+		 * since we don't know the type of the network header
+		 * right away.
+		 *
+		 * So, if we're about to replace a statement
+		 * containing a protocol identifier, just swap this and last
+		 * and replace the other one (i.e., replace 'load ether type ip'
+		 * with the combined 'load both ether type and saddr') and not
+		 * the other way around.
+		 */
+		if (this->left->flags & EXPR_F_PROTOCOL) {
+			struct expr *tmp = last;
+
+			last = this;
+			this = tmp;
+
+			expr1->flags |= EXPR_F_PROTOCOL;
+			stmt = sa[j];
+			assert(stmt->expr == this);
+			j = i;
+		}
+
+		expr_free(last->left);
+		last->left = expr1;
+
 		expr_free(last->right);
-		last->right = expr;
+		last->right = expr2;
 
 		list_del(&stmt->list);
 		stmt_free(stmt);
