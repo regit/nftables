@@ -20,6 +20,7 @@
 #include <netinet/ip_icmp.h>
 #include <netinet/icmp6.h>
 #include <net/ethernet.h>
+#include <net/if.h>
 
 #include <expression.h>
 #include <statement.h>
@@ -1617,7 +1618,7 @@ static int nat_evaluate_family(struct eval_ctx *ctx, struct stmt *stmt)
 	}
 }
 
-static int nat_evaluate_addr(struct eval_ctx *ctx, struct stmt *stmt,
+static int evaluate_addr(struct eval_ctx *ctx, struct stmt *stmt,
 			     struct expr **expr)
 {
 	struct proto_ctx *pctx = &ctx->pctx;
@@ -1659,7 +1660,7 @@ static int stmt_evaluate_nat(struct eval_ctx *ctx, struct stmt *stmt)
 		return err;
 
 	if (stmt->nat.addr != NULL) {
-		err = nat_evaluate_addr(ctx, stmt, &stmt->nat.addr);
+		err = evaluate_addr(ctx, stmt, &stmt->nat.addr);
 		if (err < 0)
 			return err;
 	}
@@ -1700,6 +1701,32 @@ static int stmt_evaluate_redir(struct eval_ctx *ctx, struct stmt *stmt)
 	}
 
 	stmt->flags |= STMT_F_TERMINAL;
+	return 0;
+}
+
+static int stmt_evaluate_dup(struct eval_ctx *ctx, struct stmt *stmt)
+{
+	int err;
+
+	switch (ctx->pctx.family) {
+	case NFPROTO_IPV4:
+	case NFPROTO_IPV6:
+		if (stmt->dup.to == NULL)
+			return stmt_error(ctx, stmt,
+					  "missing destination address");
+		err = evaluate_addr(ctx, stmt, &stmt->dup.to);
+		if (err < 0)
+			return err;
+
+		if (stmt->dup.dev != NULL) {
+			err = stmt_evaluate_arg(ctx, stmt, &ifindex_type,
+						sizeof(uint32_t) * BITS_PER_BYTE,
+						&stmt->dup.dev);
+			if (err < 0)
+				return err;
+		}
+		break;
+	}
 	return 0;
 }
 
@@ -1786,6 +1813,8 @@ int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 		return stmt_evaluate_redir(ctx, stmt);
 	case STMT_QUEUE:
 		return stmt_evaluate_queue(ctx, stmt);
+	case STMT_DUP:
+		return stmt_evaluate_dup(ctx, stmt);
 	case STMT_SET:
 		return stmt_evaluate_set(ctx, stmt);
 	default:

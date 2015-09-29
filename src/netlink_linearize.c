@@ -18,6 +18,10 @@
 #include <netlink.h>
 #include <gmputil.h>
 #include <utils.h>
+#include <netinet/in.h>
+
+#include <linux/netfilter.h>
+
 
 struct netlink_linearize_ctx {
 	struct nftnl_rule	*nlr;
@@ -859,6 +863,37 @@ static void netlink_gen_redir_stmt(struct netlink_linearize_ctx *ctx,
 	nftnl_rule_add_expr(ctx->nlr, nle);
 }
 
+static void netlink_gen_dup_stmt(struct netlink_linearize_ctx *ctx,
+				 const struct stmt *stmt)
+{
+	struct nftnl_expr *nle;
+	enum nft_registers sreg1, sreg2;
+
+	nle = alloc_nft_expr("dup");
+
+	if (stmt->dup.to != NULL) {
+		if (stmt->dup.to->dtype == &ifindex_type) {
+			sreg1 = get_register(ctx, stmt->dup.to);
+			netlink_gen_expr(ctx, stmt->dup.to, sreg1);
+			netlink_put_register(nle, NFTNL_EXPR_DUP_SREG_DEV, sreg1);
+		} else {
+			sreg1 = get_register(ctx, stmt->dup.to);
+			netlink_gen_expr(ctx, stmt->dup.to, sreg1);
+			netlink_put_register(nle, NFTNL_EXPR_DUP_SREG_ADDR, sreg1);
+		}
+	}
+	if (stmt->dup.dev != NULL) {
+		sreg2 = get_register(ctx, stmt->dup.dev);
+		netlink_gen_expr(ctx, stmt->dup.dev, sreg2);
+		netlink_put_register(nle, NFTNL_EXPR_DUP_SREG_DEV, sreg2);
+		release_register(ctx, stmt->dup.dev);
+	}
+	if (stmt->dup.to != NULL)
+		release_register(ctx, stmt->dup.to);
+
+	nftnl_rule_add_expr(ctx->nlr, nle);
+}
+
 static void netlink_gen_queue_stmt(struct netlink_linearize_ctx *ctx,
 				 const struct stmt *stmt)
 {
@@ -949,6 +984,8 @@ static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 		return netlink_gen_masq_stmt(ctx, stmt);
 	case STMT_REDIR:
 		return netlink_gen_redir_stmt(ctx, stmt);
+	case STMT_DUP:
+		return netlink_gen_dup_stmt(ctx, stmt);
 	case STMT_QUEUE:
 		return netlink_gen_queue_stmt(ctx, stmt);
 	case STMT_CT:

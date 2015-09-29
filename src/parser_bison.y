@@ -393,6 +393,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token BYPASS			"bypass"
 %token FANOUT			"fanout"
 
+%token DUP			"dup"
+%token ON			"on"
+
 %token POSITION			"position"
 %token COMMENT			"comment"
 
@@ -460,6 +463,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <stmt>			queue_stmt queue_stmt_alloc
 %destructor { stmt_free($$); }	queue_stmt queue_stmt_alloc
 %type <val>			queue_stmt_flags queue_stmt_flag
+%type <stmt>			dup_stmt
+%destructor { stmt_free($$); }	dup_stmt
 %type <stmt>			set_stmt
 %destructor { stmt_free($$); }	set_stmt
 %type <val>			set_stmt_op
@@ -1310,6 +1315,7 @@ stmt			:	verdict_stmt
 			|	ct_stmt
 			|	masq_stmt
 			|	redir_stmt
+			|	dup_stmt
 			|	set_stmt
 			;
 
@@ -1606,6 +1612,19 @@ redir_stmt_arg		:	TO	expr
 			{
 				$<stmt>0->redir.proto = $2;
 				$<stmt>0->redir.flags = $3;
+			}
+			;
+
+dup_stmt		:	DUP	TO	expr
+			{
+				$$ = dup_stmt_alloc(&@$);
+				$$->dup.to = $3;
+			}
+			|	DUP	TO	expr 	DEVICE	expr
+			{
+				$$ = dup_stmt_alloc(&@$);
+				$$->dup.to = $3;
+				$$->dup.dev = $5;
 			}
 			;
 

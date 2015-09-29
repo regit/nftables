@@ -455,3 +455,35 @@ struct stmt *set_stmt_alloc(const struct location *loc)
 {
 	return stmt_alloc(loc, &set_stmt_ops);
 }
+
+static void dup_stmt_print(const struct stmt *stmt)
+{
+	printf("dup");
+	if (stmt->dup.to != NULL) {
+		printf(" to ");
+		expr_print(stmt->dup.to);
+
+		if (stmt->dup.dev != NULL) {
+			printf(" device ");
+			expr_print(stmt->dup.dev);
+		}
+	}
+}
+
+static void dup_stmt_destroy(struct stmt *stmt)
+{
+	expr_free(stmt->dup.to);
+	expr_free(stmt->dup.dev);
+}
+
+static const struct stmt_ops dup_stmt_ops = {
+	.type		= STMT_DUP,
+	.name		= "dup",
+	.print		= dup_stmt_print,
+	.destroy	= dup_stmt_destroy,
+};
+
+struct stmt *dup_stmt_alloc(const struct location *loc)
+{
+	return stmt_alloc(loc, &dup_stmt_ops);
+}

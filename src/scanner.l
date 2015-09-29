@@ -457,6 +457,8 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "proto-dst"		{ return PROTO_DST; }
 "label"			{ return LABEL; }
 
+"dup"			{ return DUP; }
+
 "xml"			{ return XML; }
 "json"			{ return JSON; }
 

@@ -160,7 +160,7 @@ static struct error_record *ifindex_type_parse(const struct expr *sym,
 	return NULL;
 }
 
-static const struct datatype ifindex_type = {
+const struct datatype ifindex_type = {
 	.type		= TYPE_IFINDEX,
 	.name		= "iface_index",
 	.desc		= "network interface index",

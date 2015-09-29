@@ -749,6 +749,52 @@ static void netlink_parse_redir(struct netlink_parse_ctx *ctx,
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }
 
+static void netlink_parse_dup(struct netlink_parse_ctx *ctx,
+			      const struct location *loc,
+			      const struct nftnl_expr *nle)
+{
+	enum nft_registers reg1, reg2;
+	struct expr *addr, *dev;
+	struct stmt *stmt;
+
+	stmt = dup_stmt_alloc(loc);
+
+	reg1 = netlink_parse_register(nle, NFTNL_EXPR_DUP_SREG_ADDR);
+	if (reg1) {
+		addr = netlink_get_register(ctx, loc, reg1);
+		if (addr == NULL)
+			return netlink_error(ctx, loc,
+					     "DUP statement has no destination expression");
+
+		switch (ctx->table->handle.family) {
+		case NFPROTO_IPV4:
+			expr_set_type(addr, &ipaddr_type, BYTEORDER_BIG_ENDIAN);
+			break;
+		case NFPROTO_IPV6:
+			expr_set_type(addr, &ip6addr_type,
+				      BYTEORDER_BIG_ENDIAN);
+			break;
+		}
+		stmt->dup.to = addr;
+	}
+
+	reg2 = netlink_parse_register(nle, NFTNL_EXPR_DUP_SREG_DEV);
+	if (reg2) {
+		dev = netlink_get_register(ctx, loc, reg2);
+		if (dev == NULL)
+			return netlink_error(ctx, loc,
+					     "DUP statement has no output expression");
+
+		expr_set_type(dev, &ifindex_type, BYTEORDER_HOST_ENDIAN);
+		if (stmt->dup.to == NULL)
+			stmt->dup.to = dev;
+		else
+			stmt->dup.dev = dev;
+	}
+
+	list_add_tail(&stmt->list, &ctx->rule->stmts);
+}
+
 static void netlink_parse_queue(struct netlink_parse_ctx *ctx,
 			      const struct location *loc,
 			      const struct nftnl_expr *nle)
@@ -837,6 +883,7 @@ static const struct {
 	{ .name = "nat",	.parse = netlink_parse_nat },
 	{ .name = "masq",	.parse = netlink_parse_masq },
 	{ .name = "redir",	.parse = netlink_parse_redir },
+	{ .name = "dup",	.parse = netlink_parse_dup },
 	{ .name = "queue",	.parse = netlink_parse_queue },
 	{ .name = "dynset",	.parse = netlink_parse_dynset },
 };
@@ -1459,6 +1506,12 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 			break;
 		case STMT_SET:
 			expr_postprocess(&rctx, &stmt->set.key);
+			break;
+		case STMT_DUP:
+			if (stmt->dup.to != NULL)
+				expr_postprocess(&rctx, &stmt->dup.to);
+			if (stmt->dup.dev != NULL)
+				expr_postprocess(&rctx, &stmt->dup.dev);
 			break;
 		default:
 			break;
