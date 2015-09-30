@@ -254,7 +254,8 @@ static const char *set_policy2str(uint32_t policy)
 	}
 }
 
-static void do_set_print(const struct set *set, struct print_fmt_options *opts)
+static void set_print_declaration(const struct set *set,
+				  struct print_fmt_options *opts)
 {
 	const char *delim = "";
 	const char *type;
@@ -322,6 +323,11 @@ static void do_set_print(const struct set *set, struct print_fmt_options *opts)
 		time_print(set->gc_int / 1000);
 		printf("%s", opts->nl);
 	}
+}
+
+static void do_set_print(const struct set *set, struct print_fmt_options *opts)
+{
+	set_print_declaration(set, opts);
 
 	if (set->init != NULL && set->init->size > 0) {
 		printf("%s%selements = ", opts->tab, opts->tab);
@@ -986,6 +992,11 @@ static int do_list_table(struct netlink_ctx *ctx, struct cmd *cmd,
 
 static int do_list_sets(struct netlink_ctx *ctx, struct cmd *cmd)
 {
+	struct print_fmt_options opts = {
+		.tab		= "\t",
+		.nl		= "\n",
+		.stmt_separator	= "\n",
+	};
 	struct table *table;
 	struct set *set;
 
@@ -998,8 +1009,10 @@ static int do_list_sets(struct netlink_ctx *ctx, struct cmd *cmd)
 		       family2str(table->handle.family),
 		       table->handle.table);
 
-		list_for_each_entry(set, &table->sets, list)
-			set_print(set);
+		list_for_each_entry(set, &table->sets, list) {
+			set_print_declaration(set, &opts);
+			printf("%s}%s", opts.tab, opts.nl);
+		}
 
 		printf("}\n");
 	}
