@@ -907,9 +907,19 @@ static void set_elem_expr_destroy(struct expr *expr)
 	expr_free(expr->key);
 }
 
+static void set_elem_expr_clone(struct expr *new, const struct expr *expr)
+{
+	new->key = expr_clone(expr->key);
+	new->expiration = expr->expiration;
+	new->timeout = expr->timeout;
+	if (expr->comment)
+		new->comment = xstrdup(expr->comment);
+}
+
 static const struct expr_ops set_elem_expr_ops = {
 	.type		= EXPR_SET_ELEM,
 	.name		= "set element",
+	.clone		= set_elem_expr_clone,
 	.print		= set_elem_expr_print,
 	.destroy	= set_elem_expr_destroy,
 };
