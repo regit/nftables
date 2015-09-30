@@ -1063,6 +1063,26 @@ static void table_print_declaration(struct table *table)
 		table->handle.table);
 }
 
+static int do_list_chain(struct netlink_ctx *ctx, struct cmd *cmd,
+			 struct table *table)
+{
+	struct chain *chain;
+
+	table_print_declaration(table);
+
+	list_for_each_entry(chain, &table->chains, list) {
+		if (chain->handle.family != cmd->handle.family ||
+		    strcmp(cmd->handle.chain, chain->handle.chain) != 0)
+			continue;
+
+		chain_print(chain);
+	}
+
+	printf("}\n");
+
+	return 0;
+}
+
 static int do_list_chains(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	struct table *table;
@@ -1114,7 +1134,7 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 			return do_list_tables(ctx, cmd);
 		return do_list_table(ctx, cmd, table);
 	case CMD_OBJ_CHAIN:
-		return do_list_table(ctx, cmd, table);
+		return do_list_chain(ctx, cmd, table);
 	case CMD_OBJ_CHAINS:
 		return do_list_chains(ctx, cmd);
 	case CMD_OBJ_SETS:
