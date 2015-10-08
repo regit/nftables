@@ -383,6 +383,10 @@ void rule_print(const struct rule *rule)
 		stmt->ops->print(stmt);
 		printf(" ");
 	}
+
+	if (rule->handle.comment)
+		printf("comment \"%s\" ", rule->handle.comment);
+
 	if (handle_output > 0)
 		printf("# handle %" PRIu64, rule->handle.handle);
 }
@@ -622,10 +626,7 @@ static void chain_print(const struct chain *chain)
 	list_for_each_entry(rule, &chain->rules, list) {
 		printf("\t\t");
 		rule_print(rule);
-		if (rule->handle.comment)
-			printf(" comment \"%s\"\n", rule->handle.comment);
-		else
-			printf("\n");
+		printf("\n");
 	}
 	printf("\t}\n");
 }
