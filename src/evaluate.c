@@ -2050,6 +2050,8 @@ static int table_evaluate(struct eval_ctx *ctx, struct table *table)
 
 static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 {
+	struct table *table;
+
 	switch (cmd->obj) {
 	case CMD_OBJ_SETELEM:
 		return setelem_evaluate(ctx, &cmd->expr);
@@ -2058,6 +2060,15 @@ static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 		return set_evaluate(ctx, cmd->set);
 	case CMD_OBJ_RULE:
 		handle_merge(&cmd->rule->handle, &cmd->handle);
+		table = table_lookup_global(ctx);
+		if (table == NULL)
+			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
+					 ctx->cmd->handle.table);
+
+		if (chain_lookup(table, &ctx->cmd->handle) == NULL)
+			return cmd_error(ctx, "Could not process rule: Chain '%s' does not exist",
+					 ctx->cmd->handle.chain);
+
 		return rule_evaluate(ctx, cmd->rule);
 	case CMD_OBJ_CHAIN:
 		return chain_evaluate(ctx, cmd->chain);
