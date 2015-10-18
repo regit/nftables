@@ -66,3 +66,16 @@ char *xstrdup(const char *s)
 		memory_allocation_error();
 	return res;
 }
+
+void xstrunescape(const char *in, char *out)
+{
+	unsigned int i, k = 0;
+
+	for (i = 0; i < strlen(in); i++) {
+		if (in[i] == '\\')
+			continue;
+
+		out[k++] = in[i];
+	}
+	out[k++] = '\0';
+}

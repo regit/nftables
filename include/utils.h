@@ -129,5 +129,6 @@ extern void *xmalloc(size_t size);
 extern void *xrealloc(void *ptr, size_t size);
 extern void *xzalloc(size_t size);
 extern char *xstrdup(const char *s);
+extern void xstrunescape(const char *in, char *out);
 
 #endif /* NFTABLES_UTILS_H */

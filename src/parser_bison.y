@@ -217,7 +217,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token <val> NUM		"number"
 %token <string> STRING		"string"
 %token <string> QUOTED_STRING
-%destructor { xfree($$); }	STRING QUOTED_STRING
+%token <string> ASTERISK_STRING
+%destructor { xfree($$); }	STRING QUOTED_STRING ASTERISK_STRING
 
 %token LL_HDR			"ll"
 %token NETWORK_HDR		"nh"
@@ -1167,6 +1168,7 @@ identifier		:	STRING
 
 string			:	STRING
 			|	QUOTED_STRING
+			|	ASTERISK_STRING
 			;
 
 time_spec		:	STRING

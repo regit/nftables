@@ -114,6 +114,7 @@ range		({decstring}?:{decstring}?)
 letter		[a-zA-Z]
 string		({letter})({letter}|{digit}|[/\-_\.])*
 quotedstring	\"[^"]*\"
+asteriskstring	({string}\*|{string}\\\*)
 comment		#.*$
 slash		\/
 
@@ -497,6 +498,11 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 				yytext[yyleng - 1] = '\0';
 				yylval->string = xstrdup(yytext + 1);
 				return QUOTED_STRING;
+			}
+
+{asteriskstring}	{
+				yylval->string = xstrdup(yytext);
+				return ASTERISK_STRING;
 			}
 
 {string}		{

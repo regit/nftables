@@ -325,6 +325,7 @@ static void netlink_gen_cmp(struct netlink_linearize_ctx *ctx,
 	struct nftnl_expr *nle;
 	enum nft_registers sreg;
 	struct expr *right;
+	int len;
 
 	assert(dreg == NFT_REG_VERDICT);
 
@@ -332,14 +333,24 @@ static void netlink_gen_cmp(struct netlink_linearize_ctx *ctx,
 		return netlink_gen_range(ctx, expr, dreg);
 
 	sreg = get_register(ctx, expr->left);
-	netlink_gen_expr(ctx, expr->left, sreg);
 
 	switch (expr->right->ops->type) {
 	case EXPR_PREFIX:
-		right = netlink_gen_prefix(ctx, expr, sreg);
+		if (expr->left->dtype->type != TYPE_STRING) {
+			len = div_round_up(expr->right->len, BITS_PER_BYTE);
+			netlink_gen_expr(ctx, expr->left, sreg);
+			right = netlink_gen_prefix(ctx, expr, sreg);
+		} else {
+			len = div_round_up(expr->right->prefix_len, BITS_PER_BYTE);
+			right = expr->right->prefix;
+			expr->left->len = expr->right->prefix_len;
+			netlink_gen_expr(ctx, expr->left, sreg);
+		}
 		break;
 	default:
+		len = div_round_up(expr->right->len, BITS_PER_BYTE);
 		right = expr->right;
+		netlink_gen_expr(ctx, expr->left, sreg);
 		break;
 	}
 
@@ -349,7 +360,7 @@ static void netlink_gen_cmp(struct netlink_linearize_ctx *ctx,
 			      netlink_gen_cmp_op(expr->op));
 	payload_shift_value(expr->left, right);
 	netlink_gen_data(right, &nld);
-	nftnl_expr_set(nle, NFTNL_EXPR_CMP_DATA, nld.value, nld.len);
+	nftnl_expr_set(nle, NFTNL_EXPR_CMP_DATA, nld.value, len);
 	release_register(ctx, expr->left);
 
 	nftnl_rule_add_expr(ctx->nlr, nle);

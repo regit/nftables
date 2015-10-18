@@ -203,6 +203,56 @@ static int expr_evaluate_symbol(struct eval_ctx *ctx, struct expr **expr)
 	return expr_evaluate(ctx, expr);
 }
 
+static int expr_evaluate_string(struct eval_ctx *ctx, struct expr **exprp)
+{
+	struct expr *expr = *exprp;
+	unsigned int len = div_round_up(expr->len, BITS_PER_BYTE), datalen;
+	struct expr *value, *prefix;
+	char data[len + 1];
+
+	if (ctx->ectx.len > 0) {
+		if (expr->len > ctx->ectx.len)
+			return expr_error(ctx->msgs, expr,
+					  "String exceeds maximum length of %u",
+					  ctx->ectx.len / BITS_PER_BYTE);
+		expr->len = ctx->ectx.len;
+	}
+
+	mpz_export_data(data, expr->value, BYTEORDER_HOST_ENDIAN, len);
+
+	datalen = strlen(data) - 1;
+	if (data[datalen] != '*')
+		return 0;
+
+	if (datalen - 1 >= 0 &&
+	    data[datalen - 1] == '\\') {
+		char unescaped_str[len];
+
+		memset(unescaped_str, 0, sizeof(unescaped_str));
+		xstrunescape(data, unescaped_str);
+
+		value = constant_expr_alloc(&expr->location, &string_type,
+					    BYTEORDER_HOST_ENDIAN,
+					    expr->len, unescaped_str);
+		expr_free(expr);
+		*exprp = value;
+		return 0;
+	}
+	value = constant_expr_alloc(&expr->location, &string_type,
+				    BYTEORDER_HOST_ENDIAN,
+				    datalen * BITS_PER_BYTE, data);
+
+	prefix = prefix_expr_alloc(&expr->location, value,
+				   datalen * BITS_PER_BYTE);
+	prefix->dtype = &string_type;
+	prefix->flags |= EXPR_F_CONSTANT;
+	prefix->byteorder = BYTEORDER_HOST_ENDIAN;
+
+	expr_free(expr);
+	*exprp = prefix;
+	return 0;
+}
+
 static int expr_evaluate_value(struct eval_ctx *ctx, struct expr **expr)
 {
 	mpz_t mask;
@@ -226,13 +276,8 @@ static int expr_evaluate_value(struct eval_ctx *ctx, struct expr **expr)
 		mpz_clear(mask);
 		break;
 	case TYPE_STRING:
-		if (ctx->ectx.len > 0) {
-			if ((*expr)->len > ctx->ectx.len)
-				return expr_error(ctx->msgs, *expr,
-						  "String exceeds maximum length of %u",
-						  ctx->ectx.len / BITS_PER_BYTE);
-			(*expr)->len = ctx->ectx.len;
-		}
+		if (expr_evaluate_string(ctx, expr) < 0)
+			return -1;
 		break;
 	default:
 		BUG("invalid basetype %s\n", expr_basetype(*expr)->name);
@@ -370,8 +415,9 @@ static int expr_evaluate_ct(struct eval_ctx *ctx, struct expr **expr)
 }
 
 /*
- * Prefix expression: the argument must be a constant value of integer base
- * type; the prefix length must be less than or equal to the type width.
+ * Prefix expression: the argument must be a constant value of integer or
+ * string base type; the prefix length must be less than or equal to the type
+ * width.
  */
 static int expr_evaluate_prefix(struct eval_ctx *ctx, struct expr **expr)
 {
@@ -386,10 +432,15 @@ static int expr_evaluate_prefix(struct eval_ctx *ctx, struct expr **expr)
 				  "Prefix expression is undefined for "
 				  "non-constant expressions");
 
-	if (expr_basetype(base)->type != TYPE_INTEGER)
+	switch (expr_basetype(base)->type) {
+	case TYPE_INTEGER:
+	case TYPE_STRING:
+		break;
+	default:
 		return expr_error(ctx->msgs, prefix,
 				  "Prefix expression is undefined for "
 				  "%s types", base->dtype->desc);
+	}
 
 	if (prefix->prefix_len > base->len)
 		return expr_error(ctx->msgs, prefix,
@@ -398,11 +449,18 @@ static int expr_evaluate_prefix(struct eval_ctx *ctx, struct expr **expr)
 				  prefix->prefix_len, base->len);
 
 	/* Clear the uncovered bits of the base value */
-	mask = constant_expr_alloc(&prefix->location, &integer_type,
+	mask = constant_expr_alloc(&prefix->location, expr_basetype(base),
 				   BYTEORDER_HOST_ENDIAN, base->len, NULL);
-	mpz_prefixmask(mask->value, base->len, prefix->prefix_len);
+	switch (expr_basetype(base)->type) {
+	case TYPE_INTEGER:
+		mpz_prefixmask(mask->value, base->len, prefix->prefix_len);
+		break;
+	case TYPE_STRING:
+		mpz_init2(mask->value, base->len);
+		mpz_bitmask(mask->value, prefix->prefix_len);
+		break;
+	}
 	and  = binop_expr_alloc(&prefix->location, OP_AND, base, mask);
-
 	prefix->prefix = and;
 	if (expr_evaluate(ctx, &prefix->prefix) < 0)
 		return -1;
@@ -615,11 +673,16 @@ static int expr_evaluate_binop(struct eval_ctx *ctx, struct expr **expr)
 		return -1;
 	right = op->right;
 
-	if (expr_basetype(left)->type != TYPE_INTEGER)
+	switch (expr_basetype(left)->type) {
+	case TYPE_INTEGER:
+	case TYPE_STRING:
+		break;
+	default:
 		return expr_binary_error(ctx->msgs, left, op,
 					 "Binary operation (%s) is undefined "
 					 "for %s types",
 					 sym, left->dtype->desc);
+	}
 
 	if (expr_is_constant(left) && !expr_is_singleton(left))
 		return expr_binary_error(ctx->msgs, left, op,

@@ -66,6 +66,8 @@ meta iifname "eth0";ok;iifname "eth0"
 meta iifname != "eth0";ok;iifname != "eth0"
 meta iifname {"eth0", "lo"};ok
 - meta iifname != {"eth0", "lo"};ok
+meta iifname "eth*";ok;iifname "eth*"
+meta iifname "eth\*";ok;iifname "eth\*"
 
 meta iiftype {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
 - meta iiftype != {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
@@ -83,6 +85,8 @@ meta oifname "eth0";ok;oifname "eth0"
 meta oifname != "eth0";ok;oifname != "eth0"
 meta oifname { "eth0", "lo"};ok
 - meta iifname != {"eth0", "lo"};ok
+meta oifname "eth*";ok;oifname "eth*"
+meta oifname "eth\*";ok;oifname "eth\*"
 
 meta oiftype {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
 - meta oiftype != {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok

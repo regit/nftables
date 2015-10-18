@@ -217,6 +217,16 @@ ip test-ip4 input
   [ meta load iifname => reg 1 ]
   [ lookup reg 1 set set%d ]
 
+# meta iifname "eth*"
+ip test-ip4 input
+  [ meta load iifname => reg 1 ]
+  [ cmp eq reg 1 0x00687465 ]
+
+# meta iifname "eth\*"
+ip test-ip4 input
+  [ meta load iifname => reg 1 ]
+  [ cmp eq reg 1 0x2a687465 0x00000000 0x00000000 0x00000000 ]
+
 # meta iiftype {ether, ppp, ipip, ipip6, loopback, sit, ipgre}
 set%d test-ip4 3
 set%d test-ip4 0
@@ -283,6 +293,16 @@ set%d test-ip4 0
 ip test-ip4 input
   [ meta load oifname => reg 1 ]
   [ lookup reg 1 set set%d ]
+
+# meta oifname "eth*"
+ip test-ip4 input
+  [ meta load oifname => reg 1 ]
+  [ cmp eq reg 1 0x00687465 ]
+
+# meta oifname "eth\*"
+ip test-ip4 input
+  [ meta load oifname => reg 1 ]
+  [ cmp eq reg 1 0x2a687465 0x00000000 0x00000000 0x00000000 ]
 
 # meta oiftype {ether, ppp, ipip, ipip6, loopback, sit, ipgre}
 set%d test-ip4 3
