@@ -290,13 +290,40 @@ static void payload_shift_value(const struct expr *left, struct expr *right)
 	mpz_lshift_ui(right->value, left->payload.offset % BITS_PER_BYTE);
 }
 
+static struct expr *netlink_gen_prefix(struct netlink_linearize_ctx *ctx,
+				       const struct expr *expr,
+				       enum nft_registers sreg)
+{
+	struct nft_data_linearize nld, zero = {};
+	struct nftnl_expr *nle;
+	mpz_t mask;
+
+	mpz_init(mask);
+	mpz_prefixmask(mask, expr->right->len, expr->right->prefix_len);
+	netlink_gen_raw_data(mask, expr->right->byteorder,
+			     expr->right->len / BITS_PER_BYTE, &nld);
+	mpz_clear(mask);
+
+	zero.len = nld.len;
+
+	nle = alloc_nft_expr("bitwise");
+	netlink_put_register(nle, NFTNL_EXPR_BITWISE_SREG, sreg);
+	netlink_put_register(nle, NFTNL_EXPR_BITWISE_DREG, sreg);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_BITWISE_LEN, nld.len);
+	nftnl_expr_set(nle, NFTNL_EXPR_BITWISE_MASK, &nld.value, nld.len);
+	nftnl_expr_set(nle, NFTNL_EXPR_BITWISE_XOR, &zero.value, zero.len);
+	nftnl_rule_add_expr(ctx->nlr, nle);
+
+	return expr->right->prefix;
+}
+
 static void netlink_gen_cmp(struct netlink_linearize_ctx *ctx,
 			    const struct expr *expr,
 			    enum nft_registers dreg)
 {
+	struct nft_data_linearize nld;
 	struct nftnl_expr *nle;
 	enum nft_registers sreg;
-	struct nft_data_linearize nld, zero = {};
 	struct expr *right;
 
 	assert(dreg == NFT_REG_VERDICT);
@@ -308,30 +335,12 @@ static void netlink_gen_cmp(struct netlink_linearize_ctx *ctx,
 	netlink_gen_expr(ctx, expr->left, sreg);
 
 	switch (expr->right->ops->type) {
-	case EXPR_PREFIX: {
-		mpz_t mask;
-
-		mpz_init(mask);
-		mpz_prefixmask(mask, expr->right->len, expr->right->prefix_len);
-		netlink_gen_raw_data(mask, expr->right->byteorder,
-				     expr->right->len / BITS_PER_BYTE, &nld);
-		mpz_clear(mask);
-
-		zero.len = nld.len;
-
-		nle = alloc_nft_expr("bitwise");
-		netlink_put_register(nle, NFTNL_EXPR_BITWISE_SREG, sreg);
-		netlink_put_register(nle, NFTNL_EXPR_BITWISE_DREG, sreg);
-		nftnl_expr_set_u32(nle, NFTNL_EXPR_BITWISE_LEN, nld.len);
-		nftnl_expr_set(nle, NFTNL_EXPR_BITWISE_MASK, &nld.value, nld.len);
-		nftnl_expr_set(nle, NFTNL_EXPR_BITWISE_XOR, &zero.value, zero.len);
-		nftnl_rule_add_expr(ctx->nlr, nle);
-
-		right = expr->right->prefix;
+	case EXPR_PREFIX:
+		right = netlink_gen_prefix(ctx, expr, sreg);
 		break;
-		}
 	default:
 		right = expr->right;
+		break;
 	}
 
 	nle = alloc_nft_expr("cmp");
