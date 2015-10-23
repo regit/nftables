@@ -1883,27 +1883,28 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 		return set_error(ctx, set, "unqualified key data type "
 				 "specified in %s definition", type);
 
+	if (set->flags & SET_F_MAP) {
+		if (set->datatype == NULL)
+			return set_error(ctx, set, "map definition does not "
+					 "specify mapping data type");
+
+		set->datalen = set->datatype->size;
+		if (set->datalen == 0 && set->datatype->type != TYPE_VERDICT)
+			return set_error(ctx, set, "unqualified mapping data "
+					 "type specified in map definition");
+	}
+
+	ctx->set = set;
 	if (set->init != NULL) {
 		expr_set_context(&ctx->ectx, set->keytype, set->keylen);
 		if (expr_evaluate(ctx, &set->init) < 0)
 			return -1;
 	}
+	ctx->set = NULL;
 
 	/* Default timeout value implies timeout support */
 	if (set->timeout)
 		set->flags |= SET_F_TIMEOUT;
-
-	if (!(set->flags & SET_F_MAP))
-		return 0;
-
-	if (set->datatype == NULL)
-		return set_error(ctx, set, "map definition does not specify "
-				 "mapping data type");
-
-	set->datalen = set->datatype->size;
-	if (set->datalen == 0 && set->datatype->type != TYPE_VERDICT)
-		return set_error(ctx, set, "unqualified mapping data type "
-				 "specified in map definition");
 
 	return 0;
 }
