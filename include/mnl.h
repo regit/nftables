@@ -26,6 +26,8 @@ int mnl_nft_rule_batch_add(struct nftnl_rule *nlr, unsigned int flags,
 			   uint32_t seqnum);
 int mnl_nft_rule_batch_del(struct nftnl_rule *nlr, unsigned int flags,
 			   uint32_t seqnum);
+int mnl_nft_rule_batch_replace(struct nftnl_rule *nlr, unsigned int flags,
+			       uint32_t seqnum);
 
 int mnl_nft_rule_add(struct mnl_socket *nf_sock, struct nftnl_rule *r,
 		     unsigned int flags);

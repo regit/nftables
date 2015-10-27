@@ -259,6 +259,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "netdev"		{ return NETDEV; }
 
 "add"			{ return ADD; }
+"replace"		{ return REPLACE; }
 "update"		{ return UPDATE; }
 "create"		{ return CREATE; }
 "insert"		{ return INSERT; }

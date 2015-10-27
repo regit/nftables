@@ -382,6 +382,24 @@ int netlink_add_rule_batch(struct netlink_ctx *ctx,
 	return err;
 }
 
+int netlink_replace_rule_batch(struct netlink_ctx *ctx, const struct handle *h,
+			       const struct rule *rule,
+			       const struct location *loc)
+{
+	struct nftnl_rule *nlr;
+	int err;
+
+	nlr = alloc_nftnl_rule(&rule->handle);
+	netlink_linearize_rule(ctx, nlr, rule);
+	err = mnl_nft_rule_batch_replace(nlr, 0, ctx->seqnum);
+	nftnl_rule_free(nlr);
+
+	if (err < 0)
+		netlink_io_error(ctx, loc, "Could not replace rule to batch: %s",
+				 strerror(errno));
+	return err;
+}
+
 int netlink_add_rule_list(struct netlink_ctx *ctx, const struct handle *h,
 			  struct list_head *rule_list)
 {

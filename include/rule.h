@@ -237,6 +237,7 @@ extern void set_print_plain(const struct set *s);
  *
  * @CMD_INVALID:	invalid
  * @CMD_ADD:		add object (non-exclusive)
+ * @CMD_REPLACE,	replace object
  * @CMD_CREATE:		create object (exclusive)
  * @CMD_INSERT:		insert object
  * @CMD_DELETE:		delete object
@@ -250,6 +251,7 @@ extern void set_print_plain(const struct set *s);
 enum cmd_ops {
 	CMD_INVALID,
 	CMD_ADD,
+	CMD_REPLACE,
 	CMD_CREATE,
 	CMD_INSERT,
 	CMD_DELETE,

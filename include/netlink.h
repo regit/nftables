@@ -98,6 +98,10 @@ extern int netlink_add_rule_batch(struct netlink_ctx *ctx,
 extern int netlink_del_rule_batch(struct netlink_ctx *ctx,
 				  const struct handle *h,
 				  const struct location *loc);
+extern int netlink_replace_rule_batch(struct netlink_ctx *ctx,
+				      const struct handle *h,
+				      const struct rule *rule,
+				      const struct location *loc);
 
 extern int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 			     const struct location *loc,

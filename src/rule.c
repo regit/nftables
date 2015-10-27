@@ -935,6 +935,18 @@ static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd, bool excl)
 	return 0;
 }
 
+static int do_command_replace(struct netlink_ctx *ctx, struct cmd *cmd)
+{
+	switch (cmd->obj) {
+	case CMD_OBJ_RULE:
+		return netlink_replace_rule_batch(ctx, &cmd->handle, cmd->rule,
+						  &cmd->location);
+	default:
+		BUG("invalid command object type %u\n", cmd->obj);
+	}
+	return 0;
+}
+
 static int do_command_insert(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	switch (cmd->obj) {
@@ -1229,6 +1241,8 @@ int do_command(struct netlink_ctx *ctx, struct cmd *cmd)
 		return do_command_add(ctx, cmd, true);
 	case CMD_INSERT:
 		return do_command_insert(ctx, cmd);
+	case CMD_REPLACE:
+		return do_command_replace(ctx, cmd);
 	case CMD_DELETE:
 		return do_command_delete(ctx, cmd);
 	case CMD_LIST:

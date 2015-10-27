@@ -301,6 +301,22 @@ int mnl_nft_rule_batch_add(struct nftnl_rule *nlr, unsigned int flags,
 	return 0;
 }
 
+int mnl_nft_rule_batch_replace(struct nftnl_rule *nlr, unsigned int flags,
+			       uint32_t seqnum)
+{
+	struct nlmsghdr *nlh;
+
+	nlh = nftnl_rule_nlmsg_build_hdr(nftnl_batch_buffer(batch),
+			NFT_MSG_NEWRULE,
+			nftnl_rule_get_u32(nlr, NFTNL_RULE_FAMILY),
+			NLM_F_REPLACE | flags, seqnum);
+
+	nftnl_rule_nlmsg_build_payload(nlh, nlr);
+	mnl_nft_batch_continue();
+
+	return 0;
+}
+
 int mnl_nft_rule_batch_del(struct nftnl_rule *nlr, unsigned int flags,
 			   uint32_t seqnum)
 {
