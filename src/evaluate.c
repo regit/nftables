@@ -208,7 +208,8 @@ static int expr_evaluate_string(struct eval_ctx *ctx, struct expr **exprp)
 	struct expr *expr = *exprp;
 	unsigned int len = div_round_up(expr->len, BITS_PER_BYTE), datalen;
 	struct expr *value, *prefix;
-	char data[len + 1];
+	int data_len = ctx->ectx.len > 0 ? ctx->ectx.len : len + 1;
+	char data[data_len];
 
 	if (ctx->ectx.len > 0) {
 		if (expr->len > ctx->ectx.len)
@@ -218,15 +219,25 @@ static int expr_evaluate_string(struct eval_ctx *ctx, struct expr **exprp)
 		expr->len = ctx->ectx.len;
 	}
 
+	memset(data + len, 0, data_len - len);
 	mpz_export_data(data, expr->value, BYTEORDER_HOST_ENDIAN, len);
 
 	datalen = strlen(data) - 1;
-	if (data[datalen] != '*')
+	if (data[datalen] != '*') {
+		/* We need to reallocate the constant expression with the right
+		 * expression length to avoid problems on big endian.
+		 */
+		value = constant_expr_alloc(&expr->location, &string_type,
+					    BYTEORDER_HOST_ENDIAN,
+					    expr->len, data);
+		expr_free(expr);
+		*exprp = value;
 		return 0;
+	}
 
 	if (datalen - 1 >= 0 &&
 	    data[datalen - 1] == '\\') {
-		char unescaped_str[len];
+		char unescaped_str[data_len];
 
 		memset(unescaped_str, 0, sizeof(unescaped_str));
 		xstrunescape(data, unescaped_str);
