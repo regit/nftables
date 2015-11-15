@@ -1609,19 +1609,19 @@ struct rule *netlink_delinearize_rule(struct netlink_ctx *ctx,
 	if (nftnl_rule_is_set(nlr, NFTNL_RULE_POSITION))
 		h.position = nftnl_rule_get_u64(nlr, NFTNL_RULE_POSITION);
 
-	if (nftnl_rule_is_set(nlr, NFTNL_RULE_USERDATA)) {
-		uint32_t len;
-		const void *data;
-
-		data = nftnl_rule_get_data(nlr, NFTNL_RULE_USERDATA,
-					      &len);
-		h.comment = xmalloc(len);
-		memcpy((char *)h.comment, data, len);
-	}
-
 	pctx->rule = rule_alloc(&netlink_location, &h);
 	pctx->table = table_lookup(&h);
 	assert(pctx->table != NULL);
+
+	if (nftnl_rule_is_set(nlr, NFTNL_RULE_USERDATA)) {
+		const void *data;
+		uint32_t len;
+
+		data = nftnl_rule_get_data(nlr, NFTNL_RULE_USERDATA, &len);
+		pctx->rule->comment = xmalloc(len);
+		memcpy((char *)pctx->rule->comment, data, len);
+	}
+
 	nftnl_expr_foreach((struct nftnl_rule *)nlr, netlink_parse_expr, pctx);
 
 	rule_parse_postprocess(pctx, pctx->rule);

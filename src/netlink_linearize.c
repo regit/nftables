@@ -1030,5 +1030,9 @@ void netlink_linearize_rule(struct netlink_ctx *ctx, struct nftnl_rule *nlr,
 	list_for_each_entry(stmt, &rule->stmts, list)
 		netlink_gen_stmt(&lctx, stmt);
 
+	if (rule->comment)
+		nftnl_rule_set_data(nlr, NFTNL_RULE_USERDATA,
+				    rule->comment, strlen(rule->comment) + 1);
+
 	netlink_dump_rule(nlr);
 }

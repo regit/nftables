@@ -167,9 +167,6 @@ struct nftnl_rule *alloc_nftnl_rule(const struct handle *h)
 		nftnl_rule_set_u64(nlr, NFTNL_RULE_HANDLE, h->handle);
 	if (h->position)
 		nftnl_rule_set_u64(nlr, NFTNL_RULE_POSITION, h->position);
-	if (h->comment)
-		nftnl_rule_set_data(nlr, NFTNL_RULE_USERDATA,
-				       h->comment, strlen(h->comment) + 1);
 
 	return nlr;
 }

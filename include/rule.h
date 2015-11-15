@@ -15,7 +15,6 @@
  * @handle:	rule handle (rules only)
  * @position:	rule position (rules only)
  * @set_id:	set ID (sets only)
- * @comment:	human-readable comment (rules only)
  */
 struct handle {
 	uint32_t		family;
@@ -25,7 +24,6 @@ struct handle {
 	uint64_t		handle;
 	uint64_t		position;
 	uint32_t		set_id;
-	const char		*comment;
 };
 
 extern void handle_merge(struct handle *dst, const struct handle *src);
@@ -157,6 +155,7 @@ extern void chain_print_plain(const struct chain *chain);
  * @location:	location the rule was defined at
  * @stmt:	list of statements
  * @num_stmts:	number of statements in stmts list
+ * @comment:	comment
  */
 struct rule {
 	struct list_head	list;
@@ -164,6 +163,7 @@ struct rule {
 	struct location		location;
 	struct list_head	stmts;
 	unsigned int		num_stmts;
+	const char		*comment;
 };
 
 extern struct rule *rule_alloc(const struct location *loc,

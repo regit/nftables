@@ -1288,7 +1288,7 @@ rule			:	stmt_list	comment_spec
 				struct stmt *i;
 
 				$$ = rule_alloc(&@$, NULL);
-				$$->handle.comment = $2;
+				$$->comment = $2;
 				list_for_each_entry(i, $1, list)
 					$$->num_stmts++;
 				list_splice_tail($1, &$$->stmts);

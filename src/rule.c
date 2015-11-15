@@ -32,7 +32,6 @@ void handle_free(struct handle *h)
 	xfree(h->table);
 	xfree(h->chain);
 	xfree(h->set);
-	xfree(h->comment);
 }
 
 void handle_merge(struct handle *dst, const struct handle *src)
@@ -49,8 +48,6 @@ void handle_merge(struct handle *dst, const struct handle *src)
 		dst->handle = src->handle;
 	if (dst->position == 0)
 		dst->position = src->position;
-	if (dst->comment == NULL && src->comment != NULL)
-		dst->comment = xstrdup(src->comment);
 }
 
 static LIST_HEAD(table_list);
@@ -378,6 +375,7 @@ void rule_free(struct rule *rule)
 {
 	stmt_list_free(&rule->stmts);
 	handle_free(&rule->handle);
+	xfree(rule->comment);
 	xfree(rule);
 }
 
@@ -390,8 +388,8 @@ void rule_print(const struct rule *rule)
 		printf(" ");
 	}
 
-	if (rule->handle.comment)
-		printf("comment \"%s\" ", rule->handle.comment);
+	if (rule->comment)
+		printf("comment \"%s\" ", rule->comment);
 
 	if (handle_output > 0)
 		printf("# handle %" PRIu64, rule->handle.handle);
