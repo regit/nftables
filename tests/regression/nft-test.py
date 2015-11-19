@@ -499,7 +499,7 @@ def rule_add(rule, table_list, chain_list, filename, lineno,
             payload_log = open("%s.payload" % filename_path)
 
         if rule[1].strip() == "ok":
-	    try:
+            try:
                 payload_expected.index(rule[0])
             except (ValueError):
                 payload_expected = payload_find_expected(payload_log, rule[0])
@@ -553,7 +553,7 @@ def rule_add(rule, table_list, chain_list, filename, lineno,
                         if line == "":
                             break
                         gotf.write(line)
-	            gotf.close()
+                    gotf.close()
                     print_warning("Wrote payload for rule %s" % rule[0], gotf.name, 1)
 
             # Check output of nft
@@ -722,8 +722,8 @@ def payload_find_expected(payload_log, rule):
 
     while True:
         line = payload_log.readline()
-	if not line:
-	    break
+        if not line:
+            break
 
         if line[0] == "#":  # rule start
             rule_line = line.strip()[2:]
@@ -910,7 +910,7 @@ def main():
 
     if not os.path.isdir("tests/regression/"):
         print "You have to run nft-test.py from the repository root directory, eg.\n\n" + \
-            "	nftables# python tests/regression/nft-test.py\n"
+            "    nftables# python tests/regression/nft-test.py\n"
         return
 
     test_files = files_ok = run_total = 0
