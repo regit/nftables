@@ -1864,6 +1864,21 @@ static int stmt_evaluate_dup(struct eval_ctx *ctx, struct stmt *stmt)
 				return err;
 		}
 		break;
+	case NFPROTO_NETDEV:
+		if (stmt->dup.to == NULL)
+			return stmt_error(ctx, stmt,
+					  "missing destination interface");
+		if (stmt->dup.dev != NULL)
+			return stmt_error(ctx, stmt, "cannot specify device");
+
+		err = stmt_evaluate_arg(ctx, stmt, &ifindex_type,
+					sizeof(uint32_t) * BITS_PER_BYTE,
+					&stmt->dup.to);
+		if (err < 0)
+			return err;
+		break;
+	default:
+		return stmt_error(ctx, stmt, "unsupported family");
 	}
 	return 0;
 }
