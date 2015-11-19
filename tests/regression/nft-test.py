@@ -20,7 +20,7 @@ import argparse
 import signal
 
 TERMINAL_PATH = os.getcwd()
-NFT_BIN = TERMINAL_PATH + "/src/nft"
+NFT_BIN = "src/nft"
 TESTS_PATH = os.path.dirname(os.path.abspath(__file__))
 TESTS_DIRECTORY = ["any", "arp", "bridge", "inet", "ip", "ip6"]
 LOGFILE = "/tmp/nftables-test.log"
@@ -908,9 +908,11 @@ def main():
         print "You need to be root to run this, sorry"
         return
 
-    if not os.path.isdir("tests/regression/"):
-        print "You have to run nft-test.py from the repository root directory, eg.\n\n" + \
-            "    nftables# python tests/regression/nft-test.py\n"
+    # Change working directory to repository root
+    os.chdir(TESTS_PATH + "/../..")
+
+    if not os.path.isfile(NFT_BIN):
+        print "The nft binary does not exist. You need to build the project."
         return
 
     test_files = files_ok = run_total = 0
