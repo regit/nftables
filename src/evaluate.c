@@ -1883,6 +1883,28 @@ static int stmt_evaluate_dup(struct eval_ctx *ctx, struct stmt *stmt)
 	return 0;
 }
 
+static int stmt_evaluate_fwd(struct eval_ctx *ctx, struct stmt *stmt)
+{
+	int err;
+
+	switch (ctx->pctx.family) {
+	case NFPROTO_NETDEV:
+		if (stmt->fwd.to == NULL)
+			return stmt_error(ctx, stmt,
+					  "missing destination interface");
+
+		err = stmt_evaluate_arg(ctx, stmt, &ifindex_type,
+					sizeof(uint32_t) * BITS_PER_BYTE,
+					&stmt->fwd.to);
+		if (err < 0)
+			return err;
+		break;
+	default:
+		return stmt_error(ctx, stmt, "unsupported family");
+	}
+	return 0;
+}
+
 static int stmt_evaluate_queue(struct eval_ctx *ctx, struct stmt *stmt)
 {
 	if (stmt->queue.queue != NULL) {
@@ -1970,6 +1992,8 @@ int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 		return stmt_evaluate_queue(ctx, stmt);
 	case STMT_DUP:
 		return stmt_evaluate_dup(ctx, stmt);
+	case STMT_FWD:
+		return stmt_evaluate_fwd(ctx, stmt);
 	case STMT_SET:
 		return stmt_evaluate_set(ctx, stmt);
 	default:

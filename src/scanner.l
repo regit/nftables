@@ -462,6 +462,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "label"			{ return LABEL; }
 
 "dup"			{ return DUP; }
+"fwd"			{ return FWD; }
 
 "xml"			{ return XML; }
 "json"			{ return JSON; }

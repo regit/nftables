@@ -122,6 +122,13 @@ struct dup_stmt {
 struct stmt *dup_stmt_alloc(const struct location *loc);
 uint32_t dup_stmt_type(const char *type);
 
+struct fwd_stmt {
+	struct expr		*to;
+};
+
+struct stmt *fwd_stmt_alloc(const struct location *loc);
+uint32_t fwd_stmt_type(const char *type);
+
 struct set_stmt {
 	struct expr		*set;
 	struct expr		*key;
@@ -149,6 +156,7 @@ extern struct stmt *set_stmt_alloc(const struct location *loc);
  * @STMT_CT:		conntrack statement
  * @STMT_SET:		set statement
  * @STMT_DUP:		dup statement
+ * @STMT_FWD:		forward statement
  */
 enum stmt_types {
 	STMT_INVALID,
@@ -167,6 +175,7 @@ enum stmt_types {
 	STMT_CT,
 	STMT_SET,
 	STMT_DUP,
+	STMT_FWD,
 };
 
 /**
@@ -219,6 +228,7 @@ struct stmt {
 		struct ct_stmt		ct;
 		struct set_stmt		set;
 		struct dup_stmt		dup;
+		struct fwd_stmt		fwd;
 	};
 };
 

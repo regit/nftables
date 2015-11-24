@@ -490,3 +490,26 @@ struct stmt *dup_stmt_alloc(const struct location *loc)
 {
 	return stmt_alloc(loc, &dup_stmt_ops);
 }
+
+static void fwd_stmt_print(const struct stmt *stmt)
+{
+	printf("fwd to ");
+	expr_print(stmt->fwd.to);
+}
+
+static void fwd_stmt_destroy(struct stmt *stmt)
+{
+	expr_free(stmt->fwd.to);
+}
+
+static const struct stmt_ops fwd_stmt_ops = {
+	.type		= STMT_FWD,
+	.name		= "fwd",
+	.print		= fwd_stmt_print,
+	.destroy	= fwd_stmt_destroy,
+};
+
+struct stmt *fwd_stmt_alloc(const struct location *loc)
+{
+	return stmt_alloc(loc, &fwd_stmt_ops);
+}

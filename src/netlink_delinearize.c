@@ -831,6 +831,30 @@ static void netlink_parse_dup(struct netlink_parse_ctx *ctx,
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }
 
+static void netlink_parse_fwd(struct netlink_parse_ctx *ctx,
+			      const struct location *loc,
+			      const struct nftnl_expr *nle)
+{
+	enum nft_registers reg1;
+	struct expr *dev;
+	struct stmt *stmt;
+
+	stmt = fwd_stmt_alloc(loc);
+
+	reg1 = netlink_parse_register(nle, NFTNL_EXPR_FWD_SREG_DEV);
+	if (reg1) {
+		dev = netlink_get_register(ctx, loc, reg1);
+		if (dev == NULL)
+			return netlink_error(ctx, loc,
+					     "fwd statement has no output expression");
+
+		expr_set_type(dev, &ifindex_type, BYTEORDER_HOST_ENDIAN);
+		stmt->fwd.to = dev;
+	}
+
+	list_add_tail(&stmt->list, &ctx->rule->stmts);
+}
+
 static void netlink_parse_queue(struct netlink_parse_ctx *ctx,
 			      const struct location *loc,
 			      const struct nftnl_expr *nle)
@@ -922,6 +946,7 @@ static const struct {
 	{ .name = "dup",	.parse = netlink_parse_dup },
 	{ .name = "queue",	.parse = netlink_parse_queue },
 	{ .name = "dynset",	.parse = netlink_parse_dynset },
+	{ .name = "fwd",	.parse = netlink_parse_fwd },
 };
 
 static int netlink_parse_expr(struct nftnl_expr *nle, void *arg)
@@ -1666,6 +1691,10 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 				expr_postprocess(&rctx, &stmt->dup.to);
 			if (stmt->dup.dev != NULL)
 				expr_postprocess(&rctx, &stmt->dup.dev);
+			break;
+		case STMT_FWD:
+			if (stmt->fwd.to != NULL)
+				expr_postprocess(&rctx, &stmt->fwd.to);
 			break;
 		default:
 			break;
