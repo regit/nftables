@@ -68,6 +68,7 @@ struct proto_hdr_template {
  *
  * @name:	protocol name
  * @base:	header base
+ * @checksum_key: key of template containing checksum
  * @protocol_key: key of template containing upper layer protocol description
  * @length:	total size of the header, in bits
  * @protocols:	link to upper layer protocol descriptions indexed by protocol value
@@ -76,6 +77,7 @@ struct proto_hdr_template {
 struct proto_desc {
 	const char			*name;
 	enum proto_bases		base;
+	unsigned int			checksum_key;
 	unsigned int			protocol_key;
 	unsigned int			length;
 	struct {
