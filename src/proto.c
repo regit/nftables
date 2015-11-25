@@ -668,13 +668,13 @@ const struct proto_desc proto_inet_service = {
 
 static const struct symbol_table arpop_tbl = {
 	.symbols	= {
-		SYMBOL("request",	ARPOP_REQUEST),
-		SYMBOL("reply",		ARPOP_REPLY),
-		SYMBOL("rrequest",	ARPOP_RREQUEST),
-		SYMBOL("rreply",	ARPOP_RREPLY),
-		SYMBOL("inrequest",	ARPOP_InREQUEST),
-		SYMBOL("inreply",	ARPOP_InREPLY),
-		SYMBOL("nak",		ARPOP_NAK),
+		SYMBOL("request",	__constant_htons(ARPOP_REQUEST)),
+		SYMBOL("reply",		__constant_htons(ARPOP_REPLY)),
+		SYMBOL("rrequest",	__constant_htons(ARPOP_RREQUEST)),
+		SYMBOL("rreply",	__constant_htons(ARPOP_RREPLY)),
+		SYMBOL("inrequest",	__constant_htons(ARPOP_InREQUEST)),
+		SYMBOL("inreply",	__constant_htons(ARPOP_InREPLY)),
+		SYMBOL("nak",		__constant_htons(ARPOP_NAK)),
 		SYMBOL_LIST_END
 	},
 };
