@@ -138,6 +138,30 @@ void payload_init_raw(struct expr *expr, enum proto_bases base,
 	expr->len		= len;
 }
 
+static void payload_stmt_print(const struct stmt *stmt)
+{
+	expr_print(stmt->payload.expr);
+	printf(" set ");
+	expr_print(stmt->payload.val);
+}
+
+static const struct stmt_ops payload_stmt_ops = {
+	.type		= STMT_PAYLOAD,
+	.name		= "payload",
+	.print		= payload_stmt_print,
+};
+
+struct stmt *payload_stmt_alloc(const struct location *loc,
+				struct expr *expr, struct expr *val)
+{
+	struct stmt *stmt;
+
+	stmt = stmt_alloc(loc, &payload_stmt_ops);
+	stmt->payload.expr = expr;
+	stmt->payload.val  = val;
+	return stmt;
+}
+
 /**
  * payload_gen_dependency - generate match expression on payload dependency
  *

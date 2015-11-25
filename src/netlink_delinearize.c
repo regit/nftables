@@ -397,9 +397,9 @@ static void netlink_parse_byteorder(struct netlink_parse_ctx *ctx,
 	netlink_set_register(ctx, dreg, expr);
 }
 
-static void netlink_parse_payload(struct netlink_parse_ctx *ctx,
-				  const struct location *loc,
-				  const struct nftnl_expr *nle)
+static void netlink_parse_payload_expr(struct netlink_parse_ctx *ctx,
+				       const struct location *loc,
+				       const struct nftnl_expr *nle)
 {
 	enum nft_registers dreg;
 	uint32_t base, offset, len;
@@ -414,6 +414,39 @@ static void netlink_parse_payload(struct netlink_parse_ctx *ctx,
 
 	dreg = netlink_parse_register(nle, NFTNL_EXPR_PAYLOAD_DREG);
 	netlink_set_register(ctx, dreg, expr);
+}
+
+static void netlink_parse_payload_stmt(struct netlink_parse_ctx *ctx,
+				       const struct location *loc,
+				       const struct nftnl_expr *nle)
+{
+	enum nft_registers sreg;
+	uint32_t base, offset, len;
+	struct expr *expr, *val;
+	struct stmt *stmt;
+
+	base   = nftnl_expr_get_u32(nle, NFTNL_EXPR_PAYLOAD_BASE) + 1;
+	offset = nftnl_expr_get_u32(nle, NFTNL_EXPR_PAYLOAD_OFFSET) * BITS_PER_BYTE;
+	len    = nftnl_expr_get_u32(nle, NFTNL_EXPR_PAYLOAD_LEN) * BITS_PER_BYTE;
+
+	expr = payload_expr_alloc(loc, NULL, 0);
+	payload_init_raw(expr, base, offset, len);
+
+	sreg = netlink_parse_register(nle, NFT_EXPR_PAYLOAD_SREG);
+	val  = netlink_get_register(ctx, loc, sreg);
+	stmt = payload_stmt_alloc(loc, expr, val);
+
+	list_add_tail(&stmt->list, &ctx->rule->stmts);
+}
+
+static void netlink_parse_payload(struct netlink_parse_ctx *ctx,
+				  const struct location *loc,
+				  const struct nftnl_expr *nle)
+{
+	if (nftnl_expr_is_set(nle, NFT_EXPR_PAYLOAD_DREG))
+		netlink_parse_payload_expr(ctx, loc, nle);
+	else
+		netlink_parse_payload_stmt(ctx, loc, nle);
 }
 
 static void netlink_parse_exthdr(struct netlink_parse_ctx *ctx,
@@ -1553,6 +1586,13 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 		switch (stmt->ops->type) {
 		case STMT_EXPRESSION:
 			stmt_expr_postprocess(&rctx, prev);
+			break;
+		case STMT_PAYLOAD:
+			expr_postprocess(&rctx, &stmt->payload.expr);
+			expr_set_type(stmt->payload.val,
+				      stmt->payload.expr->dtype,
+				      stmt->payload.expr->byteorder);
+			expr_postprocess(&rctx, &stmt->payload.val);
 			break;
 		case STMT_META:
 			if (stmt->meta.expr != NULL)

@@ -17,6 +17,14 @@ struct counter_stmt {
 
 extern struct stmt *counter_stmt_alloc(const struct location *loc);
 
+struct payload_stmt {
+	struct expr			*expr;
+	struct expr			*val;
+};
+
+extern struct stmt *payload_stmt_alloc(const struct location *loc,
+				       struct expr *payload, struct expr *expr);
+
 #include <meta.h>
 struct meta_stmt {
 	enum nft_meta_keys		key;
@@ -128,6 +136,7 @@ extern struct stmt *set_stmt_alloc(const struct location *loc);
  * @STMT_EXPRESSION:	expression statement (relational)
  * @STMT_VERDICT:	verdict statement
  * @STMT_COUNTER:	counters
+ * @STMT_PAYLOAD:	payload statement
  * @STMT_META:		meta statement
  * @STMT_LIMIT:		limit statement
  * @STMT_LOG:		log statement
@@ -145,6 +154,7 @@ enum stmt_types {
 	STMT_EXPRESSION,
 	STMT_VERDICT,
 	STMT_COUNTER,
+	STMT_PAYLOAD,
 	STMT_META,
 	STMT_LIMIT,
 	STMT_LOG,
@@ -196,6 +206,7 @@ struct stmt {
 	union {
 		struct expr		*expr;
 		struct counter_stmt	counter;
+		struct payload_stmt	payload;
 		struct meta_stmt	meta;
 		struct log_stmt		log;
 		struct limit_stmt	limit;

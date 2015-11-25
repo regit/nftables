@@ -438,9 +438,9 @@ static bool resolve_protocol_conflict(struct eval_ctx *ctx,
  * generate the necessary relational expression and prepend it to the current
  * statement.
  */
-static int expr_evaluate_payload(struct eval_ctx *ctx, struct expr **expr)
+static int __expr_evaluate_payload(struct eval_ctx *ctx, struct expr *expr)
 {
-	struct expr *payload = *expr;
+	struct expr *payload = expr;
 	enum proto_bases base = payload->payload.base;
 	struct stmt *nstmt;
 
@@ -453,6 +453,14 @@ static int expr_evaluate_payload(struct eval_ctx *ctx, struct expr **expr)
 				  "conflicting protocols specified: %s vs. %s",
 				  ctx->pctx.protocol[base].desc->name,
 				  payload->payload.desc->name);
+
+	return 0;
+}
+
+static int expr_evaluate_payload(struct eval_ctx *ctx, struct expr **expr)
+{
+	if (__expr_evaluate_payload(ctx, *expr) < 0)
+		return -1;
 
 	return expr_evaluate_primary(ctx, expr);
 }
@@ -1353,6 +1361,17 @@ static int stmt_evaluate_verdict(struct eval_ctx *ctx, struct stmt *stmt)
 	return 0;
 }
 
+static int stmt_evaluate_payload(struct eval_ctx *ctx, struct stmt *stmt)
+{
+	if (__expr_evaluate_payload(ctx, stmt->payload.expr) < 0)
+		return -1;
+
+	return stmt_evaluate_arg(ctx, stmt,
+				 stmt->payload.expr->dtype,
+				 stmt->payload.expr->len,
+				 &stmt->payload.val);
+}
+
 static int stmt_evaluate_meta(struct eval_ctx *ctx, struct stmt *stmt)
 {
 	return stmt_evaluate_arg(ctx, stmt,
@@ -1916,6 +1935,8 @@ int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 		return stmt_evaluate_expr(ctx, stmt);
 	case STMT_VERDICT:
 		return stmt_evaluate_verdict(ctx, stmt);
+	case STMT_PAYLOAD:
+		return stmt_evaluate_payload(ctx, stmt);
 	case STMT_META:
 		return stmt_evaluate_meta(ctx, stmt);
 	case STMT_CT:

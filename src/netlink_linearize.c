@@ -680,6 +680,44 @@ static void netlink_gen_counter_stmt(struct netlink_linearize_ctx *ctx,
 	nftnl_rule_add_expr(ctx->nlr, nle);
 }
 
+static void netlink_gen_payload_stmt(struct netlink_linearize_ctx *ctx,
+				     const struct stmt *stmt)
+{
+	struct nftnl_expr *nle;
+	const struct proto_desc *desc;
+	const struct expr *expr;
+	enum nft_registers sreg;
+	unsigned int csum_off;
+
+	sreg = get_register(ctx, stmt->payload.val);
+	netlink_gen_expr(ctx, stmt->payload.val, sreg);
+	release_register(ctx, stmt->payload.val);
+
+	expr = stmt->payload.expr;
+
+	csum_off = 0;
+	desc = expr->payload.desc;
+	if (desc != NULL && desc->checksum_key)
+		csum_off = desc->templates[desc->checksum_key].offset;
+
+	nle = alloc_nft_expr("payload");
+	netlink_put_register(nle, NFTNL_EXPR_PAYLOAD_SREG, sreg);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_PAYLOAD_BASE,
+			   expr->payload.base - 1);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_PAYLOAD_OFFSET,
+			   expr->payload.offset / BITS_PER_BYTE);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_PAYLOAD_LEN,
+			   expr->len / BITS_PER_BYTE);
+	if (csum_off) {
+		nftnl_expr_set_u32(nle, NFTNL_EXPR_PAYLOAD_CSUM_TYPE,
+				   NFT_PAYLOAD_CSUM_INET);
+		nftnl_expr_set_u32(nle, NFTNL_EXPR_PAYLOAD_CSUM_OFFSET,
+				   csum_off / BITS_PER_BYTE);
+	}
+
+	nftnl_rule_add_expr(ctx->nlr, nle);
+}
+
 static void netlink_gen_meta_stmt(struct netlink_linearize_ctx *ctx,
 				  const struct stmt *stmt)
 {
@@ -990,6 +1028,8 @@ static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 		return netlink_gen_verdict_stmt(ctx, stmt);
 	case STMT_COUNTER:
 		return netlink_gen_counter_stmt(ctx, stmt);
+	case STMT_PAYLOAD:
+		return netlink_gen_payload_stmt(ctx, stmt);
 	case STMT_META:
 		return netlink_gen_meta_stmt(ctx, stmt);
 	case STMT_LOG:

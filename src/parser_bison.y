@@ -447,6 +447,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { stmt_free($$); }	stmt match_stmt verdict_stmt
 %type <stmt>			counter_stmt counter_stmt_alloc
 %destructor { stmt_free($$); }	counter_stmt counter_stmt_alloc
+%type <stmt>			payload_stmt
+%destructor { stmt_free($$); }	payload_stmt
 %type <stmt>			ct_stmt
 %destructor { stmt_free($$); }	ct_stmt
 %type <stmt>			meta_stmt
@@ -1312,6 +1314,7 @@ stmt_list		:	stmt
 stmt			:	verdict_stmt
 			|	match_stmt
 			|	counter_stmt
+			|	payload_stmt
 			|	meta_stmt
 			|	log_stmt
 			|	limit_stmt
@@ -2058,6 +2061,12 @@ ct_key			:	STATE		{ $$ = NFT_CT_STATE; }
 ct_stmt			:	CT	ct_key		SET	expr
 			{
 				$$ = ct_stmt_alloc(&@$, $2, $4);
+			}
+			;
+
+payload_stmt		:	payload_expr		SET	expr
+			{
+				$$ = payload_stmt_alloc(&@$, $1, $3);
 			}
 			;
 
