@@ -1188,8 +1188,8 @@ static void relational_binop_postprocess(struct rule_pp_ctx *ctx, struct expr *e
 	} else if (binop->op == OP_AND &&
 		   binop->left->ops->type == EXPR_PAYLOAD &&
 		   binop->right->ops->type == EXPR_VALUE) {
-		struct expr *payload = expr->left->left;
-		struct expr *mask = expr->left->right;
+		struct expr *payload = binop->left;
+		struct expr *mask = binop->right;
 
 		/*
 		 * This *might* be a payload match testing header fields that
@@ -1237,7 +1237,7 @@ static void relational_binop_postprocess(struct rule_pp_ctx *ctx, struct expr *e
 			assert(expr->left->ops->type == EXPR_BINOP);
 
 			assert(binop->left == payload);
-			expr->left = payload;
+			expr->left = expr_get(payload);
 			expr_free(binop);
 		}
 	}
