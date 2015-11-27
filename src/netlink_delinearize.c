@@ -174,7 +174,7 @@ static void netlink_parse_immediate(struct netlink_parse_ctx *ctx,
 		nld.verdict = nftnl_expr_get_u32(nle, NFTNL_EXPR_IMM_VERDICT); 
 		if  (nftnl_expr_is_set(nle, NFTNL_EXPR_IMM_CHAIN)) {
 			nld.chain = nftnl_expr_get(nle, NFTNL_EXPR_IMM_CHAIN,
-						      &nld.len);
+						   &nld.len);
 		}
 	} else if (nftnl_expr_is_set(nle, NFTNL_EXPR_IMM_DATA)) {
 		nld.value = nftnl_expr_get(nle, NFTNL_EXPR_IMM_DATA, &nld.len);
@@ -347,7 +347,7 @@ static void netlink_parse_bitwise(struct netlink_parse_ctx *ctx,
 
 	if (mpz_cmp_ui(o, 0)) {
 		nld.value = nftnl_expr_get(nle, NFTNL_EXPR_BITWISE_XOR,
-					      &nld.len);
+					   &nld.len);
 
 		or = netlink_alloc_value(loc, &nld);
 		mpz_set(or->value, o);
@@ -564,10 +564,8 @@ static void netlink_parse_counter(struct netlink_parse_ctx *ctx,
 	struct stmt *stmt;
 
 	stmt = counter_stmt_alloc(loc);
-	stmt->counter.packets =
-		nftnl_expr_get_u64(nle, NFTNL_EXPR_CTR_PACKETS);
-	stmt->counter.bytes   =
-		nftnl_expr_get_u64(nle, NFTNL_EXPR_CTR_BYTES);
+	stmt->counter.packets = nftnl_expr_get_u64(nle, NFTNL_EXPR_CTR_PACKETS);
+	stmt->counter.bytes   = nftnl_expr_get_u64(nle, NFTNL_EXPR_CTR_BYTES);
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }
 
@@ -585,8 +583,7 @@ static void netlink_parse_log(struct netlink_parse_ctx *ctx,
 		stmt->log.flags |= STMT_LOG_PREFIX;
 	}
 	if (nftnl_expr_is_set(nle, NFTNL_EXPR_LOG_GROUP)) {
-		stmt->log.group =
-			nftnl_expr_get_u16(nle, NFTNL_EXPR_LOG_GROUP);
+		stmt->log.group = nftnl_expr_get_u16(nle, NFTNL_EXPR_LOG_GROUP);
 		stmt->log.flags |= STMT_LOG_GROUP;
 	}
 	if (nftnl_expr_is_set(nle, NFTNL_EXPR_LOG_SNAPLEN)) {
@@ -653,8 +650,7 @@ static void netlink_parse_nat(struct netlink_parse_ctx *ctx,
 	family = nftnl_expr_get_u32(nle, NFTNL_EXPR_NAT_FAMILY);
 
 	if (nftnl_expr_is_set(nle, NFTNL_EXPR_NAT_FLAGS))
-		stmt->nat.flags = nftnl_expr_get_u32(nle,
-							NFTNL_EXPR_NAT_FLAGS);
+		stmt->nat.flags = nftnl_expr_get_u32(nle, NFTNL_EXPR_NAT_FLAGS);
 
 	reg1 = netlink_parse_register(nle, NFTNL_EXPR_NAT_REG_ADDR_MIN);
 	if (reg1) {
