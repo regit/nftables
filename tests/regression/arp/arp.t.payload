@@ -130,7 +130,7 @@ arp test-arp input
 # arp operation {nak, inreply, inrequest, rreply, rrequest, reply, request}
 set%d test-arp 3
 set%d test-arp 0
-	element 0000000a  : 0 [end]	element 00000009  : 0 [end]	element 00000008  : 0 [end]	element 00000004  : 0 [end]	element 00000003  : 0 [end]	element 00000002  : 0 [end]	element 00000001  : 0 [end]
+	element 00000a00  : 0 [end]	element 00000900  : 0 [end]	element 00000800  : 0 [end]	element 00000400  : 0 [end]	element 00000300  : 0 [end]	element 00000200  : 0 [end]	element 00000100  : 0 [end]
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
   [ lookup reg 1 set set%d ]
@@ -138,80 +138,80 @@ arp test-arp input
 # arp operation request
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp eq reg 1 0x00000001 ]
+  [ cmp eq reg 1 0x00000100 ]
 
 # arp operation reply
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp eq reg 1 0x00000002 ]
+  [ cmp eq reg 1 0x00000200 ]
 
 # arp operation rrequest
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp eq reg 1 0x00000003 ]
+  [ cmp eq reg 1 0x00000300 ]
 
 # arp operation rreply
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp eq reg 1 0x00000004 ]
+  [ cmp eq reg 1 0x00000400 ]
 
 # arp operation inrequest
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp eq reg 1 0x00000008 ]
+  [ cmp eq reg 1 0x00000800 ]
 
 # arp operation inreply
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp eq reg 1 0x00000009 ]
+  [ cmp eq reg 1 0x00000900 ]
 
 # arp operation nak
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp eq reg 1 0x0000000a ]
+  [ cmp eq reg 1 0x00000a00 ]
 
 # arp operation reply
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp eq reg 1 0x00000002 ]
+  [ cmp eq reg 1 0x00000200 ]
 
 # arp operation != request
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp neq reg 1 0x00000001 ]
+  [ cmp neq reg 1 0x00000100 ]
 
 # arp operation != reply
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp neq reg 1 0x00000002 ]
+  [ cmp neq reg 1 0x00000200 ]
 
 # arp operation != rrequest
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp neq reg 1 0x00000003 ]
+  [ cmp neq reg 1 0x00000300 ]
 
 # arp operation != rreply
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp neq reg 1 0x00000004 ]
+  [ cmp neq reg 1 0x00000400 ]
 
 # arp operation != inrequest
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp neq reg 1 0x00000008 ]
+  [ cmp neq reg 1 0x00000800 ]
 
 # arp operation != inreply
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp neq reg 1 0x00000009 ]
+  [ cmp neq reg 1 0x00000900 ]
 
 # arp operation != nak
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp neq reg 1 0x0000000a ]
+  [ cmp neq reg 1 0x00000a00 ]
 
 # arp operation != reply
 arp test-arp input
   [ payload load 2b @ network header + 6 => reg 1 ]
-  [ cmp neq reg 1 0x00000002 ]
+  [ cmp neq reg 1 0x00000200 ]
 
