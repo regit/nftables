@@ -698,6 +698,7 @@ static int constant_binop_simplify(struct eval_ctx *ctx, struct expr **expr)
 		break;
 	case OP_LSHIFT:
 		assert(left->byteorder == BYTEORDER_HOST_ENDIAN);
+		mpz_set(val, left->value);
 		mpz_lshift_ui(val, mpz_get_uint32(right->value));
 		mpz_and(val, val, mask);
 		break;
@@ -1094,6 +1095,8 @@ static int binop_can_transfer(struct eval_ctx *ctx,
 			return expr_binary_error(ctx->msgs, right, left,
 						 "Comparison is always false");
 		return 1;
+	case OP_RSHIFT:
+		return 1;
 	case OP_XOR:
 		return 1;
 	default:
@@ -1111,6 +1114,10 @@ static int binop_transfer_one(struct eval_ctx *ctx,
 		(*right) = binop_expr_alloc(&(*right)->location, OP_RSHIFT,
 					    *right, expr_get(left->right));
 		break;
+	case OP_RSHIFT:
+		(*right) = binop_expr_alloc(&(*right)->location, OP_LSHIFT,
+					    *right, expr_get(left->right));
+		break;
 	case OP_XOR:
 		(*right) = binop_expr_alloc(&(*right)->location, OP_XOR,
 					    *right, expr_get(left->right));
@@ -1125,6 +1132,7 @@ static int binop_transfer_one(struct eval_ctx *ctx,
 static int binop_transfer(struct eval_ctx *ctx, struct expr **expr)
 {
 	struct expr *left = (*expr)->left, *i, *next;
+	unsigned int shift;
 	int err;
 
 	if (left->ops->type != EXPR_BINOP)
@@ -1156,10 +1164,24 @@ static int binop_transfer(struct eval_ctx *ctx, struct expr **expr)
 		return 0;
 	}
 
-	left = expr_get((*expr)->left->left);
-	left->dtype = (*expr)->left->dtype;
-	expr_free((*expr)->left);
-	(*expr)->left = left;
+	switch (left->op) {
+	case OP_RSHIFT:
+		/* Mask out the bits the shift would have masked out */
+		shift = mpz_get_uint8(left->right->value);
+		mpz_bitmask(left->right->value, left->left->len);
+		mpz_lshift_ui(left->right->value, shift);
+		left->op = OP_AND;
+		break;
+	case OP_LSHIFT:
+	case OP_XOR:
+		left = expr_get((*expr)->left->left);
+		left->dtype = (*expr)->left->dtype;
+		expr_free((*expr)->left);
+		(*expr)->left = left;
+		break;
+	default:
+		BUG("invalid binop operation %u", left->op);
+	}
 	return 0;
 }
 
