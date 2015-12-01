@@ -508,12 +508,6 @@ def rule_add(rule, table_list, chain_list, filename, lineno,
                     print_error("did not find payload information for rule '%s'" % rule[0], payload_log.name, 1)
 
         for chain in chain_list:
-            if len(rule) == 1:
-                reason = "Skipping malformed test. (" + \
-                    str(rule[0].rstrip('\n')) + ")"
-                print_warning(reason, filename, lineno)
-                continue
-
             unit_tests += 1
             table_flush(table, filename, lineno)
             table_info = " " + table[0] + " " + table[1] + " "
@@ -808,6 +802,11 @@ def run_test_file(filename, force_all_family_option, specific_file):
 
         # Rule
         rule = line.split(';')  # rule[1] Ok or FAIL
+        if len(rule) == 1 or len(rule) > 3 or rule[1].rstrip() not in {"ok", "fail"}:
+            reason = "Skipping malformed rule test. (" + line.rstrip('\n') + ")"
+            print_warning(reason, filename, lineno)
+            continue
+
         if line[0] == "-":  # Run omitted lines
             if need_fix_option:
                 rule[0] = rule[0].rstrip()[1:].strip()

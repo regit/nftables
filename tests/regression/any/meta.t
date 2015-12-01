@@ -166,7 +166,7 @@ meta iifgroup 0;ok;iifgroup default
 meta iifgroup != 0;ok;iifgroup != default
 meta iifgroup default;ok;iifgroup default
 meta iifgroup != default;ok;iifgroup != default
-meta iifgroup {default};ok;;iifgroup {default}
+meta iifgroup {default};ok;iifgroup {default}
 - meta iifgroup != {default};ok
 meta iifgroup { 11,33};ok
 meta iifgroup {11-33};ok
