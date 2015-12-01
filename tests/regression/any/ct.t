@@ -1,9 +1,6 @@
 *ip;test-ip4
 *ip6;test-ip6
 *inet;test-inet
-# ct expresion is not supported in arp and bridge family yet.
-- *arp;test-arp
-- *bridge;test-bridge
 
 :output;type filter hook output priority 0
 

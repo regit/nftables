@@ -809,8 +809,6 @@ def run_test_file(filename, force_all_family_option, specific_file):
         # Rule
         rule = line.split(';')  # rule[1] Ok or FAIL
         if line[0] == "-":  # Run omitted lines
-            if line[1:].find("*") != -1:
-                continue
             if need_fix_option:
                 rule[0] = rule[0].rstrip()[1:].strip()
             else:

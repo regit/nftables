@@ -1,6 +1,6 @@
 *ip6;test-ip6
 # BUG: There is a bug with icmpv6 and inet tables
-- *inet;test-inet
+# *inet;test-inet
 :input;type filter hook input priority 0
 
 icmpv6 type destination-unreachable accept;ok
