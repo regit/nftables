@@ -1558,11 +1558,11 @@ static void stmt_expr_postprocess(struct rule_pp_ctx *ctx, struct stmt *prev)
 {
 	enum ops op;
 
-	if (prev && ctx->stmt->ops->type == prev->ops->type &&
+	expr_postprocess(ctx, &ctx->stmt->expr);
+
+	if (prev && ctx->stmt && ctx->stmt->ops->type == prev->ops->type &&
 	    expr_may_merge_range(ctx->stmt->expr, prev->expr, &op))
 		expr_postprocess_range(ctx, prev, op);
-
-	expr_postprocess(ctx, &ctx->stmt->expr);
 }
 
 static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *rule)
