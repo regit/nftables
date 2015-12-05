@@ -1146,6 +1146,18 @@ static int binop_transfer(struct eval_ctx *ctx, struct expr **expr)
 		if (binop_transfer_one(ctx, left, &(*expr)->right) < 0)
 			return -1;
 		break;
+	case EXPR_RANGE:
+		err = binop_can_transfer(ctx, left, (*expr)->right->left);
+		if (err <= 0)
+			return err;
+		err = binop_can_transfer(ctx, left, (*expr)->right->right);
+		if (err <= 0)
+			return err;
+		if (binop_transfer_one(ctx, left, &(*expr)->right->left) < 0)
+			return -1;
+		if (binop_transfer_one(ctx, left, &(*expr)->right->right) < 0)
+			return -1;
+		break;
 	case EXPR_SET:
 		list_for_each_entry(i, &(*expr)->right->expressions, list) {
 			err = binop_can_transfer(ctx, left, i);
