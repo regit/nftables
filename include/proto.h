@@ -159,9 +159,9 @@ enum eth_hdr_fields {
 
 enum vlan_hdr_fields {
 	VLANHDR_INVALID,
-	VLANHDR_VID,
-	VLANHDR_CFI,
 	VLANHDR_PCP,
+	VLANHDR_CFI,
+	VLANHDR_VID,
 	VLANHDR_TYPE,
 };
 

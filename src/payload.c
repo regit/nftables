@@ -339,18 +339,21 @@ static unsigned int mask_length(const struct expr *mask)
  * Walk the template list and determine if a match can be found without
  * using the provided mask.
  *
- * If the mask has to be used, trim the mask length accordingly
- * and return true to let the caller know that the mask is a dependency.
+ * If the mask has to be used, trim the payload expression length accordingly,
+ * adjust the payload offset and return true to let the caller know that the
+ * mask can be removed. This function also returns the shift for the right hand
+ * constant side of the expression.
  */
 bool payload_expr_trim(struct expr *expr, struct expr *mask,
-		       const struct proto_ctx *ctx)
+		       const struct proto_ctx *ctx, unsigned int *shift)
 {
-	unsigned int payload_offset = expr->payload.offset + mask_to_offset(mask);
+	unsigned int payload_offset = expr->payload.offset;
+	unsigned int mask_offset = mask_to_offset(mask);
 	unsigned int mask_len = mask_length(mask);
 	const struct proto_hdr_template *tmpl;
 	unsigned int payload_len = expr->len;
 	const struct proto_desc *desc;
-	unsigned int i, matched_len = mask_to_offset(mask);
+	unsigned int off, i, len = 0;
 
 	assert(expr->ops->type == EXPR_PAYLOAD);
 
@@ -365,6 +368,9 @@ bool payload_expr_trim(struct expr *expr, struct expr *mask,
 		payload_offset -= ctx->protocol[expr->payload.base].offset;
 	}
 
+	off = round_up(mask->len, BITS_PER_BYTE) - mask_len;
+	payload_offset += off;
+
 	for (i = 1; i < array_size(desc->templates); i++) {
 		tmpl = &desc->templates[i];
 		if (tmpl->offset != payload_offset)
@@ -374,14 +380,15 @@ bool payload_expr_trim(struct expr *expr, struct expr *mask,
 			return false;
 
 		payload_len -= tmpl->len;
-		matched_len += tmpl->len;
 		payload_offset += tmpl->len;
+		len += tmpl->len;
 		if (payload_len == 0)
 			return false;
 
-		if (matched_len == mask_len) {
-			assert(mask->len >= mask_len);
-			mask->len = mask_len;
+		if (mask_offset + len == mask_len) {
+			expr->payload.offset += off;
+			expr->len = len;
+			*shift = mask_offset;
 			return true;
 		}
 	}
@@ -395,7 +402,6 @@ bool payload_expr_trim(struct expr *expr, struct expr *mask,
  *
  * @list:	list to append expanded payload expressions to
  * @expr:	the payload expression to expand
- * @mask:	optional/implicit mask to use when searching templates
  * @ctx:	protocol context
  *
  * Expand a merged adjacent payload expression into its original components
@@ -405,16 +411,14 @@ bool payload_expr_trim(struct expr *expr, struct expr *mask,
  * 	 offset order.
  */
 void payload_expr_expand(struct list_head *list, struct expr *expr,
-			 struct expr *mask, const struct proto_ctx *ctx)
+			 const struct proto_ctx *ctx)
 {
-	unsigned int off = mask_to_offset(mask);
 	const struct proto_hdr_template *tmpl;
 	const struct proto_desc *desc;
 	struct expr *new;
 	unsigned int i;
 
 	assert(expr->ops->type == EXPR_PAYLOAD);
-	assert(!mask || mask->len != 0);
 
 	desc = ctx->protocol[expr->payload.base].desc;
 	if (desc == NULL)
@@ -431,7 +435,7 @@ void payload_expr_expand(struct list_head *list, struct expr *expr,
 			list_add_tail(&new->list, list);
 			expr->len	     -= tmpl->len;
 			expr->payload.offset += tmpl->len;
-			if (expr->len == off)
+			if (expr->len == 0)
 				return;
 		} else
 			break;

@@ -20,9 +20,8 @@ extern struct expr *payload_expr_join(const struct expr *e1,
 				      const struct expr *e2);
 
 bool payload_expr_trim(struct expr *expr, struct expr *mask,
-		       const struct proto_ctx *ctx);
+		       const struct proto_ctx *ctx, unsigned int *shift);
 extern void payload_expr_expand(struct list_head *list, struct expr *expr,
-				struct expr *mask,
 				const struct proto_ctx *ctx);
 extern void payload_expr_complete(struct expr *expr,
 				  const struct proto_ctx *ctx);

@@ -998,8 +998,7 @@ static void integer_type_postprocess(struct expr *expr)
 
 static void payload_match_expand(struct rule_pp_ctx *ctx,
 				 struct expr *expr,
-				 struct expr *payload,
-				 struct expr *mask)
+				 struct expr *payload)
 {
 	struct expr *left = payload, *right = expr->right, *tmp;
 	struct list_head list = LIST_HEAD_INIT(list);
@@ -1008,7 +1007,7 @@ static void payload_match_expand(struct rule_pp_ctx *ctx,
 	enum proto_bases base = left->payload.base;
 	const struct expr_ops *payload_ops = left->ops;
 
-	payload_expr_expand(&list, left, mask, &ctx->pctx);
+	payload_expr_expand(&list, left, &ctx->pctx);
 
 	list_for_each_entry(left, &list, list) {
 		tmp = constant_expr_splice(right, left->len);
@@ -1063,8 +1062,7 @@ static void payload_match_expand(struct rule_pp_ctx *ctx,
 
 static void payload_match_postprocess(struct rule_pp_ctx *ctx,
 				      struct expr *expr,
-				      struct expr *payload,
-				      struct expr *mask)
+				      struct expr *payload)
 {
 	enum proto_bases base = payload->payload.base;
 
@@ -1075,7 +1073,7 @@ static void payload_match_postprocess(struct rule_pp_ctx *ctx,
 	case OP_EQ:
 	case OP_NEQ:
 		if (expr->right->ops->type == EXPR_VALUE) {
-			payload_match_expand(ctx, expr, payload, mask);
+			payload_match_expand(ctx, expr, payload);
 			break;
 		}
 		/* Fall through */
@@ -1190,6 +1188,7 @@ static void relational_binop_postprocess(struct rule_pp_ctx *ctx, struct expr *e
 		   binop->right->ops->type == EXPR_VALUE) {
 		struct expr *payload = binop->left;
 		struct expr *mask = binop->right;
+		unsigned int shift;
 
 		/*
 		 * This *might* be a payload match testing header fields that
@@ -1214,7 +1213,7 @@ static void relational_binop_postprocess(struct rule_pp_ctx *ctx, struct expr *e
 		 * payload_expr_trim will figure out if the mask is needed to match
 		 * templates.
 		 */
-		if (payload_expr_trim(payload, mask, &ctx->pctx)) {
+		if (payload_expr_trim(payload, mask, &ctx->pctx, &shift)) {
 			/* mask is implicit, binop needs to be removed.
 			 *
 			 * Fix all values of the expression according to the mask
@@ -1226,13 +1225,11 @@ static void relational_binop_postprocess(struct rule_pp_ctx *ctx, struct expr *e
 			 */
 			if (value->ops->type == EXPR_VALUE) {
 				assert(value->len >= expr->left->right->len);
-				value->len = mask->len;
+				mpz_rshift_ui(value->value, shift);
+				value->len = payload->len;
 			}
 
-			payload->len = mask->len;
-			payload->payload.offset += mpz_scan1(mask->value, 0);
-
-			payload_match_postprocess(ctx, expr, payload, mask);
+			payload_match_postprocess(ctx, expr, payload);
 
 			assert(expr->left->ops->type == EXPR_BINOP);
 
@@ -1383,7 +1380,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 	case EXPR_RELATIONAL:
 		switch (expr->left->ops->type) {
 		case EXPR_PAYLOAD:
-			payload_match_postprocess(ctx, expr, expr->left, NULL);
+			payload_match_postprocess(ctx, expr, expr->left);
 			return;
 		default:
 			expr_postprocess(ctx, &expr->left);

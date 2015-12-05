@@ -407,9 +407,9 @@ const struct proto_desc proto_tcp = {
 		[TCPHDR_SEQ]		= TCPHDR_FIELD("sequence", seq),
 		[TCPHDR_ACKSEQ]		= TCPHDR_FIELD("ackseq", ack_seq),
 		[TCPHDR_DOFF]		= HDR_BITFIELD("doff", &integer_type,
-						       (12 * BITS_PER_BYTE) + 4, 4),
+						       (12 * BITS_PER_BYTE), 4),
 		[TCPHDR_RESERVED]	= HDR_BITFIELD("reserved", &integer_type,
-						       (12 * BITS_PER_BYTE) + 0, 4),
+						       (12 * BITS_PER_BYTE) + 4, 4),
 		[TCPHDR_FLAGS]		= HDR_BITFIELD("flags", &tcp_flag_type,
 						       13 * BITS_PER_BYTE,
 						       BITS_PER_BYTE),
@@ -459,7 +459,8 @@ const struct proto_desc proto_dccp = {
 	.templates	= {
 		[DCCPHDR_SPORT]		= INET_SERVICE("sport", struct dccp_hdr, dccph_sport),
 		[DCCPHDR_DPORT]		= INET_SERVICE("dport", struct dccp_hdr, dccph_dport),
-		[DCCPHDR_TYPE]		= HDR_BITFIELD("type", &dccp_pkttype_type, 67, 4),
+		[DCCPHDR_TYPE]		= HDR_BITFIELD("type", &dccp_pkttype_type,
+						       (8 * BITS_PER_BYTE) + 3, 4),
 	},
 };
 
@@ -508,8 +509,8 @@ const struct proto_desc proto_ip = {
 		PROTO_LINK(IPPROTO_SCTP,	&proto_sctp),
 	},
 	.templates	= {
-		[IPHDR_VERSION]		= HDR_BITFIELD("version", &integer_type, 4, 4),
-		[IPHDR_HDRLENGTH]	= HDR_BITFIELD("hdrlength", &integer_type, 0, 4),
+		[IPHDR_VERSION]		= HDR_BITFIELD("version", &integer_type, 0, 4),
+		[IPHDR_HDRLENGTH]	= HDR_BITFIELD("hdrlength", &integer_type, 4, 4),
 		[IPHDR_TOS]		= IPHDR_FIELD("tos",		tos),
 		[IPHDR_LENGTH]		= IPHDR_FIELD("length",		tot_len),
 		[IPHDR_ID]		= IPHDR_FIELD("id",		id),
@@ -730,9 +731,9 @@ const struct proto_desc proto_vlan = {
 
 	},
 	.templates	= {
-		[VLANHDR_VID]		= VLANHDR_BITFIELD("id", 0, 12),
-		[VLANHDR_CFI]		= VLANHDR_BITFIELD("cfi", 12, 1),
-		[VLANHDR_PCP]		= VLANHDR_BITFIELD("pcp", 13, 3),
+		[VLANHDR_PCP]		= VLANHDR_BITFIELD("pcp", 0, 3),
+		[VLANHDR_CFI]		= VLANHDR_BITFIELD("cfi", 3, 1),
+		[VLANHDR_VID]		= VLANHDR_BITFIELD("id", 4, 12),
 		[VLANHDR_TYPE]		= VLANHDR_TYPE("type", &ethertype_type, vlan_type),
 	},
 };

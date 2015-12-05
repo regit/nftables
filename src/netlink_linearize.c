@@ -103,27 +103,37 @@ static void netlink_gen_concat(struct netlink_linearize_ctx *ctx,
 	}
 }
 
+static unsigned int payload_shift_calc(const struct expr *expr)
+{
+	unsigned int offset, len;
+	int shift;
+
+	offset = expr->payload.offset % BITS_PER_BYTE;
+	len = round_up(expr->len, BITS_PER_BYTE);
+	shift = len - (offset + expr->len);
+	assert(shift >= 0);
+
+	return shift;
+}
+
 static void netlink_gen_payload_mask(struct netlink_linearize_ctx *ctx,
 				     const struct expr *expr,
 				     enum nft_registers dreg)
 {
 	struct nft_data_linearize nld, zero = {};
+	unsigned int shift, len, masklen;
 	struct nftnl_expr *nle;
-	unsigned int offset, len, masklen;
 	mpz_t mask;
 
-	offset = expr->payload.offset % BITS_PER_BYTE;
-	masklen = expr->len + offset;
+	shift = payload_shift_calc(expr);
+	if (!shift && expr->payload.offset % BITS_PER_BYTE == 0)
+		return;
 
-	if (masklen > 128)
-		BUG("expr mask length is %u (len %u, offset %u)\n",
-				masklen, expr->len, offset);
-
+	masklen = expr->len + shift;
+	assert(masklen <= NFT_REG_SIZE * BITS_PER_BYTE);
 	mpz_init2(mask, masklen);
 	mpz_bitmask(mask, expr->len);
-
-	if (offset)
-		mpz_lshift_ui(mask, offset);
+	mpz_lshift_ui(mask, shift);
 
 	nle = alloc_nft_expr("bitwise");
 
@@ -158,8 +168,7 @@ static void netlink_gen_payload(struct netlink_linearize_ctx *ctx,
 
 	nftnl_rule_add_expr(ctx->nlr, nle);
 
-	if (expr->len % BITS_PER_BYTE)
-		netlink_gen_payload_mask(ctx, expr, dreg);
+	netlink_gen_payload_mask(ctx, expr, dreg);
 }
 
 static void netlink_gen_exthdr(struct netlink_linearize_ctx *ctx,
@@ -287,7 +296,7 @@ static void payload_shift_value(const struct expr *left, struct expr *right)
 	    left->ops->type != EXPR_PAYLOAD)
 		return;
 
-	mpz_lshift_ui(right->value, left->payload.offset % BITS_PER_BYTE);
+	mpz_lshift_ui(right->value, payload_shift_calc(left));
 }
 
 static struct expr *netlink_gen_prefix(struct netlink_linearize_ctx *ctx,
