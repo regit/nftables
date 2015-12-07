@@ -9,14 +9,6 @@
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - ip6 version 6;ok
-- ip6 priority 3;ok
-
-# $ sudo nft add rule ip6 test6 input ip6 priority 33
-# <cmdline>:1:39-40: Error: Value 33 exceeds valid range 0-15
-# $ sudo nft add rule ip6 test6 input ip6 priority 3
-# <cmdline>:1:1-39: Error: Could not process rule: Invalid argument
-# add rule ip6 test6 input ip6 priority 3
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ip6 flowlabel 22;ok
 ip6 flowlabel != 233;ok
