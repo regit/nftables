@@ -1,11 +1,13 @@
 # ip6 flowlabel 22
 ip6 test-ip6 input
   [ payload load 3b @ network header + 1 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x00ffff0f ) ^ 0x00000000 ]
   [ cmp eq reg 1 0x00160000 ]
 
 # ip6 flowlabel != 233
 ip6 test-ip6 input
   [ payload load 3b @ network header + 1 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x00ffff0f ) ^ 0x00000000 ]
   [ cmp neq reg 1 0x00e90000 ]
 
 # ip6 flowlabel { 33, 55, 67, 88}
@@ -14,6 +16,7 @@ set%d test-ip6 0
 	element 00210000  : 0 [end]	element 00370000  : 0 [end]	element 00430000  : 0 [end]	element 00580000  : 0 [end]
 ip6 test-ip6 input
   [ payload load 3b @ network header + 1 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x00ffff0f ) ^ 0x00000000 ]
   [ lookup reg 1 set set%d ]
 
 # ip6 flowlabel { 33-55}
@@ -22,6 +25,7 @@ set%d test-ip6 0
 	element 00000000  : 1 [end]	element 00210000  : 0 [end]	element 00380000  : 1 [end]
 ip6 test-ip6 input
   [ payload load 3b @ network header + 1 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x00ffff0f ) ^ 0x00000000 ]
   [ lookup reg 1 set set%d ]
 
 # ip6 length 22

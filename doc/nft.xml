@@ -1479,7 +1479,7 @@ filter output oif eth0
 							<row>
 								<entry>flowlabel</entry>
 								<entry>Flow label</entry>
-								<entry></entry>
+								<entry>integer (20 bit)</entry>
 							</row>
 							<row>
 								<entry>length</entry>
