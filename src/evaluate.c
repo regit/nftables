@@ -362,7 +362,8 @@ conflict_resolution_gen_dependency(struct eval_ctx *ctx, int protocol,
 	return 0;
 }
 
-static uint8_t expr_offset_shift(const struct expr *expr, unsigned int offset)
+static uint8_t expr_offset_shift(const struct expr *expr, unsigned int offset,
+				 unsigned int *extra_len)
 {
 	unsigned int new_offset, len;
 	int shift;
@@ -370,34 +371,38 @@ static uint8_t expr_offset_shift(const struct expr *expr, unsigned int offset)
 	new_offset = offset % BITS_PER_BYTE;
 	len = round_up(expr->len, BITS_PER_BYTE);
 	shift = len - (new_offset + expr->len);
-	assert(shift >= 0);
-
+	while (shift < 0) {
+		shift += BITS_PER_BYTE;
+		*extra_len += BITS_PER_BYTE;
+	}
 	return shift;
 }
 
 static void expr_evaluate_bits(struct eval_ctx *ctx, struct expr **exprp)
 {
 	struct expr *expr = *exprp, *and, *mask, *lshift, *off;
-	unsigned masklen;
+	unsigned masklen, len = expr->len, extra_len = 0;
 	uint8_t shift;
 	mpz_t bitmask;
 
 	switch (expr->ops->type) {
 	case EXPR_PAYLOAD:
-		shift = expr_offset_shift(expr, expr->payload.offset);
+		shift = expr_offset_shift(expr, expr->payload.offset,
+					  &extra_len);
 		break;
 	case EXPR_EXTHDR:
-		shift = expr_offset_shift(expr, expr->exthdr.tmpl->offset);
+		shift = expr_offset_shift(expr, expr->exthdr.tmpl->offset,
+					  &extra_len);
 		break;
 	default:
 		BUG("Unknown expression %s\n", expr->ops->name);
 	}
 
-	masklen = expr->len + shift;
+	masklen = len + shift;
 	assert(masklen <= NFT_REG_SIZE * BITS_PER_BYTE);
 
 	mpz_init2(bitmask, masklen);
-	mpz_bitmask(bitmask, expr->len);
+	mpz_bitmask(bitmask, len);
 	mpz_lshift_ui(bitmask, shift);
 
 	mask = constant_expr_alloc(&expr->location, expr_basetype(expr),
@@ -423,6 +428,9 @@ static void expr_evaluate_bits(struct eval_ctx *ctx, struct expr **exprp)
 		*exprp = lshift;
 	} else
 		*exprp = and;
+
+	if (extra_len)
+		expr->len += extra_len;
 }
 
 static int __expr_evaluate_exthdr(struct eval_ctx *ctx, struct expr **exprp)
