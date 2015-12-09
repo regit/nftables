@@ -213,21 +213,24 @@ static const char *get_rate(uint64_t byte_rate, uint64_t *rate)
 
 static void limit_stmt_print(const struct stmt *stmt)
 {
+	bool inv = stmt->limit.flags & NFT_LIMIT_F_INV;
 	const char *data_unit;
 	uint64_t rate;
 
 	switch (stmt->limit.type) {
 	case NFT_LIMIT_PKTS:
-		printf("limit rate %" PRIu64 "/%s",
-		       stmt->limit.rate, get_unit(stmt->limit.unit));
+		printf("limit rate %s%" PRIu64 "/%s",
+		       inv ? "over " : "", stmt->limit.rate,
+		       get_unit(stmt->limit.unit));
 		if (stmt->limit.burst > 0)
 			printf(" burst %u packets", stmt->limit.burst);
 		break;
 	case NFT_LIMIT_PKT_BYTES:
 		data_unit = get_rate(stmt->limit.rate, &rate);
 
-		printf("limit rate %" PRIu64 " %s/%s",
-		       rate, data_unit, get_unit(stmt->limit.unit));
+		printf("limit rate %s%" PRIu64 " %s/%s",
+		       inv ? "over " : "", rate, data_unit,
+		       get_unit(stmt->limit.unit));
 		if (stmt->limit.burst > 0) {
 			uint64_t burst;
 

@@ -367,6 +367,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token LIMIT			"limit"
 %token RATE			"rate"
 %token BURST			"burst"
+%token OVER			"over"
+%token UNTIL			"until"
 
 %token NANOSECOND		"nanosecond"
 %token MICROSECOND		"microsecond"
@@ -458,7 +460,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <val>			level_type
 %type <stmt>			limit_stmt
 %destructor { stmt_free($$); }	limit_stmt
-%type <val>			limit_burst time_unit
+%type <val>			limit_burst limit_mode time_unit
 %type <stmt>			reject_stmt reject_stmt_alloc
 %destructor { stmt_free($$); }	reject_stmt reject_stmt_alloc
 %type <stmt>			nat_stmt nat_stmt_alloc masq_stmt masq_stmt_alloc redir_stmt redir_stmt_alloc
@@ -1467,31 +1469,38 @@ level_type		:	LEVEL_EMERG	{ $$ = LOG_EMERG; }
 			|	LEVEL_DEBUG	{ $$ = LOG_DEBUG; }
 			;
 
-limit_stmt		:	LIMIT	RATE	NUM	SLASH	time_unit	limit_burst
+limit_stmt		:	LIMIT	RATE	limit_mode	NUM	SLASH	time_unit	limit_burst
 	    		{
 				$$ = limit_stmt_alloc(&@$);
-				$$->limit.rate	= $3;
-				$$->limit.unit	= $5;
-				$$->limit.burst	= $6;
+				$$->limit.rate	= $4;
+				$$->limit.unit	= $6;
+				$$->limit.burst	= $7;
 				$$->limit.type	= NFT_LIMIT_PKTS;
+				$$->limit.flags = $3;
 			}
-			|	LIMIT RATE	NUM	STRING	limit_burst
+			|	LIMIT	RATE	limit_mode	NUM	STRING	limit_burst
 			{
 				struct error_record *erec;
 				uint64_t rate, unit;
 
-				erec = rate_parse(&@$, $4, &rate, &unit);
+				erec = rate_parse(&@$, $5, &rate, &unit);
 				if (erec != NULL) {
 					erec_queue(erec, state->msgs);
 					YYERROR;
 				}
 
 				$$ = limit_stmt_alloc(&@$);
-				$$->limit.rate	= rate * $3;
+				$$->limit.rate	= rate * $4;
 				$$->limit.unit	= unit;
-				$$->limit.burst	= $5;
+				$$->limit.burst	= $6;
 				$$->limit.type	= NFT_LIMIT_PKT_BYTES;
+				$$->limit.flags = $3;
 			}
+			;
+
+limit_mode		:	OVER				{ $$ = NFT_LIMIT_F_INV; }
+			|	UNTIL				{ $$ = 0; }
+			|	/* empty */			{ $$ = 0; }
 			;
 
 limit_burst		:	/* empty */			{ $$ = 0; }

@@ -793,6 +793,7 @@ static void netlink_gen_limit_stmt(struct netlink_linearize_ctx *ctx,
 	if (stmt->limit.burst > 0)
 		nftnl_expr_set_u32(nle, NFTNL_EXPR_LIMIT_BURST,
 				   stmt->limit.burst);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_LIMIT_FLAGS, stmt->limit.flags);
 
 	nftnl_rule_add_expr(ctx->nlr, nle);
 }

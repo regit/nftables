@@ -312,6 +312,8 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "limit"			{ return LIMIT; }
 "rate"			{ return RATE; }
 "burst"			{ return BURST; }
+"until"			{ return UNTIL; }
+"over"			{ return OVER; }
 
 "nanosecond"		{ return NANOSECOND; }
 "microsecond"		{ return MICROSECOND; }
