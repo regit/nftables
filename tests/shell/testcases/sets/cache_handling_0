@@ -1,0 +1,35 @@
+#!/bin/bash
+
+MKTEMP=$(which mktemp)
+if [ -x $MKTEMP ] ; then
+	tmpfile=$(${MKTEMP})
+else
+	tmpfile=$(/tmp/${RANDOM})
+fi
+
+if [ ! -w $tmpfile ] ; then
+	echo "Failed to create tmp file" >&2
+	exit 0
+fi
+
+trap "rm -rf $tmpfile" EXIT # cleanup if aborted
+
+echo "
+table inet test {
+	set test {
+		type ipv4_addr
+		elements = { 1.1.1.1}
+	}
+
+	chain test {
+		ip saddr @test counter accept
+		ip daddr { 2.2.2.2} counter accept
+	}
+}" > $tmpfile
+
+set -e
+
+$NFT -f $tmpfile
+$NFT delete rule inet test test handle 2
+$NFT delete set inet test test
+$NFT -f $tmpfile
