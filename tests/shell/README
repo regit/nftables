@@ -1,0 +1,23 @@
+This test-suite is intended to perform tests of higher level than
+the other reggresion test-suite.
+
+It can run arbitrary executables which can perform any test apart of testing
+the nft syntax or netlink code (which is what the regression tests does).
+
+To run the test suite (as root):
+ % cd tests/shell
+ % ./run-tests.sh
+
+Test files are executables files with the pattern <<name_N>>, where N is the
+expected return code of the executable. Since they are located with `find',
+test-files can be spreaded in any sub-directories.
+
+You can turn on a verbose execution by calling:
+ % ./run-tests.sh -v
+
+Before each call to the test-files, `nft flush ruleset' will be called.
+Also, test-files will receive the environment variable $NFT which contains the
+path to the nftables binary being tested.
+
+You can pass an arbitrary $NFT value as well:
+ % NFT=../../src/nft ./run-tests.sh
