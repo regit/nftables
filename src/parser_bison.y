@@ -565,7 +565,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %type <expr>			ct_expr
 %destructor { expr_free($$); }	ct_expr
-%type <val>			ct_key		ct_key_dir
+%type <val>			ct_key		ct_key_dir	ct_key_counters
 
 %type <val>			export_format
 %type <string>			monitor_event
@@ -2274,6 +2274,7 @@ ct_key			:	STATE		{ $$ = NFT_CT_STATE; }
 			|	EXPIRATION	{ $$ = NFT_CT_EXPIRATION; }
 			|	HELPER		{ $$ = NFT_CT_HELPER; }
 			|	LABEL		{ $$ = NFT_CT_LABELS; }
+			|	ct_key_counters
 			;
 ct_key_dir		:	SADDR		{ $$ = NFT_CT_SRC; }
 			|	DADDR		{ $$ = NFT_CT_DST; }
@@ -2281,6 +2282,11 @@ ct_key_dir		:	SADDR		{ $$ = NFT_CT_SRC; }
 			|	PROTOCOL	{ $$ = NFT_CT_PROTOCOL; }
 			|	PROTO_SRC	{ $$ = NFT_CT_PROTO_SRC; }
 			|	PROTO_DST	{ $$ = NFT_CT_PROTO_DST; }
+			|	ct_key_counters
+			;
+
+ct_key_counters		:	BYTES		{ $$ = NFT_CT_BYTES; }
+			|	PACKETS		{ $$ = NFT_CT_PKTS; }
 			;
 
 ct_stmt			:	CT	ct_key		SET	expr

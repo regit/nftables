@@ -203,6 +203,10 @@ static const struct ct_template ct_templates[] = {
 	[NFT_CT_LABELS]		= CT_TEMPLATE("label", &ct_label_type,
 					      BYTEORDER_HOST_ENDIAN,
 					      CT_LABEL_BIT_SIZE),
+	[NFT_CT_BYTES]		= CT_TEMPLATE("bytes", &integer_type,
+					      BYTEORDER_HOST_ENDIAN, 64),
+	[NFT_CT_PKTS]		= CT_TEMPLATE("packets", &integer_type,
+					      BYTEORDER_HOST_ENDIAN, 64),
 };
 
 static void ct_expr_print(const struct expr *expr)
