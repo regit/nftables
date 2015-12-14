@@ -286,3 +286,21 @@ ip test-ip4 output
   [ meta load mark => reg 1 ]
   [ lookup reg 1 set map%d dreg 1 ]
   [ ct set mark with reg 1 ]
+
+# ct original bytes \> 100000
+ip test-ip4 output
+  [ ct load bytes => reg 1 , dir original ]
+  [ byteorder reg 1 = hton(reg 1, 8, 8) ]
+  [ cmp gt reg 1 0x00000000 0xa0860100 ]
+
+# ct reply packets \< 100
+ip test-ip4 output
+  [ ct load packets => reg 1 , dir reply ]
+  [ byteorder reg 1 = hton(reg 1, 8, 8) ]
+  [ cmp lt reg 1 0x00000000 0x64000000 ]
+
+# ct bytes \> 100000
+ip test-ip4 output
+  [ ct load bytes => reg 1 ]
+  [ byteorder reg 1 = hton(reg 1, 8, 8) ]
+  [ cmp gt reg 1 0x00000000 0xa0860100 ]

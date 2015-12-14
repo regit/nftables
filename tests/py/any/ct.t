@@ -110,6 +110,15 @@ ct state . ct mark { new . 0x12345678, new . 0x34127856, established . 0x1278563
 ct direction . ct mark { original . 0x12345678};ok
 ct state . ct mark vmap { new . 0x12345678 : drop};ok
 
+ct original bytes \> 100000;ok;ct original bytes > 100000
+ct reply packets \< 100;ok;ct reply packets < 100
+ct bytes \> 100000;ok;ct bytes > 100000
+
+# bogus direction
+ct both bytes gt 1;fail
+# nonsensical
+ct bytes original reply;fail
+
 # missing direction
 ct saddr 1.2.3.4;fail
 
