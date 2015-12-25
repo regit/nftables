@@ -365,7 +365,7 @@ static bool supersede_dep(const struct proto_desc *have,
 	if (payload->payload.base != PROTO_BASE_LL_HDR || have->length)
 		return false;
 
-	if (have != &proto_inet)
+	if (have != &proto_inet && have != &proto_netdev)
 		return false;
 
 	return true;

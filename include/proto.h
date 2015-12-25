@@ -308,6 +308,8 @@ extern const struct proto_desc proto_arp;
 extern const struct proto_desc proto_vlan;
 extern const struct proto_desc proto_eth;
 
+extern const struct proto_desc proto_netdev;
+
 extern const struct proto_desc proto_unknown;
 extern const struct proto_hdr_template proto_unknown_template;
 

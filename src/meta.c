@@ -470,7 +470,9 @@ static void meta_expr_pctx_update(struct proto_ctx *ctx,
 
 	switch (left->meta.key) {
 	case NFT_META_IIFTYPE:
-		if (h->base < PROTO_BASE_NETWORK_HDR && ctx->family != NFPROTO_INET)
+		if (h->base < PROTO_BASE_NETWORK_HDR &&
+		    ctx->family != NFPROTO_INET &&
+		    ctx->family != NFPROTO_NETDEV)
 			return;
 
 		desc = proto_dev_desc(mpz_get_uint16(right->value));
@@ -493,6 +495,16 @@ static void meta_expr_pctx_update(struct proto_ctx *ctx,
 			desc = &proto_unknown;
 
 		proto_ctx_update(ctx, PROTO_BASE_TRANSPORT_HDR, &expr->location, desc);
+		break;
+	case NFT_META_PROTOCOL:
+		if (h->base < PROTO_BASE_NETWORK_HDR && ctx->family != NFPROTO_NETDEV)
+			return;
+
+		desc = proto_find_upper(h->desc, ntohs(mpz_get_uint16(right->value)));
+		if (desc == NULL)
+			desc = &proto_unknown;
+
+		proto_ctx_update(ctx, PROTO_BASE_NETWORK_HDR, &expr->location, desc);
 		break;
 	default:
 		break;
@@ -528,6 +540,10 @@ struct expr *meta_expr_alloc(const struct location *loc, enum nft_meta_keys key)
 	case NFT_META_L4PROTO:
 		expr->flags |= EXPR_F_PROTOCOL;
 		expr->meta.base = PROTO_BASE_NETWORK_HDR;
+		break;
+	case NFT_META_PROTOCOL:
+		expr->flags |= EXPR_F_PROTOCOL;
+		expr->meta.base = PROTO_BASE_LL_HDR;
 		break;
 	default:
 		break;
