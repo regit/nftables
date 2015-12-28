@@ -303,7 +303,7 @@ static const struct symbol_table icmp_type_tbl = {
 	},
 };
 
-static const struct datatype icmp_type_type = {
+const struct datatype icmp_type_type = {
 	.type		= TYPE_ICMP_TYPE,
 	.name		= "icmp_type",
 	.desc		= "ICMP type",

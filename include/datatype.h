@@ -207,6 +207,7 @@ extern const struct datatype arphrd_type;
 extern const struct datatype inet_protocol_type;
 extern const struct datatype inet_service_type;
 extern const struct datatype mark_type;
+extern const struct datatype icmp_type_type;
 extern const struct datatype icmp_code_type;
 extern const struct datatype icmpv6_code_type;
 extern const struct datatype icmpx_code_type;

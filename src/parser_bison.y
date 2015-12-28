@@ -2101,6 +2101,13 @@ primary_rhs_expr	:	symbol_expr		{ $$ = $1; }
 							 BYTEORDER_HOST_ENDIAN,
 							 sizeof(data) * BITS_PER_BYTE, &data);
 			}
+			|	REDIRECT
+			{
+				uint8_t data = ICMP_REDIRECT;
+				$$ = constant_expr_alloc(&@$, &icmp_type_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 sizeof(data) * BITS_PER_BYTE, &data);
+			}
 			;
 
 relational_op		:	EQ		{ $$ = OP_EQ; }
