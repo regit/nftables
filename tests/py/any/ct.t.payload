@@ -273,3 +273,16 @@ ip test-ip4 output
   [ ct load mark => reg 9 ]
   [ lookup reg 1 set map%d dreg 0 ]
 
+# ct mark set mark
+ip test-ip4 output
+  [ meta load mark => reg 1 ]
+  [ ct set mark with reg 1 ]
+
+# ct mark set mark map { 1 : 10, 2 : 20, 3 : 30 }
+map%d test-ip4 b
+map%d test-ip4 0
+        element 00000001  : 0000000a 0 [end]    element 00000002  : 00000014 0 [end]    element 00000003  : 0000001e 0 [end]
+ip test-ip4 output
+  [ meta load mark => reg 1 ]
+  [ lookup reg 1 set map%d dreg 1 ]
+  [ ct set mark with reg 1 ]
