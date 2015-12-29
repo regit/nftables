@@ -486,6 +486,10 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { expr_free($$); }	multiton_expr
 %type <expr>			prefix_expr range_expr wildcard_expr
 %destructor { expr_free($$); }	prefix_expr range_expr wildcard_expr
+
+%type <expr>			stmt_expr concat_stmt_expr map_stmt_expr
+%destructor { expr_free($$); }	stmt_expr concat_stmt_expr map_stmt_expr
+
 %type <expr>			list_expr
 %destructor { expr_free($$); }	list_expr
 %type <expr>			concat_expr
@@ -1577,20 +1581,51 @@ nat_stmt_alloc		:	SNAT
 			}
 			;
 
-nat_stmt_args		:	expr
+concat_stmt_expr	:	primary_expr
+			|	concat_stmt_expr	DOT	primary_expr
+			{
+				if ($$->ops->type != EXPR_CONCAT) {
+					$$ = concat_expr_alloc(&@$);
+					compound_expr_add($$, $1);
+				} else {
+					struct location rhs[] = {
+						[1]	= @2,
+						[2]	= @3,
+					};
+					location_update(&$3->location, rhs, 2);
+
+					$$ = $1;
+					$$->location = @$;
+				}
+				compound_expr_add($$, $3);
+			}
+			;
+
+map_stmt_expr		:	concat_stmt_expr	MAP	rhs_expr
+			{
+				$$ = map_expr_alloc(&@$, $1, $3);
+			}
+			;
+
+stmt_expr		:	map_stmt_expr
+			|	multiton_expr
+			|	primary_expr
+			;
+
+nat_stmt_args		:	stmt_expr
 			{
 				$<stmt>0->nat.addr = $1;
 			}
-			|	expr	COLON	expr
+			|	stmt_expr	COLON	stmt_expr
 			{
 				$<stmt>0->nat.addr = $1;
 				$<stmt>0->nat.proto = $3;
 			}
-			|	COLON	expr
+			|	COLON		stmt_expr
 			{
 				$<stmt>0->nat.proto = $2;
 			}
-			|	nat_stmt_args	nf_nat_flags
+			|       nat_stmt_args   nf_nat_flags
 			{
 				$<stmt>0->nat.flags = $2;
 			}
@@ -1614,7 +1649,7 @@ redir_stmt		:	redir_stmt_alloc	redir_stmt_arg
 redir_stmt_alloc	:	REDIRECT	{ $$ = redir_stmt_alloc(&@$); }
 			;
 
-redir_stmt_arg		:	TO	expr
+redir_stmt_arg		:	TO	stmt_expr
 			{
 				$<stmt>0->redir.proto = $2;
 			}
@@ -1622,19 +1657,19 @@ redir_stmt_arg		:	TO	expr
 			{
 				$<stmt>0->redir.flags = $1;
 			}
-			|	TO	expr	nf_nat_flags
+			|	TO	stmt_expr	nf_nat_flags
 			{
 				$<stmt>0->redir.proto = $2;
 				$<stmt>0->redir.flags = $3;
 			}
 			;
 
-dup_stmt		:	DUP	TO	expr
+dup_stmt		:	DUP	TO	stmt_expr
 			{
 				$$ = dup_stmt_alloc(&@$);
 				$$->dup.to = $3;
 			}
-			|	DUP	TO	expr 	DEVICE	expr
+			|	DUP	TO	stmt_expr 	DEVICE	stmt_expr
 			{
 				$$ = dup_stmt_alloc(&@$);
 				$$->dup.to = $3;
@@ -1671,7 +1706,7 @@ queue_stmt_args		:	queue_stmt_arg
 			|	queue_stmt_args	queue_stmt_arg
 			;
 
-queue_stmt_arg		:	QUEUENUM	expr
+queue_stmt_arg		:	QUEUENUM	stmt_expr
 			{
 				$<stmt>0->queue.queue = $2;
 			}
@@ -1865,7 +1900,6 @@ map_expr		:	concat_expr	MAP	rhs_expr
 			;
 
 expr			:	concat_expr
-			|	multiton_expr
 			|	set_expr
 			|       map_expr
 			;
