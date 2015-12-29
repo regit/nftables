@@ -482,10 +482,10 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			basic_expr
 %destructor { expr_free($$); }	basic_expr
 
-%type <expr>			multiton_expr
-%destructor { expr_free($$); }	multiton_expr
-%type <expr>			prefix_expr range_expr wildcard_expr
-%destructor { expr_free($$); }	prefix_expr range_expr wildcard_expr
+%type <expr>			multiton_rhs_expr
+%destructor { expr_free($$); }	multiton_rhs_expr
+%type <expr>			prefix_rhs_expr range_rhs_expr wildcard_rhs_expr
+%destructor { expr_free($$); }	prefix_rhs_expr range_rhs_expr wildcard_rhs_expr
 
 %type <expr>			stmt_expr concat_stmt_expr map_stmt_expr
 %destructor { expr_free($$); }	stmt_expr concat_stmt_expr map_stmt_expr
@@ -1608,8 +1608,8 @@ map_stmt_expr		:	concat_stmt_expr	MAP	rhs_expr
 			;
 
 stmt_expr		:	map_stmt_expr
-			|	multiton_expr
-			|	primary_expr
+			|	multiton_rhs_expr
+			|	primary_rhs_expr
 			;
 
 nat_stmt_args		:	stmt_expr
@@ -1865,19 +1865,19 @@ list_expr		:	basic_expr		COMMA		basic_expr
 			}
 			;
 
-prefix_expr		:	basic_rhs_expr		SLASH	NUM
+prefix_rhs_expr		:	basic_rhs_expr	SLASH	NUM
 			{
 				$$ = prefix_expr_alloc(&@$, $1, $3);
 			}
 			;
 
-range_expr		:	basic_rhs_expr		DASH	basic_rhs_expr
+range_rhs_expr		:	basic_rhs_expr	DASH	basic_rhs_expr
 			{
 				$$ = range_expr_alloc(&@$, $1, $3);
 			}
 			;
 
-wildcard_expr		:	ASTERISK
+wildcard_rhs_expr	:	ASTERISK
 	       		{
 				struct expr *expr;
 
@@ -1888,9 +1888,9 @@ wildcard_expr		:	ASTERISK
 			}
 			;
 
-multiton_expr		:	prefix_expr
-			|	range_expr
-			|	wildcard_expr
+multiton_rhs_expr	:	prefix_rhs_expr
+			|	range_rhs_expr
+			|	wildcard_rhs_expr
 			;
 
 map_expr		:	concat_expr	MAP	rhs_expr
@@ -1966,7 +1966,7 @@ set_elem_option		:	TIMEOUT			time_spec
 			;
 
 set_lhs_expr		:	concat_rhs_expr
-			|	multiton_expr
+			|	multiton_rhs_expr
 			;
 
 set_rhs_expr		:	concat_rhs_expr
@@ -2006,7 +2006,7 @@ list_rhs_expr		:	basic_rhs_expr		COMMA		basic_rhs_expr
 			;
 
 rhs_expr		:	concat_rhs_expr		{ $$ = $1; }
-			|	multiton_expr		{ $$ = $1; }
+			|	multiton_rhs_expr	{ $$ = $1; }
 			|	set_expr		{ $$ = $1; }
 			;
 
