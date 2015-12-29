@@ -514,8 +514,11 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %type <expr>			rhs_expr concat_rhs_expr basic_rhs_expr
 %destructor { expr_free($$); }	rhs_expr concat_rhs_expr basic_rhs_expr
-%type <expr>			primary_rhs_expr list_rhs_expr
-%destructor { expr_free($$); }	primary_rhs_expr list_rhs_expr
+%type <expr>			primary_rhs_expr list_rhs_expr shift_rhs_expr
+%destructor { expr_free($$); }	primary_rhs_expr list_rhs_expr shift_rhs_expr
+%type <expr>			and_rhs_expr exclusive_or_rhs_expr inclusive_or_rhs_expr
+%destructor { expr_free($$); }	and_rhs_expr exclusive_or_rhs_expr inclusive_or_rhs_expr
+
 
 %type <expr>			relational_expr
 %destructor { expr_free($$); }	relational_expr
@@ -2010,7 +2013,42 @@ rhs_expr		:	concat_rhs_expr		{ $$ = $1; }
 			|	set_expr		{ $$ = $1; }
 			;
 
-concat_rhs_expr		:	basic_rhs_expr		{ $$ = $1; }
+shift_rhs_expr		:	primary_rhs_expr
+			|	shift_rhs_expr		LSHIFT		primary_rhs_expr
+			{
+				$$ = binop_expr_alloc(&@$, OP_LSHIFT, $1, $3);
+			}
+			|	shift_rhs_expr		RSHIFT		primary_rhs_expr
+			{
+				$$ = binop_expr_alloc(&@$, OP_RSHIFT, $1, $3);
+			}
+			;
+
+and_rhs_expr		:	shift_rhs_expr
+			|	and_rhs_expr		AMPERSAND	shift_rhs_expr
+			{
+				$$ = binop_expr_alloc(&@$, OP_AND, $1, $3);
+			}
+			;
+
+exclusive_or_rhs_expr	:	and_rhs_expr
+			|	exclusive_or_rhs_expr	CARET		and_rhs_expr
+			{
+				$$ = binop_expr_alloc(&@$, OP_XOR, $1, $3);
+			}
+			;
+
+inclusive_or_rhs_expr	:	exclusive_or_rhs_expr
+			|	inclusive_or_rhs_expr	'|'		exclusive_or_rhs_expr
+			{
+				$$ = binop_expr_alloc(&@$, OP_OR, $1, $3);
+			}
+			;
+
+basic_rhs_expr		:	inclusive_or_rhs_expr
+			;
+
+concat_rhs_expr		:	basic_rhs_expr
 			|	concat_rhs_expr	DOT	basic_rhs_expr
 			{
 				if ($$->ops->type != EXPR_CONCAT) {
@@ -2028,9 +2066,6 @@ concat_rhs_expr		:	basic_rhs_expr		{ $$ = $1; }
 				}
 				compound_expr_add($$, $3);
 			}
-			;
-
-basic_rhs_expr		:	primary_rhs_expr	{ $$ = $1; }
 			;
 
 primary_rhs_expr	:	symbol_expr		{ $$ = $1; }
