@@ -236,7 +236,7 @@ static void netlink_parse_cmp(struct netlink_parse_ctx *ctx,
 	    left->dtype != &string_type) {
 		return netlink_error(ctx, loc,
 				     "Relational expression size mismatch");
-	} else if (left->len < right->len) {
+	} else if (left->len > 0 && left->len < right->len) {
 		left = netlink_parse_concat_expr(ctx, loc, sreg, right->len);
 		if (left == NULL)
 			return;
