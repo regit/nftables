@@ -1020,6 +1020,8 @@ static int do_list_sets(struct netlink_ctx *ctx, struct cmd *cmd)
 		       table->handle.table);
 
 		list_for_each_entry(set, &table->sets, list) {
+			if (set->flags & SET_F_ANONYMOUS)
+				continue;
 			set_print_declaration(set, &opts);
 			printf("%s}%s", opts.tab, opts.nl);
 		}
