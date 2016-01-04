@@ -536,12 +536,16 @@ static void netlink_parse_ct_expr(struct netlink_parse_ctx *ctx,
 				  const struct location *loc,
 				  const struct nftnl_expr *nle)
 {
+	struct expr *expr = NULL;
 	enum nft_registers dreg;
+	int8_t dir = -1;
 	uint32_t key;
-	struct expr *expr;
+
+	if (nftnl_expr_is_set(nle, NFTNL_EXPR_CT_DIR))
+		dir = nftnl_expr_get_u8(nle, NFTNL_EXPR_CT_DIR);
 
 	key  = nftnl_expr_get_u32(nle, NFTNL_EXPR_CT_KEY);
-	expr = ct_expr_alloc(loc, key);
+	expr = ct_expr_alloc(loc, key, dir);
 
 	dreg = netlink_parse_register(nle, NFTNL_EXPR_CT_DREG);
 	netlink_set_register(ctx, dreg, expr);
@@ -1117,6 +1121,12 @@ static void meta_match_postprocess(struct rule_pp_ctx *ctx,
 	}
 }
 
+static void ct_match_postprocess(struct rule_pp_ctx *ctx,
+				 const struct expr *expr)
+{
+	return meta_match_postprocess(ctx, expr);
+}
+
 /* Convert a bitmask to a prefix length */
 static unsigned int expr_mask_to_prefix(const struct expr *expr)
 {
@@ -1394,6 +1404,9 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 		expr_postprocess(ctx, &expr->right);
 
 		switch (expr->left->ops->type) {
+		case EXPR_CT:
+			ct_match_postprocess(ctx, expr);
+			break;
 		case EXPR_META:
 			meta_match_postprocess(ctx, expr);
 			break;
@@ -1431,8 +1444,10 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 	case EXPR_SET_REF:
 	case EXPR_EXTHDR:
 	case EXPR_META:
-	case EXPR_CT:
 	case EXPR_VERDICT:
+		break;
+	case EXPR_CT:
+		ct_expr_update_type(&ctx->pctx, expr);
 		break;
 	default:
 		BUG("unknown expression type %s\n", expr->ops->name);

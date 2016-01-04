@@ -273,6 +273,7 @@ struct expr {
 		struct {
 			/* EXPR_CT */
 			enum nft_ct_keys	key;
+			int8_t			direction;
 		} ct;
 	};
 };

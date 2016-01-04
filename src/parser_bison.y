@@ -567,7 +567,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %type <expr>			ct_expr
 %destructor { expr_free($$); }	ct_expr
-%type <val>			ct_key
+%type <val>			ct_key		ct_key_dir
 
 %type <val>			export_format
 %type <string>			monitor_event
@@ -2264,9 +2264,22 @@ meta_stmt		:	META	meta_key	SET	expr
 			}
 			;
 
-ct_expr			:	CT	ct_key
+ct_expr			: 	CT	ct_key
 			{
-				$$ = ct_expr_alloc(&@$, $2);
+				$$ = ct_expr_alloc(&@$, $2, -1);
+			}
+			|	CT	ct_key_dir 	STRING
+			{
+				struct error_record *erec;
+				int8_t direction;
+
+				erec = ct_dir_parse(&@$, $3, &direction);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+
+				$$ = ct_expr_alloc(&@$, $2, direction);
 			}
 			;
 
@@ -2276,13 +2289,14 @@ ct_key			:	STATE		{ $$ = NFT_CT_STATE; }
 			|	MARK		{ $$ = NFT_CT_MARK; }
 			|	EXPIRATION	{ $$ = NFT_CT_EXPIRATION; }
 			|	HELPER		{ $$ = NFT_CT_HELPER; }
-			|	L3PROTOCOL	{ $$ = NFT_CT_L3PROTOCOL; }
-			|	SADDR		{ $$ = NFT_CT_SRC; }
+			|	LABEL		{ $$ = NFT_CT_LABELS; }
+			;
+ct_key_dir		:	SADDR		{ $$ = NFT_CT_SRC; }
 			|	DADDR		{ $$ = NFT_CT_DST; }
+			|	L3PROTOCOL	{ $$ = NFT_CT_L3PROTOCOL; }
 			|	PROTOCOL	{ $$ = NFT_CT_PROTOCOL; }
 			|	PROTO_SRC	{ $$ = NFT_CT_PROTO_SRC; }
 			|	PROTO_DST	{ $$ = NFT_CT_PROTO_DST; }
-			|	LABEL		{ $$ = NFT_CT_LABELS; }
 			;
 
 ct_stmt			:	CT	ct_key		SET	expr
