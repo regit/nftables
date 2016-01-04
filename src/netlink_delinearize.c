@@ -331,12 +331,14 @@ static void netlink_parse_bitwise(struct netlink_parse_ctx *ctx,
 		mpz_ior(m, m, o);
 	}
 
-	if (mpz_scan0(m, 0) != left->len) {
+	if (left->len > 0 && mpz_scan0(m, 0) == left->len) {
+		/* mask encompasses the entire value */
+		expr_free(mask);
+	} else {
 		mpz_set(mask->value, m);
 		expr = binop_expr_alloc(loc, OP_AND, expr, mask);
 		expr->len = left->len;
-	} else
-		expr_free(mask);
+	}
 
 	if (mpz_cmp_ui(x, 0)) {
 		mpz_set(xor->value, x);
