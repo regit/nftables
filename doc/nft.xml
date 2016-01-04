@@ -982,6 +982,13 @@ filter output ip6 daddr ::1
 						<arg>skgid</arg>
 						<arg>nftrace</arg>
 						<arg>rtclassid</arg>
+						<arg>ibriport</arg>
+						<arg>obriport</arg>
+						<arg>pkttype</arg>
+						<arg>cpu</arg>
+						<arg>iifgroup</arg>
+						<arg>oifgroup</arg>
+						<arg>cgroup</arg>
 					</group>
 				</cmdsynopsis>
 			</para>
@@ -1074,6 +1081,41 @@ filter output ip6 daddr ::1
 								<entry>Routing realm</entry>
 								<entry>realm</entry>
 							</row>
+							<row>
+								<entry>ibriport</entry>
+								<entry>Input bridge interface name</entry>
+								<entry>string</entry>
+							</row>
+							<row>
+								<entry>obriport</entry>
+								<entry>Output bridge interface name</entry>
+								<entry>string</entry>
+							</row>
+							<row>
+								<entry>pkttype</entry>
+								<entry>packet type</entry>
+								<entry>pkt_type</entry>
+							</row>
+							<row>
+								<entry>cpu</entry>
+								<entry>cpu number processing the packet</entry>
+								<entry>integer (32 bits)</entry>
+							</row>
+							<row>
+								<entry>iifgroup</entry>
+								<entry>incoming device group</entry>
+								<entry>devgroup_type</entry>
+							</row>
+							<row>
+								<entry>oifgroup</entry>
+								<entry>outgoing device group</entry>
+								<entry>devgroup_type</entry>
+							</row>
+							<row>
+								<entry>cgroup</entry>
+								<entry>control group id</entry>
+								<entry>integer (32 bits)</entry>
+							</row>
 						</tbody>
 					</tgroup>
 				</table>
@@ -1129,6 +1171,20 @@ filter output ip6 daddr ::1
 								<entry>
 									Routing Realm (32 bit number). Can be specified numerically
 									or as symbolic name defined in /etc/iproute2/rt_realms.
+								</entry>
+							</row>
+							<row>
+								<entry>devgroup_type</entry>
+								<entry>
+									Device group (32 bit number). Can be specified numerically
+									or as symbolic name defined in /etc/iproute2/group.
+								</entry>
+							</row>
+							<row>
+								<entry>pkt_type</entry>
+								<entry>
+									Packet type: Unicast (addressed to local host),
+									Broadcast (to all), Multicast (to group).
 								</entry>
 							</row>
 						</tbody>
@@ -1884,6 +1940,7 @@ filter output oif eth0
 						<arg>mark</arg>
 						<arg>expiration</arg>
 						<arg>helper</arg>
+						<arg>label</arg>
 						<arg>l3proto</arg>
 						<arg>saddr</arg>
 						<arg>daddr</arg>
@@ -1937,6 +1994,11 @@ filter output oif eth0
 								<entry>helper</entry>
 								<entry>Helper associated with the connection</entry>
 								<entry>string</entry>
+							</row>
+							<row>
+								<entry>label</entry>
+								<entry>Connection tracking label</entry>
+								<entry>ct_label</entry>
 							</row>
 							<row>
 								<entry>l3proto</entry>
