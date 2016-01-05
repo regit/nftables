@@ -17,6 +17,7 @@
 #include <arpa/inet.h>
 #include <linux/types.h>
 #include <linux/netfilter.h>
+#include <linux/icmpv6.h>
 
 #include <nftables.h>
 #include <datatype.h>
@@ -26,7 +27,6 @@
 #include <netlink.h>
 
 #include <netinet/ip_icmp.h>
-#include <netinet/icmp6.h>
 
 static const struct datatype *datatypes[TYPE_MAX + 1] = {
 	[TYPE_INVALID]		= &invalid_type,
@@ -731,10 +731,12 @@ const struct datatype icmp_code_type = {
 
 static const struct symbol_table icmpv6_code_tbl = {
 	.symbols	= {
-		SYMBOL("no-route",		ICMP6_DST_UNREACH_NOROUTE),
-		SYMBOL("admin-prohibited",	ICMP6_DST_UNREACH_ADMIN),
-		SYMBOL("addr-unreachable",	ICMP6_DST_UNREACH_ADDR),
-		SYMBOL("port-unreachable",	ICMP6_DST_UNREACH_NOPORT),
+		SYMBOL("no-route",		ICMPV6_NOROUTE),
+		SYMBOL("admin-prohibited",	ICMPV6_ADM_PROHIBITED),
+		SYMBOL("addr-unreachable",	ICMPV6_ADDR_UNREACH),
+		SYMBOL("port-unreachable",	ICMPV6_PORT_UNREACH),
+		SYMBOL("policy-fail",		ICMPV6_POLICY_FAIL),
+		SYMBOL("reject-route",		ICMPV6_REJECT_ROUTE),
 		SYMBOL_LIST_END
 	},
 };
