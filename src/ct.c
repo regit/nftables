@@ -209,19 +209,18 @@ static void ct_expr_print(const struct expr *expr)
 {
 	const struct symbolic_constant *s;
 
-	printf("ct %s", ct_templates[expr->ct.key].token);
-
+	printf("ct ");
 	if (expr->ct.direction < 0)
-		return;
+		goto done;
 
 	for (s = ct_dir_tbl.symbols; s->identifier != NULL; s++) {
 		if (expr->ct.direction == (int) s->value) {
-			printf(" %s", s->identifier);
-			return;
+			printf("%s ", s->identifier);
+			break;
 		}
 	}
-
-	printf(" %d", expr->ct.direction);
+ done:
+	printf("%s", ct_templates[expr->ct.key].token);
 }
 
 static bool ct_expr_cmp(const struct expr *e1, const struct expr *e2)

@@ -2252,18 +2252,18 @@ ct_expr			: 	CT	ct_key
 			{
 				$$ = ct_expr_alloc(&@$, $2, -1);
 			}
-			|	CT	ct_key_dir 	STRING
+			|	CT	STRING	ct_key_dir
 			{
 				struct error_record *erec;
 				int8_t direction;
 
-				erec = ct_dir_parse(&@$, $3, &direction);
+				erec = ct_dir_parse(&@$, $2, &direction);
 				if (erec != NULL) {
 					erec_queue(erec, state->msgs);
 					YYERROR;
 				}
 
-				$$ = ct_expr_alloc(&@$, $2, direction);
+				$$ = ct_expr_alloc(&@$, $3, direction);
 			}
 			;
 

@@ -1,60 +1,60 @@
-# ct saddr original 192.168.0.1
+# ct original saddr 192.168.0.1
 ip test-ip4 output
   [ ct load src => reg 1 , dir original ]
   [ cmp eq reg 1 0x0100a8c0 ]
 
-# ct saddr reply 192.168.0.1
+# ct reply saddr 192.168.0.1
 ip test-ip4 output
   [ ct load src => reg 1 , dir reply ]
   [ cmp eq reg 1 0x0100a8c0 ]
 
-# ct daddr original 192.168.0.1
+# ct original daddr 192.168.0.1
 ip test-ip4 output
   [ ct load dst => reg 1 , dir original ]
   [ cmp eq reg 1 0x0100a8c0 ]
 
-# ct daddr reply 192.168.0.1
+# ct reply daddr 192.168.0.1
 ip test-ip4 output
   [ ct load dst => reg 1 , dir reply ]
   [ cmp eq reg 1 0x0100a8c0 ]
 
-# ct saddr original 192.168.1.0/24
+# ct original saddr 192.168.1.0/24
 ip test-ip4 output
   [ ct load src => reg 1 , dir original ]
   [ bitwise reg 1 = (reg=1 & 0x00ffffff ) ^ 0x00000000 ]
   [ cmp eq reg 1 0x0001a8c0 ]
 
-# ct saddr reply 192.168.1.0/24
+# ct reply saddr 192.168.1.0/24
 ip test-ip4 output
   [ ct load src => reg 1 , dir reply ]
   [ bitwise reg 1 = (reg=1 & 0x00ffffff ) ^ 0x00000000 ]
   [ cmp eq reg 1 0x0001a8c0 ]
 
-# ct daddr original 192.168.1.0/24
+# ct original daddr 192.168.1.0/24
 ip test-ip4 output
   [ ct load dst => reg 1 , dir original ]
   [ bitwise reg 1 = (reg=1 & 0x00ffffff ) ^ 0x00000000 ]
   [ cmp eq reg 1 0x0001a8c0 ]
 
-# ct daddr reply 192.168.1.0/24
+# ct reply daddr 192.168.1.0/24
 ip test-ip4 output
   [ ct load dst => reg 1 , dir reply ]
   [ bitwise reg 1 = (reg=1 & 0x00ffffff ) ^ 0x00000000 ]
   [ cmp eq reg 1 0x0001a8c0 ]
 
-# ct l3proto original ipv4
+# ct original l3proto ipv4
 ip test-ip4 output
   [ ct load l3protocol => reg 1 , dir original ]
   [ cmp eq reg 1 0x00000002 ]
 
-# ct protocol original 6 ct proto-dst original 22
+# ct original protocol 6 ct original proto-dst 22
 ip test-ip4 output
   [ ct load protocol => reg 1 , dir original ]
   [ cmp eq reg 1 0x00000006 ]
   [ ct load proto_dst => reg 1 , dir original ]
   [ cmp eq reg 1 0x00001600 ]
 
-# ct protocol original 17 ct proto-src reply 53
+# ct original protocol 17 ct reply proto-src 53
 ip test-ip4 output
   [ ct load protocol => reg 1 , dir original ]
   [ cmp eq reg 1 0x00000011 ]

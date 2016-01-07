@@ -109,3 +109,11 @@ ct state . ct mark { new . 0x12345678};ok
 ct state . ct mark { new . 0x12345678, new . 0x34127856, established . 0x12785634};ok
 ct direction . ct mark { original . 0x12345678};ok
 ct state . ct mark vmap { new . 0x12345678 : drop};ok
+
+# missing direction
+ct saddr 1.2.3.4;fail
+
+# direction, but must be used without
+ct original mark 42;fail
+# swapped key and direction
+ct mark original;fail
