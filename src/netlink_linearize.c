@@ -592,6 +592,14 @@ static void netlink_gen_unary(struct netlink_linearize_ctx *ctx,
 			      enum nft_registers dreg)
 {
 	struct nftnl_expr *nle;
+	int byte_size;
+
+	if ((expr->arg->len % 64) == 0)
+		byte_size = 8;
+	else if ((expr->arg->len % 32) == 0)
+		byte_size = 4;
+	else
+		byte_size = 2;
 
 	netlink_gen_expr(ctx, expr->arg, dreg);
 
@@ -601,7 +609,7 @@ static void netlink_gen_unary(struct netlink_linearize_ctx *ctx,
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_BYTEORDER_LEN,
 			   expr->len / BITS_PER_BYTE);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_BYTEORDER_SIZE,
-			   expr->arg->len % 32 ? 2 : 4);
+			   byte_size);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_BYTEORDER_OP,
 			   netlink_gen_unary_op(expr->op));
 	nftnl_rule_add_expr(ctx->nlr, nle);
