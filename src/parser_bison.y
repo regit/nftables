@@ -490,8 +490,6 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			stmt_expr concat_stmt_expr map_stmt_expr
 %destructor { expr_free($$); }	stmt_expr concat_stmt_expr map_stmt_expr
 
-%type <expr>			list_expr
-%destructor { expr_free($$); }	list_expr
 %type <expr>			concat_expr
 %destructor { expr_free($$); }	concat_expr
 
@@ -1854,20 +1852,6 @@ concat_expr		:	basic_expr
 			}
 			;
 
-list_expr		:	basic_expr		COMMA		basic_expr
-			{
-				$$ = list_expr_alloc(&@$);
-				compound_expr_add($$, $1);
-				compound_expr_add($$, $3);
-			}
-			|	list_expr		COMMA		basic_expr
-			{
-				$1->location = @$;
-				compound_expr_add($1, $3);
-				$$ = $1;
-			}
-			;
-
 prefix_rhs_expr		:	basic_rhs_expr	SLASH	NUM
 			{
 				$$ = prefix_expr_alloc(&@$, $1, $3);
@@ -1976,8 +1960,8 @@ set_rhs_expr		:	concat_rhs_expr
 			|	verdict_expr
 			;
 
-initializer_expr	:	expr
-			|	list_expr
+initializer_expr	:	rhs_expr
+			|	list_rhs_expr
 			;
 
 relational_expr		:	expr	/* implicit */	rhs_expr
