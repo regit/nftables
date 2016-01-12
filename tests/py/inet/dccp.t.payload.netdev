@@ -1,0 +1,82 @@
+# dccp sport 21-35
+inet test-inet input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 2b @ transport header + 0 => reg 1 ]
+  [ cmp gte reg 1 0x00001500 ]
+  [ cmp lte reg 1 0x00002300 ]
+
+# dccp sport != 21-35
+inet test-inet input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 2b @ transport header + 0 => reg 1 ]
+  [ cmp lt reg 1 0x00001500 ]
+  [ cmp gt reg 1 0x00002300 ]
+
+# dccp sport {23, 24, 25}
+set%d test-inet 3
+set%d test-inet 0
+	element 00001700  : 0 [end]	element 00001800  : 0 [end]	element 00001900  : 0 [end]
+inet test-inet input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 2b @ transport header + 0 => reg 1 ]
+  [ lookup reg 1 set set%d ]
+
+# dccp sport { 20-50 }
+set%d test-ip4 7
+set%d test-ip4 0
+	element 00000000  : 1 [end]	element 00001400  : 0 [end]	element 00003300  : 1 [end]
+inet test-inet input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 2b @ transport header + 0 => reg 1 ]
+  [ lookup reg 1 set set%d ]
+
+# dccp sport ftp-data - re-mail-ck
+inet test-inet input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 2b @ transport header + 0 => reg 1 ]
+  [ cmp gte reg 1 0x00001400 ]
+  [ cmp lte reg 1 0x00003200 ]
+
+# dccp sport 20-50
+inet test-inet input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 2b @ transport header + 0 => reg 1 ]
+  [ cmp gte reg 1 0x00001400 ]
+  [ cmp lte reg 1 0x00003200 ]
+
+# dccp sport { 20-50}
+set%d test-ip4 7
+set%d test-ip4 0
+	element 00000000  : 1 [end]	element 00001400  : 0 [end]	element 00003300  : 1 [end]
+inet test-inet input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 2b @ transport header + 0 => reg 1 ]
+  [ lookup reg 1 set set%d ]
+
+# dccp dport {23, 24, 25}
+set%d test-ip4 3
+set%d test-ip4 0
+	element 00001700  : 0 [end]	element 00001800  : 0 [end]	element 00001900  : 0 [end]
+inet test-inet input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 2b @ transport header + 2 => reg 1 ]
+  [ lookup reg 1 set set%d ]
+
+# dccp dport { 20-50}
+set%d test-ip4 7
+set%d test-ip4 0
+	element 00000000  : 1 [end]	element 00001400  : 0 [end]	element 00003300  : 1 [end]
+inet test-inet input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 2b @ transport header + 2 => reg 1 ]
+  [ lookup reg 1 set set%d ]
+

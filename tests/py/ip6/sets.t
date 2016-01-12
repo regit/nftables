@@ -1,7 +1,9 @@
 :input;type filter hook input priority 0
+:ingress;type filter hook ingress device lo priority 0
 
 *ip6;test-ip6;input
 *inet;test-inet;input
+*netdev;test-netdev;ingress
 
 !set_ipv6_add1 ipv6_addr;ok
 !set_inet1 inet_proto;ok

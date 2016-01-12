@@ -1,8 +1,10 @@
 :input;type filter hook input priority 0
+:ingress;type filter hook ingress device lo priority 0
 
 *ip;test-ip4;input
 *ip6;test-ip6;input
 *inet;test-inet;input
+*netdev;test-netdev;ingress
 
 dccp sport 21-35;ok
 dccp sport != 21-35;ok

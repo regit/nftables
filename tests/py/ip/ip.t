@@ -1,7 +1,9 @@
 :input;type filter hook input priority 0
+:ingress;type filter hook ingress device lo priority 0
 
 *ip;test-ip4;input
 *inet;test-inet;input
+*netdev;test-netdev;ingress
 
 - ip version 2;ok
 

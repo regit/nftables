@@ -1,7 +1,9 @@
 # filter chains available are: input, output, forward
 :input;type filter hook input priority 0
+:ingress;type filter hook ingress device lo priority 0
 
 *arp;test-arp;input
+*netdev;test-netdev;ingress
 
 arp htype 1;ok
 arp htype != 1;ok
