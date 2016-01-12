@@ -1,8 +1,8 @@
 :input;type filter hook input priority 0
 
 *ip;test-ip4;input
-*ip;test-ip6;input
-*ip;test-inet;input
+*ip6;test-ip6;input
+*inet;test-inet;input
 
 udp sport 80 accept;ok
 udp sport != 60 accept;ok
