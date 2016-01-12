@@ -381,15 +381,6 @@ ip6 test-ip6 input
   [ payload load 2b @ transport header + 14 => reg 1 ]
   [ lookup reg 1 set set%d ]
 
-# tcp checksum 23456 log drop
-ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
-  [ cmp eq reg 1 0x00000006 ]
-  [ payload load 2b @ transport header + 16 => reg 1 ]
-  [ cmp eq reg 1 0x0000a05b ]
-  [ log prefix (null) ]
-  [ immediate reg 0 drop ]
-
 # tcp checksum 22
 ip6 test-ip6 input
   [ payload load 1b @ network header + 6 => reg 1 ]

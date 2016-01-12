@@ -83,7 +83,6 @@ tcp window { 33, 55, 67, 88};ok
 tcp window { 33-55};ok
 - tcp window != { 33-55};ok
 
-tcp checksum 23456 log drop;ok
 tcp checksum 22;ok
 tcp checksum != 233;ok
 tcp checksum 33-45;ok

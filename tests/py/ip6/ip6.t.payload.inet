@@ -72,7 +72,7 @@ inet test-inet input
   [ payload load 2b @ network header + 4 => reg 1 ]
   [ lookup reg 1 set set%d ]
 
-# ip6 nexthdr {udp, ah, comp, udplite, tcp, dccp, sctp} log
+# ip6 nexthdr {udp, ah, comp, udplite, tcp, dccp, sctp}
 set%d test-inet 3
 set%d test-inet 0
 	element 00000011  : 0 [end]	element 00000033  : 0 [end]	element 0000006c  : 0 [end]	element 00000088  : 0 [end]	element 00000006  : 0 [end]	element 00000021  : 0 [end]	element 00000084  : 0 [end]
@@ -81,7 +81,6 @@ inet test-inet input
   [ cmp eq reg 1 0x0000000a ]
   [ payload load 1b @ network header + 6 => reg 1 ]
   [ lookup reg 1 set set%d ]
-  [ log prefix (null) ]
 
 # ip6 nexthdr {esp, ah, comp, udp, udplite, tcp, dccp, sctp, icmpv6}
 set%d test-inet 3
@@ -133,13 +132,12 @@ inet test-inet input
   [ cmp lt reg 1 0x00000021 ]
   [ cmp gt reg 1 0x0000002c ]
 
-# ip6 hoplimit 1 log
+# ip6 hoplimit 1
 inet test-inet input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x0000000a ]
   [ payload load 1b @ network header + 7 => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
-  [ log prefix (null) ]
 
 # ip6 hoplimit != 233
 inet test-inet input

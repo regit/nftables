@@ -57,7 +57,7 @@ ip frag-off { 33-55};ok
 - ip frag-off != { 33-55};ok
 
 ip ttl 0 drop;ok
-ip ttl 233 log;ok
+ip ttl 233;ok
 ip ttl 33-55;ok
 ip ttl != 45-50;ok
 ip ttl {43, 53, 45 };ok
@@ -68,8 +68,8 @@ ip ttl {43, 53, 45 };ok
 ip ttl { 33-55};ok
 - ip ttl != { 33-55};ok
 
-ip protocol tcp log;ok;ip protocol 6 log
-ip protocol != tcp log;ok;ip protocol != 6 log
+ip protocol tcp;ok;ip protocol 6
+ip protocol != tcp;ok;ip protocol != 6
 ip protocol { icmp, esp, ah, comp, udp, udplite, tcp, dccp, sctp} accept;ok;ip protocol { 33, 136, 17, 51, 50, 6, 132, 1, 108} accept
 - ip protocol != { icmp, esp, ah, comp, udp, udplite, tcp, dccp, sctp} accept;ok
 
@@ -86,8 +86,8 @@ ip checksum { 33-55};ok
 ip saddr 192.168.2.0/24;ok
 ip saddr != 192.168.2.0/24;ok
 ip saddr 192.168.3.1 ip daddr 192.168.3.100;ok
-ip saddr != 1.1.1.1 log prefix giuseppe;ok;ip saddr != 1.1.1.1 log prefix "giuseppe"
-ip saddr 1.1.1.1 log prefix example group 1;ok;ip saddr 1.1.1.1 log prefix "example" group 1
+ip saddr != 1.1.1.1;ok;ip saddr != 1.1.1.1
+ip saddr 1.1.1.1;ok;ip saddr 1.1.1.1
 ip daddr 192.168.0.1-192.168.0.250;ok
 ip daddr 10.0.0.0-10.255.255.255;ok
 ip daddr 172.16.0.0-172.31.255.255;ok
@@ -105,7 +105,7 @@ ip saddr != 192.168.1.3-192.168.33.55;ok
 
 ip daddr 192.168.0.1;ok
 ip daddr 192.168.0.1 drop;ok
-ip daddr 192.168.0.2 log;ok
+ip daddr 192.168.0.2;ok
 
 ip saddr \& 0xff == 1;ok;ip saddr & 0.0.0.255 == 0.0.0.1
 ip saddr \& 0.0.0.255 \< 0.0.0.127;ok;ip saddr & 0.0.0.255 < 0.0.0.127

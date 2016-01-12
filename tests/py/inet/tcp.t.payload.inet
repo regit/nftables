@@ -381,15 +381,6 @@ inet test-inet input
   [ payload load 2b @ transport header + 14 => reg 1 ]
   [ lookup reg 1 set set%d ]
 
-# tcp checksum 23456 log drop
-inet test-inet input
-  [ meta load l4proto => reg 1 ]
-  [ cmp eq reg 1 0x00000006 ]
-  [ payload load 2b @ transport header + 16 => reg 1 ]
-  [ cmp eq reg 1 0x0000a05b ]
-  [ log prefix (null) ]
-  [ immediate reg 0 drop ]
-
 # tcp checksum 22
 inet test-inet input
   [ meta load l4proto => reg 1 ]

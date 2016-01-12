@@ -37,7 +37,7 @@ ip6 length != 33-45;ok
 ip6 length { 33-55};ok
 - ip6 length != { 33-55};ok
 
-ip6 nexthdr {udp, ah, comp, udplite, tcp, dccp, sctp} log;ok;ip6 nexthdr { 132, 51, 108, 136, 17, 33, 6} log
+ip6 nexthdr {udp, ah, comp, udplite, tcp, dccp, sctp};ok;ip6 nexthdr { 132, 51, 108, 136, 17, 33, 6}
 ip6 nexthdr {esp, ah, comp, udp, udplite, tcp, dccp, sctp, icmpv6};ok;ip6 nexthdr { 6, 136, 108, 33, 50, 17, 132, 58, 51}
 - ip6 nexthdr != {esp, ah, comp, udp, udplite, tcp, dccp, sctp, icmpv6};ok
 ip6 nexthdr esp;ok;ip6 nexthdr 50
@@ -47,7 +47,7 @@ ip6 nexthdr { 33-44};ok
 ip6 nexthdr 33-44;ok
 ip6 nexthdr != 33-44;ok
 
-ip6 hoplimit 1 log;ok
+ip6 hoplimit 1;ok
 ip6 hoplimit != 233;ok
 ip6 hoplimit 33-45;ok
 ip6 hoplimit != 33-45;ok
