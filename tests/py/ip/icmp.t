@@ -1,7 +1,8 @@
-*ip;test-ip4
 # BUG: There is a bug with icmp protocol and inet family.
 # *inet;test-inet
 :input;type filter hook input priority 0
+
+*ip;test-ip4;input
 
 icmp type echo-reply accept;ok
 icmp type destination-unreachable accept;ok

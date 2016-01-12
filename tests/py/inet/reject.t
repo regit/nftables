@@ -1,5 +1,6 @@
-*inet;test-inet
 :input;type filter hook input priority 0
+
+*inet;test-inet;input
 
 # The output is specific for inet family
 reject with icmp type host-unreachable;ok;meta nfproto ipv4 reject with icmp type host-unreachable

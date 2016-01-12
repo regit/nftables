@@ -1,6 +1,7 @@
-*ip6;test-ip6
-*inet;test-inet
 :input;type filter hook input priority 0
+
+*ip6;test-ip6;input
+*inet;test-inet;input
 
 rt nexthdr 1;ok
 rt nexthdr != 1;ok

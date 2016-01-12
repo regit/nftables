@@ -1,6 +1,7 @@
-*ip6;test-ip6
-*inet;test-inet
 :input;type filter hook input priority 0
+
+*ip6;test-ip6;input
+*inet;test-inet;input
 
 # BUG: Problem with version, priority
 # <cmdline>:1:1-38: Error: Could not process rule: Invalid argument

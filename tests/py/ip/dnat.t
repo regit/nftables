@@ -1,5 +1,6 @@
-*ip;test-ip4
 :prerouting;type nat hook prerouting priority 0
+
+*ip;test-ip4;prerouting
 
 iifname "eth0" tcp dport 80-90 dnat 192.168.3.2;ok
 iifname "eth0" tcp dport != 80-90 dnat 192.168.3.2;ok

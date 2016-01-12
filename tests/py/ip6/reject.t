@@ -1,5 +1,6 @@
-*ip6;test-ip6
 :output;type filter hook output priority 0
+
+*ip6;test-ip6;output
 
 reject;ok
 reject with icmpv6 type no-route;ok

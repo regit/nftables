@@ -1,5 +1,6 @@
-*ip6;test-ip6
 :input;type filter hook input priority 0
+
+*ip6;test-ip6;input
 
 dup to abcd::1;ok
 dup to abcd::1 device eth0;ok

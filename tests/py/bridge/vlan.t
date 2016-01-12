@@ -1,5 +1,6 @@
-*bridge;test-bridge
 :input;type filter hook input priority 0
+
+*bridge;test-bridge;input
 
 vlan id 4094;ok
 vlan id 0;ok

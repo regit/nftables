@@ -1,6 +1,7 @@
-*ip6;test-ip6
-*inet;test-inet
 :filter-input;type filter hook input priority 0
+
+*ip6;test-ip6;filter-input
+*inet;test-inet;filter-input
 
 hbh hdrlength 22;ok
 hbh hdrlength != 233;ok

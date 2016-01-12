@@ -1,5 +1,6 @@
-*ip;test-ip4
 :output;type filter hook output priority 0
+
+*ip;test-ip4;output
 
 reject;ok
 reject with icmp type host-unreachable;ok

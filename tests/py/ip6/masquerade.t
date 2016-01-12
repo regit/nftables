@@ -1,5 +1,6 @@
-*ip6;test-ip6
 :postrouting;type nat hook postrouting priority 0
+
+*ip6;test-ip6;postrouting
 
 # nf_nat flags combination
 udp dport 53 masquerade;ok

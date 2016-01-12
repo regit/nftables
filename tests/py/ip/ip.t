@@ -1,6 +1,7 @@
-*ip;test-ip4
-*inet;test-inet
 :input;type filter hook input priority 0
+
+*ip;test-ip4;input
+*inet;test-inet;input
 
 - ip version 2;ok
 

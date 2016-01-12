@@ -1,5 +1,6 @@
-*ip;test-ip4
 :output;type nat hook output priority 0
+
+*ip;test-ip4;output
 
 # without arguments
 udp dport 53 redirect;ok

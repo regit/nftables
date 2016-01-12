@@ -1,5 +1,6 @@
-*ip6;test-ip6
 :output;type nat hook output priority 0
+
+*ip6;test-ip6;output
 
 # with no arguments
 redirect;ok

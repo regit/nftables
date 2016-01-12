@@ -1,9 +1,10 @@
-*ip;test-ip4
-*ip6;test-ip6
-*inet;test-inet
-*arp;test-arp
-*bridge;test-bridge
 :output;type filter hook output priority 0
+
+*ip;test-ip4;output
+*ip6;test-ip6;output
+*inet;test-inet;output
+*arp;test-arp;output
+*bridge;test-bridge;output
 
 limit rate 400/minute;ok
 limit rate 20/second;ok

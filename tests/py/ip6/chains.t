@@ -1,5 +1,3 @@
-*ip6;test-ip6
-
 # filter chains available are: input, output, forward, forward, prerouting and postrouting.
 :filter-input;type filter hook input priority 0
 :filter-prer;type filter hook prerouting priority 0
@@ -15,3 +13,5 @@
 
 # route chain available is output.
 :route-out;type route hook output priority 0
+
+*ip6;test-ip6;filter-input,filter-prer,filter-forw-t,filter-out-t,filter-post-t,nat-input,nat-prerouting,nat-output,nat-postrou,route-out

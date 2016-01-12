@@ -1,7 +1,8 @@
-*ip;test-ip4
-*ip6;test-ip6
-*inet;test-inet
 :input;type filter hook input priority 0
+
+*ip;test-ip4;input
+*ip6;test-ip6;input
+*inet;test-inet;input
 
 esp spi 100;ok
 esp spi != 100;ok

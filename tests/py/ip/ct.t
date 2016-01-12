@@ -1,6 +1,6 @@
-*ip;test-ip4
-
 :output;type filter hook output priority 0
+
+*ip;test-ip4;output
 
 ct saddr original 192.168.0.1;ok
 ct saddr reply 192.168.0.1;ok

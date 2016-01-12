@@ -1,10 +1,10 @@
-*ip;test-ip4
-*ip6;test-ip6
-*inet;test-inet
-*arp;test-arp
-*bridge;test-bridge
-
 :input;type filter hook input priority 0
+
+*ip;test-ip4;input
+*ip6;test-ip6;input
+*inet;test-inet;input
+*arp;test-arp;input
+*bridge;test-bridge;input
 
 meta length 1000;ok
 meta length 22;ok

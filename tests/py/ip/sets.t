@@ -1,6 +1,7 @@
-*ip;test-ip4
-*inet;test-inet
 :input;type filter hook input priority 0
+
+*ip;test-ip4;input
+*inet;test-inet;input
 
 !set_ipv4_add ipv4_addr;ok
 !set_inet inet_proto;ok

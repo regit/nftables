@@ -1,6 +1,7 @@
-*ip6;test-ip6
-*inet;test-inet
 :input;type filter hook input priority 0
+
+*ip6;test-ip6;input
+*inet;test-inet;input
 
 ip6 saddr vmap { abcd::3 : accept };ok
 ip6 saddr 1234:1234:1234:1234:1234:1234:1234:1234:1234;fail

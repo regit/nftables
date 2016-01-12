@@ -1,6 +1,7 @@
-*arp;test-arp
 # filter chains available are: input, output, forward
 :input;type filter hook input priority 0
+
+*arp;test-arp;input
 
 arp htype 1;ok
 arp htype != 1;ok

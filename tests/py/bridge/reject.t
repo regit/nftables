@@ -1,5 +1,6 @@
-*bridge;test-bridge
 :input;type filter hook input priority 0
+
+*bridge;test-bridge;input
 
 # The output is specific for bridge family
 reject with icmp type host-unreachable;ok;ether type ip reject with icmp type host-unreachable
