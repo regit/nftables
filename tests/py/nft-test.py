@@ -48,9 +48,10 @@ class Colors:
 class Chain:
     """Class that represents a chain"""
 
-    def __init__(self, name, config):
+    def __init__(self, name, config, lineno):
         self.name = name
         self.config = config
+        self.lineno = lineno
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -59,9 +60,10 @@ class Chain:
 class Table:
     """Class that represents a table"""
 
-    def __init__(self, family, name):
+    def __init__(self, family, name, chains):
         self.family = family
         self.name = name
+        self.chains = chains
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -148,6 +150,15 @@ def table_create(table, filename, lineno):
         print_error(reason, filename, lineno)
         return -1
 
+    for table_chain in table.chains:
+        chain = chain_get_by_name(table_chain)
+        if chain is None:
+            reason = "The chain " + table_chain + " requested by table " + \
+                     table.name + " does not exist."
+            print_error(reason, filename, lineno)
+        else:
+            chain_create(chain, table, filename)
+
     return 0
 
 
@@ -180,45 +191,42 @@ def table_delete(table, filename=None, lineno=None):
     return 0
 
 
-def chain_exist(chain, table, filename, lineno):
+def chain_exist(chain, table, filename):
     '''
     Checks a chain
     '''
     table_info = " " + table.family + " " + table.name + " "
     cmd = NFT_BIN + " list -nnn chain" + table_info + chain.name
-    ret = execute_cmd(cmd, filename, lineno)
+    ret = execute_cmd(cmd, filename, chain.lineno)
 
     return True if (ret == 0) else False
 
 
-def chain_create(chain, table, filename, lineno):
+def chain_create(chain, table, filename):
     '''
     Adds a chain
     '''
     table_info = " " + table.family + " " + table.name + " "
 
-    if chain_exist(chain, table, filename, lineno):
+    if chain_exist(chain, table, filename):
         reason = "This chain '" + chain.name + "' exists in " + table.name + \
                  ". I cannot create two chains with same name."
-        print_error(reason, filename, lineno)
+        print_error(reason, filename, chain.lineno)
         return -1
 
     cmd = NFT_BIN + " add chain" + table_info + chain.name + \
           "\{ " + chain.config + "\; \}"
 
-    ret = execute_cmd(cmd, filename, lineno)
+    ret = execute_cmd(cmd, filename, chain.lineno)
     if ret != 0:
         reason = "I cannot create the chain '" + chain.name
-        print_error(reason, filename, lineno)
+        print_error(reason, filename, chain.lineno)
         return -1
 
-    if chain not in chain_list:
-        chain_list.append(chain)
-
-    if not chain_exist(chain, table, filename, lineno):
+    if not chain_exist(chain, table, filename):
         reason = "I have added the chain '" + chain.name + \
                  "' but it does not exist in " + table.name
-        print_error(reason, filename, lineno)
+        print_error(reason, filename, chain.lineno)
         return -1
 
     return 0
@@ -230,7 +238,7 @@ def chain_delete(chain, table, filename=None, lineno=None):
     '''
     table_info = " " + table.family + " " + table.name + " "
 
-    if not chain_exist(chain, table, filename, lineno):
+    if not chain_exist(chain, table, filename):
         reason = "The chain " + chain.name + " does not exists in " + \
                  table.name + ". I cannot delete it."
         print_error(reason, filename, lineno)
@@ -250,13 +258,23 @@ def chain_delete(chain, table, filename=None, lineno=None):
         print_error(reason, filename, lineno)
         return -1
 
-    if chain_exist(chain, table, filename, lineno):
+    if chain_exist(chain, table, filename):
         reason = "The chain " + chain.name + " exists in " + table.name + \
                  ". I cannot delete this chain"
         print_error(reason, filename, lineno)
         return -1
 
     return 0
+
+
+def chain_get_by_name(name):
+    for chain in chain_list:
+        if chain.name == name:
+            break
+    else:
+        chain = None
+
+    return chain
 
 
 def set_add(set_info, filename, lineno):
@@ -524,7 +542,8 @@ def rule_add(rule, filename, lineno, force_all_family_option, filename_path):
                     print_error("did not find payload information for "
                                 "rule '%s'" % rule[0], payload_log.name, 1)
 
-        for chain in chain_list:
+        for table_chain in table.chains:
+            chain = chain_get_by_name(table_chain)
             unit_tests += 1
             table_flush(table, filename, lineno)
             table_info = " " + table.family + " " + table.name + " "
@@ -624,7 +643,8 @@ def preexec():
 
 def cleanup_on_exit():
     for table in table_list:
-        for chain in chain_list:
+        for table_chain in table.chains:
+            chain = chain_get_by_name(table_chain)
             chain_delete(chain, table, "", "")
         if all_set:
             set_delete(table)
@@ -678,18 +698,15 @@ def print_result_all(filename, tests, warning, error, unit_tests):
 
 def table_process(table_line, filename, lineno):
     table_info = table_line.split(";")
-    table = Table(table_info[0], table_info[1])
+    table = Table(table_info[0], table_info[1], table_info[2].split(","))
 
     return table_create(table, filename, lineno)
 
 
-def chain_process(chain_line, filename, lineno):
+def chain_process(chain_line, lineno):
     chain_info = chain_line.split(";")
-    chain = Chain(chain_info[0], chain_info[1])
+    chain_list.append(Chain(chain_info[0], chain_info[1], lineno))
 
-    for table in table_list:
-        if chain_create(chain, table, filename, lineno) != 0:
-            return -1
     return 0
 
 
@@ -779,7 +796,7 @@ def run_test_file(filename, force_all_family_option, specific_file):
 
         if line[0] == ":":  # Chain
             chain_line = line.rstrip()[1:]
-            ret = chain_process(chain_line, filename, lineno)
+            ret = chain_process(chain_line, lineno)
             if ret != 0:
                 break
             continue
@@ -837,7 +854,8 @@ def run_test_file(filename, force_all_family_option, specific_file):
     # Delete rules, sets, chains and tables
     for table in table_list:
         # We delete chains
-        for chain in chain_list:
+        for table_chain in table.chains:
+            chain = chain_get_by_name(table_chain)
             chain_delete(chain, table, filename, lineno)
 
         # We delete sets.
