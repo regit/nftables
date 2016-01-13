@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# list ruleset shows a table
+
+EXPECTED="table ip test {
+}"
+
+set -e
+
+$NFT add table test
+GET="$($NFT list ruleset)"
+
+if [ "$EXPECTED" != "$GET" ] ; then
+	DIFF="$(which diff)"
+	[ -x $DIFF ] && $DIFF -u <(echo "$EXPECTED") <(echo "$GET")
+	exit 1
+fi
+

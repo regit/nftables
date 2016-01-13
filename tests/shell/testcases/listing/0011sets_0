@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# listing all sets, no anonymous sets allowed
+
+EXPECTED="table ip nat {
+}
+table ip6 test {
+}
+table inet filter {
+}
+table arp test_arp {
+}
+table bridge test_bridge {
+}"
+
+set -e
+
+$NFT add table ip nat
+$NFT add chain ip nat test
+$NFT add rule ip nat test tcp dport {123}
+
+$NFT add table ip6 test
+$NFT add chain ip6 test test
+$NFT add rule ip6 test test udp sport {123}
+
+$NFT add table arp test_arp
+$NFT add chain arp test_arp test
+$NFT add rule arp test_arp test meta nfproto {ipv4}
+
+$NFT add table bridge test_bridge
+$NFT add chain bridge test_bridge test
+$NFT add rule bridge test_bridge test ip daddr {1.1.1.1}
+
+$NFT add table inet filter
+$NFT add chain inet filter test
+$NFT add rule inet filter test tcp dport {80, 443}
+
+GET="$($NFT list sets)"
+
+if [ "$EXPECTED" != "$GET" ] ; then
+	DIFF="$(which diff)"
+	[ -x $DIFF ] && $DIFF -u <(echo "$EXPECTED") <(echo "$GET")
+	exit 1
+fi

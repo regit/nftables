@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# listing ruleset per family
+
+EXPECTED="table ip test {
+}"
+
+set -e
+
+$NFT add table ip test
+$NFT add table ip6 test
+$NFT add table inet test
+$NFT add table arp test
+$NFT add table bridge test
+
+GET="$($NFT list ruleset ip)"
+if [ "$EXPECTED" != "$GET" ] ; then
+	DIFF="$(which diff)"
+	[ -x $DIFF ] && $DIFF -u <(echo "$EXPECTED") <(echo "$GET")
+	exit 1
+fi
