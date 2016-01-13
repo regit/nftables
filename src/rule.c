@@ -267,7 +267,10 @@ static void set_print_declaration(const struct set *set,
 	if (opts->table != NULL)
 		printf(" %s", opts->table);
 
-	printf(" %s { %s", set->handle.set, opts->nl);
+	printf(" %s {%s", set->handle.set, opts->nl);
+
+	if (!opts->nl[0])
+		printf(" ");
 
 	printf("%s%stype %s", opts->tab, opts->tab, set->keytype->name);
 	if (set->flags & SET_F_MAP)
