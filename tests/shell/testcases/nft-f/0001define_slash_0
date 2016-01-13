@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# tests for commit 85d6803 (parser_bison: initializer_expr must use rhs_expr)
+
+MKTEMP=$(which mktemp)
+if [ -x $MKTEMP ] ; then
+	tmpfile=$(${MKTEMP})
+else
+	tmpfile=$(/tmp/${RANDOM})
+fi
+
+if [ ! -w $tmpfile ] ; then
+	echo "Failed to create tmp file" >&2
+	exit 0
+fi
+
+trap "rm -rf $tmpfile" EXIT # cleanup if aborted
+
+echo "
+define net = 1.1.1.1/24
+" > $tmpfile
+
+set -e
+
+$NFT -f $tmpfile
