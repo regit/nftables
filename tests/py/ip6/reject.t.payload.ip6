@@ -18,6 +18,14 @@ ip6 test-ip6 output
 ip6 test-ip6 output
   [ reject type 0 code 4 ]
 
+# reject with icmpv6 type policy-fail
+ip6 test-ip6 output
+  [ reject type 0 code 5 ]
+
+# reject with icmpv6 type reject-route
+ip6 test-ip6 output
+  [ reject type 0 code 6 ]
+
 # reject with tcp reset
 ip6 test-ip6 output
   [ payload load 1b @ network header + 6 => reg 1 ]
