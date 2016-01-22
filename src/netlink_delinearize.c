@@ -726,15 +726,40 @@ static void netlink_parse_masq(struct netlink_parse_ctx *ctx,
 			       const struct location *loc,
 			       const struct nftnl_expr *nle)
 {
+	enum nft_registers reg1, reg2;
+	struct expr *proto;
 	struct stmt *stmt;
-	uint32_t flags;
+	uint32_t flags = 0;
 
-	flags = 0;
 	if (nftnl_expr_is_set(nle, NFTNL_EXPR_MASQ_FLAGS))
 		flags = nftnl_expr_get_u32(nle, NFTNL_EXPR_MASQ_FLAGS);
 
 	stmt = masq_stmt_alloc(loc);
 	stmt->masq.flags = flags;
+
+	reg1 = netlink_parse_register(nle, NFTNL_EXPR_MASQ_REG_PROTO_MIN);
+	if (reg1) {
+		proto = netlink_get_register(ctx, loc, reg1);
+		if (proto == NULL)
+			return netlink_error(ctx, loc,
+					     "MASQUERADE statement"
+					     "has no proto expression");
+		expr_set_type(proto, &inet_service_type, BYTEORDER_BIG_ENDIAN);
+		stmt->masq.proto = proto;
+	}
+
+	reg2 = netlink_parse_register(nle, NFTNL_EXPR_MASQ_REG_PROTO_MAX);
+	if (reg2 && reg2 != reg1) {
+		proto = netlink_get_register(ctx, loc, reg2);
+		if (proto == NULL)
+			return netlink_error(ctx, loc,
+					     "MASQUERADE statement"
+					     "has no proto expression");
+		expr_set_type(proto, &inet_service_type, BYTEORDER_BIG_ENDIAN);
+		if (stmt->masq.proto != NULL)
+			proto = range_expr_alloc(loc, stmt->masq.proto, proto);
+		stmt->masq.proto = proto;
+	}
 
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }

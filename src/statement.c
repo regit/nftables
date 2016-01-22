@@ -385,13 +385,24 @@ static void masq_stmt_print(const struct stmt *stmt)
 {
 	printf("masquerade");
 
+	if (stmt->masq.proto) {
+		printf(" to :");
+		expr_print(stmt->masq.proto);
+	}
+
 	print_nf_nat_flags(stmt->masq.flags);
+}
+
+static void masq_stmt_destroy(struct stmt *stmt)
+{
+	expr_free(stmt->masq.proto);
 }
 
 static const struct stmt_ops masq_stmt_ops = {
 	.type		= STMT_MASQ,
 	.name		= "masq",
 	.print		= masq_stmt_print,
+	.destroy	= masq_stmt_destroy,
 };
 
 struct stmt *masq_stmt_alloc(const struct location *loc)

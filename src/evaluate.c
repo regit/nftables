@@ -1881,6 +1881,12 @@ static int stmt_evaluate_masq(struct eval_ctx *ctx, struct stmt *stmt)
 	if (err < 0)
 		return err;
 
+	if (stmt->masq.proto != NULL) {
+		err = nat_evaluate_transport(ctx, stmt, &stmt->masq.proto);
+		if (err < 0)
+			return err;
+	}
+
 	stmt->flags |= STMT_F_TERMINAL;
 	return 0;
 }

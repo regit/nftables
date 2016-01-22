@@ -86,6 +86,7 @@ extern struct stmt *nat_stmt_alloc(const struct location *loc);
 
 struct masq_stmt {
 	uint32_t		flags;
+	struct expr		*proto;
 };
 
 extern struct stmt *masq_stmt_alloc(const struct location *loc);

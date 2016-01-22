@@ -916,12 +916,36 @@ static void netlink_gen_nat_stmt(struct netlink_linearize_ctx *ctx,
 static void netlink_gen_masq_stmt(struct netlink_linearize_ctx *ctx,
 				  const struct stmt *stmt)
 {
+	enum nft_registers pmin_reg, pmax_reg;
 	struct nftnl_expr *nle;
+	int registers = 0;
 
 	nle = alloc_nft_expr("masq");
 	if (stmt->masq.flags != 0)
 		nftnl_expr_set_u32(nle, NFTNL_EXPR_MASQ_FLAGS,
 				      stmt->masq.flags);
+	if (stmt->masq.proto) {
+		pmin_reg = get_register(ctx, NULL);
+		registers++;
+
+		if (stmt->masq.proto->ops->type == EXPR_RANGE) {
+			pmax_reg = get_register(ctx, NULL);
+			registers++;
+
+			netlink_gen_expr(ctx, stmt->masq.proto->left, pmin_reg);
+			netlink_gen_expr(ctx, stmt->masq.proto->right, pmax_reg);
+			netlink_put_register(nle, NFTNL_EXPR_MASQ_REG_PROTO_MIN, pmin_reg);
+			netlink_put_register(nle, NFTNL_EXPR_MASQ_REG_PROTO_MAX, pmax_reg);
+		} else {
+			netlink_gen_expr(ctx, stmt->masq.proto, pmin_reg);
+			netlink_put_register(nle, NFTNL_EXPR_MASQ_REG_PROTO_MIN, pmin_reg);
+		}
+	}
+
+	while (registers > 0) {
+		release_register(ctx, NULL);
+		registers--;
+	}
 
 	nftnl_rule_add_expr(ctx->nlr, nle);
 }

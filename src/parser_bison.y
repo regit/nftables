@@ -1644,15 +1644,26 @@ nat_stmt_args		:	stmt_expr
 			}
 			;
 
-masq_stmt		:	masq_stmt_alloc
-			|	masq_stmt_alloc	nf_nat_flags
-			{
-				$$ = $1;
-				$$->masq.flags = $2;
-			}
+masq_stmt		:	masq_stmt_alloc		masq_stmt_args
+			|	masq_stmt_alloc
 			;
 
 masq_stmt_alloc		:	MASQUERADE 	{ $$ = masq_stmt_alloc(&@$); }
+			;
+
+masq_stmt_args		:	TO 	COLON	stmt_expr
+			{
+				$<stmt>0->masq.proto = $3;
+			}
+			|	TO 	COLON	stmt_expr	nf_nat_flags
+			{
+				$<stmt>0->masq.proto = $3;
+				$<stmt>0->masq.flags = $4;
+			}
+			|	nf_nat_flags
+			{
+				$<stmt>0->masq.flags = $1;
+			}
 			;
 
 redir_stmt		:	redir_stmt_alloc	redir_stmt_arg
