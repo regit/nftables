@@ -1170,6 +1170,40 @@ static struct expr *binop_tree_to_list(struct expr *list, struct expr *expr)
 	return list;
 }
 
+static void binop_postprocess(struct rule_pp_ctx *ctx, struct expr *expr)
+{
+	struct expr *binop = expr->left, *value = expr->right;
+
+	struct expr *payload = binop->left;
+	struct expr *mask = binop->right;
+	unsigned int shift;
+
+	if (payload_expr_trim(payload, mask, &ctx->pctx, &shift)) {
+		/* mask is implicit, binop needs to be removed.
+		 *
+		 * Fix all values of the expression according to the mask
+		 * and then process the payload instruction using the real
+		 * sizes and offsets we're interested in.
+		 *
+		 * Finally, convert the expression to 1) by replacing
+		 * the binop with the binop payload expr.
+		 */
+		if (value->ops->type == EXPR_VALUE) {
+			assert(value->len >= expr->left->right->len);
+			mpz_rshift_ui(value->value, shift);
+			value->len = payload->len;
+		}
+
+		payload_match_postprocess(ctx, expr, payload);
+
+		assert(expr->left->ops->type == EXPR_BINOP);
+
+		assert(binop->left == payload);
+		expr->left = expr_get(payload);
+		expr_free(binop);
+	}
+}
+
 static void relational_binop_postprocess(struct rule_pp_ctx *ctx, struct expr *expr)
 {
 	struct expr *binop = expr->left, *value = expr->right;
@@ -1202,10 +1236,6 @@ static void relational_binop_postprocess(struct rule_pp_ctx *ctx, struct expr *e
 	} else if (binop->op == OP_AND &&
 		   binop->left->ops->type == EXPR_PAYLOAD &&
 		   binop->right->ops->type == EXPR_VALUE) {
-		struct expr *payload = binop->left;
-		struct expr *mask = binop->right;
-		unsigned int shift;
-
 		/*
 		 * This *might* be a payload match testing header fields that
 		 * have non byte divisible offsets and/or bit lengths.
@@ -1229,30 +1259,7 @@ static void relational_binop_postprocess(struct rule_pp_ctx *ctx, struct expr *e
 		 * payload_expr_trim will figure out if the mask is needed to match
 		 * templates.
 		 */
-		if (payload_expr_trim(payload, mask, &ctx->pctx, &shift)) {
-			/* mask is implicit, binop needs to be removed.
-			 *
-			 * Fix all values of the expression according to the mask
-			 * and then process the payload instruction using the real
-			 * sizes and offsets we're interested in.
-			 *
-			 * Finally, convert the expression to 1) by replacing
-			 * the binop with the binop payload expr.
-			 */
-			if (value->ops->type == EXPR_VALUE) {
-				assert(value->len >= expr->left->right->len);
-				mpz_rshift_ui(value->value, shift);
-				value->len = payload->len;
-			}
-
-			payload_match_postprocess(ctx, expr, payload);
-
-			assert(expr->left->ops->type == EXPR_BINOP);
-
-			assert(binop->left == payload);
-			expr->left = expr_get(payload);
-			expr_free(binop);
-		}
+		binop_postprocess(ctx, expr);
 	}
 }
 
