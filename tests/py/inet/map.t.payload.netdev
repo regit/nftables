@@ -1,0 +1,11 @@
+# mark set ip saddr map { 10.2.3.2 : 0x0000002a, 10.2.3.1 : 0x00000017}
+map%d test-netdev b
+map%d test-netdev 0
+	element 0103020a  : 00000017 0 [end]	element 0203020a  : 0000002a 0 [end]
+netdev test-netdev ingress
+  [ meta load protocol => reg 1 ]
+  [ cmp eq reg 1 0x00000008 ]
+  [ payload load 4b @ network header + 12 => reg 1 ]
+  [ lookup reg 1 set map%d dreg 1 ]
+  [ meta set mark with reg 1 ]
+

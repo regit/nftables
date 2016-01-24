@@ -1,0 +1,9 @@
+# mark set ip saddr map { 10.2.3.2 : 0x0000002a, 10.2.3.1 : 0x00000017}
+map%d test-ip b
+map%d test-ip 0
+	element 0103020a  : 00000017 0 [end]	element 0203020a  : 0000002a 0 [end]
+ip test-ip input
+  [ payload load 4b @ network header + 12 => reg 1 ]
+  [ lookup reg 1 set map%d dreg 1 ]
+  [ meta set mark with reg 1 ]
+
