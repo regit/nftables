@@ -1204,6 +1204,18 @@ static void binop_postprocess(struct rule_pp_ctx *ctx, struct expr *expr)
 	}
 }
 
+static void map_binop_postprocess(struct rule_pp_ctx *ctx, struct expr *expr)
+{
+	struct expr *binop = expr->left;
+
+	if (binop->op != OP_AND)
+		return;
+
+	if (binop->left->ops->type == EXPR_PAYLOAD &&
+	    binop->right->ops->type == EXPR_VALUE)
+		binop_postprocess(ctx, expr);
+}
+
 static void relational_binop_postprocess(struct rule_pp_ctx *ctx, struct expr *expr)
 {
 	struct expr *binop = expr->left, *value = expr->right;
@@ -1356,6 +1368,14 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 
 	switch (expr->ops->type) {
 	case EXPR_MAP:
+		switch (expr->map->ops->type) {
+		case EXPR_BINOP:
+			map_binop_postprocess(ctx, expr);
+			break;
+		default:
+			break;
+		}
+
 		expr_postprocess(ctx, &expr->map);
 		expr_postprocess(ctx, &expr->mappings);
 		break;

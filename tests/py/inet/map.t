@@ -6,3 +6,4 @@
 *netdev;test-netdev;ingress
 
 mark set ip saddr map { 10.2.3.2 : 0x0000002a, 10.2.3.1 : 0x00000017};ok;mark set ip saddr map { 10.2.3.1 : 0x00000017, 10.2.3.2 : 0x0000002a}
+mark set ip hdrlength map { 5 : 0x00000017, 4 : 0x00000001};ok;mark set ip hdrlength map { 4 : 0x00000001, 5 : 0x00000017}
