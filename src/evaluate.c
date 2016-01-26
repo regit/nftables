@@ -359,16 +359,32 @@ conflict_resolution_gen_dependency(struct eval_ctx *ctx, int protocol,
  * ip saddr adds meta dependency on ipv4 packets
  * ether saddr adds another dependeny on ethernet frames.
  */
-static bool supersede_dep(const struct proto_desc *have,
-			  struct expr *payload)
+static int supersede_dep(struct eval_ctx *ctx, const struct proto_desc *have,
+			 struct expr *payload)
 {
+	enum proto_bases base = payload->payload.base;
+	struct stmt *nstmt;
+	uint16_t type;
+
 	if (payload->payload.base != PROTO_BASE_LL_HDR || have->length)
-		return false;
+		return 1;
 
 	if (have != &proto_inet && have != &proto_netdev)
-		return false;
+		return 1;
 
-	return true;
+	if (proto_dev_type(payload->payload.desc, &type) < 0)
+		return expr_error(ctx->msgs, payload,
+				  "protocol specification is invalid "
+				  "for this family");
+
+	nstmt = meta_stmt_meta_iiftype(&payload->location, type);
+	if (stmt_evaluate(ctx, nstmt) < 0)
+		return expr_error(ctx->msgs, payload,
+				  "dependency statement is invalid");
+
+	list_add_tail(&nstmt->list, &ctx->stmt->list);
+	ctx->pctx.protocol[base].desc = payload->payload.desc;
+	return 0;
 }
 
 static int resolve_protocol_conflict(struct eval_ctx *ctx, struct expr *payload)
@@ -377,7 +393,7 @@ static int resolve_protocol_conflict(struct eval_ctx *ctx, struct expr *payload)
 	enum proto_bases base = payload->payload.base;
 	const struct proto_desc *desc;
 	struct stmt *nstmt = NULL;
-	int link;
+	int link, err;
 
 	desc = ctx->pctx.protocol[base].desc;
 	if (desc == payload->payload.desc) {
@@ -388,23 +404,9 @@ static int resolve_protocol_conflict(struct eval_ctx *ctx, struct expr *payload)
 	if (payload->payload.base != h->base)
 		return 1;
 
-	if (supersede_dep(desc, payload)) {
-		uint16_t type;
-
-		if (proto_dev_type(payload->payload.desc, &type) < 0)
-			return expr_error(ctx->msgs, payload,
-					  "protocol specification is invalid "
-					  "for this family");
-
-		nstmt = meta_stmt_meta_iiftype(&payload->location, type);
-		if (stmt_evaluate(ctx, nstmt) < 0)
-			return expr_error(ctx->msgs, payload,
-					  "dependency statement is invalid");
-
-		list_add_tail(&nstmt->list, &ctx->stmt->list);
-		ctx->pctx.protocol[base].desc = payload->payload.desc;
-		return 0;
-	}
+	err = supersede_dep(ctx, desc, payload);
+	if (err <= 0)
+		return err;
 
 	if (base < PROTO_BASE_MAX) {
 		const struct proto_desc *next = ctx->pctx.protocol[base + 1].desc;
