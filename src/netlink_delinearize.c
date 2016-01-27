@@ -1042,6 +1042,7 @@ static void payload_match_expand(struct rule_pp_ctx *ctx,
 		 * payload expression.
 		 */
 		if (ctx->pbase == PROTO_BASE_INVALID &&
+		    expr->op == OP_EQ &&
 		    left->flags & EXPR_F_PROTOCOL) {
 			unsigned int proto = mpz_get_be16(tmp->value);
 			const struct proto_desc *desc, *next;
