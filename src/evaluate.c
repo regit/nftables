@@ -360,10 +360,8 @@ conflict_resolution_gen_dependency(struct eval_ctx *ctx, int protocol,
  * ether saddr adds another dependeny on ethernet frames.
  */
 static int meta_iiftype_gen_dependency(struct eval_ctx *ctx,
-				       const struct proto_desc *have,
-				       struct expr *payload)
+				       struct expr *payload, struct stmt **res)
 {
-	enum proto_bases base = payload->payload.base;
 	struct stmt *nstmt;
 	uint16_t type;
 
@@ -377,8 +375,7 @@ static int meta_iiftype_gen_dependency(struct eval_ctx *ctx,
 		return expr_error(ctx->msgs, payload,
 				  "dependency statement is invalid");
 
-	list_add_tail(&nstmt->list, &ctx->stmt->list);
-	ctx->pctx.protocol[base].desc = payload->payload.desc;
+	*res = nstmt;
 	return 0;
 }
 
@@ -409,9 +406,11 @@ static int resolve_protocol_conflict(struct eval_ctx *ctx,
 
 	if (payload->payload.base == PROTO_BASE_LL_HDR &&
 	    proto_is_dummy(desc)) {
-		err = meta_iiftype_gen_dependency(ctx, desc, payload);
-		if (err <= 0)
+		err = meta_iiftype_gen_dependency(ctx, payload, &nstmt);
+		if (err < 0)
 			return err;
+
+		list_add_tail(&nstmt->list, &ctx->stmt->list);
 	}
 
 	assert(base < PROTO_BASE_MAX);
@@ -474,6 +473,10 @@ static int __expr_evaluate_payload(struct eval_ctx *ctx, struct expr *expr)
 			err = resolve_protocol_conflict(ctx, desc, payload);
 			if (err <= 0)
 				return err;
+
+			desc = ctx->pctx.protocol[base].desc;
+			if (desc == payload->payload.desc)
+				return 0;
 		}
 		return expr_error(ctx->msgs, payload,
 				  "conflicting protocols specified: %s vs. %s",
