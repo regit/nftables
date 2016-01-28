@@ -395,11 +395,6 @@ static int resolve_protocol_conflict(struct eval_ctx *ctx,
 	struct stmt *nstmt = NULL;
 	int link, err;
 
-	if (desc == payload->payload.desc) {
-		payload->payload.offset += ctx->pctx.protocol[base].offset;
-		return 0;
-	}
-
 	err = supersede_dep(ctx, desc, payload);
 	if (err <= 0)
 		return err;
@@ -448,6 +443,14 @@ static int __expr_evaluate_payload(struct eval_ctx *ctx, struct expr *expr)
 			return -1;
 		list_add_tail(&nstmt->list, &ctx->stmt->list);
 	} else {
+		/* No conflict: Same payload protocol as context, adjust offset
+		 * if needed.
+		 */
+		if (desc == payload->payload.desc) {
+			payload->payload.offset +=
+				ctx->pctx.protocol[base].offset;
+			return 0;
+		}
 		/* If we already have context and this payload is on the same
 		 * base, try to resolve the protocol conflict.
 		 */
