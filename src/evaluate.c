@@ -387,22 +387,18 @@ static int supersede_dep(struct eval_ctx *ctx, const struct proto_desc *have,
 	return 0;
 }
 
-static int resolve_protocol_conflict(struct eval_ctx *ctx, struct expr *payload)
+static int resolve_protocol_conflict(struct eval_ctx *ctx,
+				     const struct proto_desc *desc,
+				     struct expr *payload)
 {
-	const struct hook_proto_desc *h = &hook_proto_desc[ctx->pctx.family];
 	enum proto_bases base = payload->payload.base;
-	const struct proto_desc *desc;
 	struct stmt *nstmt = NULL;
 	int link, err;
 
-	desc = ctx->pctx.protocol[base].desc;
 	if (desc == payload->payload.desc) {
 		payload->payload.offset += ctx->pctx.protocol[base].offset;
 		return 0;
 	}
-
-	if (payload->payload.base != h->base)
-		return 1;
 
 	err = supersede_dep(ctx, desc, payload);
 	if (err <= 0)
@@ -442,17 +438,24 @@ static int __expr_evaluate_payload(struct eval_ctx *ctx, struct expr *expr)
 {
 	struct expr *payload = expr;
 	enum proto_bases base = payload->payload.base;
+	const struct proto_desc *desc;
 	struct stmt *nstmt;
 	int err;
 
-	if (ctx->pctx.protocol[base].desc == NULL) {
+	desc = ctx->pctx.protocol[base].desc;
+	if (desc == NULL) {
 		if (payload_gen_dependency(ctx, payload, &nstmt) < 0)
 			return -1;
 		list_add_tail(&nstmt->list, &ctx->stmt->list);
 	} else {
-		err = resolve_protocol_conflict(ctx, payload);
-		if (err <= 0)
-			return err;
+		/* If we already have context and this payload is on the same
+		 * base, try to resolve the protocol conflict.
+		 */
+		if (payload->payload.base == desc->base) {
+			err = resolve_protocol_conflict(ctx, desc, payload);
+			if (err <= 0)
+				return err;
+		}
 		return expr_error(ctx->msgs, payload,
 				  "conflicting protocols specified: %s vs. %s",
 				  ctx->pctx.protocol[base].desc->name,
