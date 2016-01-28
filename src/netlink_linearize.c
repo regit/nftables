@@ -919,14 +919,17 @@ static void netlink_gen_redir_stmt(struct netlink_linearize_ctx *ctx,
 					 pmin_reg);
 			netlink_gen_expr(ctx, stmt->redir.proto->right,
 					 pmax_reg);
-			nftnl_expr_set_u32(nle, NFTNL_EXPR_REDIR_REG_PROTO_MIN,
-					   pmin_reg);
-			nftnl_expr_set_u32(nle, NFTNL_EXPR_REDIR_REG_PROTO_MAX,
-					   pmax_reg);
+			netlink_put_register(nle,
+					     NFTNL_EXPR_REDIR_REG_PROTO_MIN,
+					     pmin_reg);
+			netlink_put_register(nle,
+					     NFTNL_EXPR_REDIR_REG_PROTO_MAX,
+					     pmax_reg);
 		} else {
 			netlink_gen_expr(ctx, stmt->redir.proto, pmin_reg);
-			nftnl_expr_set_u32(nle, NFTNL_EXPR_REDIR_REG_PROTO_MIN,
-					   pmin_reg);
+			netlink_put_register(nle,
+					     NFTNL_EXPR_REDIR_REG_PROTO_MIN,
+					     pmin_reg);
 		}
 	}
 
