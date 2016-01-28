@@ -382,6 +382,17 @@ static int meta_iiftype_gen_dependency(struct eval_ctx *ctx,
 	return 0;
 }
 
+static void proto_ctx_debunk(struct eval_ctx *ctx,
+			     const struct proto_desc *desc,
+			     const struct proto_desc *next,
+			     struct expr *payload, enum proto_bases base)
+{
+	ctx->pctx.protocol[base + 1].desc = NULL;
+	ctx->pctx.protocol[base].desc = next;
+	ctx->pctx.protocol[base].offset += desc->length;
+	payload->payload.offset += desc->length;
+}
+
 static bool proto_is_dummy(const struct proto_desc *desc)
 {
 	return desc == &proto_inet || desc == &proto_netdev;
@@ -406,15 +417,17 @@ static int resolve_protocol_conflict(struct eval_ctx *ctx,
 	assert(base < PROTO_BASE_MAX);
 	next = ctx->pctx.protocol[base + 1].desc;
 
+	/* ether type vlan sets vlan as network protocol, debunk ethernet if it
+	 * is already there.
+	 */
 	if (payload->payload.desc == next) {
-		ctx->pctx.protocol[base + 1].desc = NULL;
-		ctx->pctx.protocol[base].desc = next;
-		ctx->pctx.protocol[base].offset += desc->length;
-		payload->payload.offset += desc->length;
+		proto_ctx_debunk(ctx, desc, next, payload, base);
 		return 0;
-	} else if (next) {
-		return 1;
 	}
+
+	/* This payload and the existing context don't match, conflict. */
+	if (next != NULL)
+		return 1;
 
 	link = proto_find_num(desc, payload->payload.desc);
 	if (link < 0 || conflict_resolution_gen_dependency(ctx, link, payload, &nstmt) < 0)
