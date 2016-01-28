@@ -1031,6 +1031,30 @@ static void integer_type_postprocess(struct expr *expr)
 	}
 }
 
+static void payload_dependency_save(struct rule_pp_ctx *ctx, unsigned int base,
+				    struct stmt *nstmt, struct expr *tmp)
+{
+	unsigned int proto = mpz_get_be16(tmp->value);
+	const struct proto_desc *desc, *next;
+	bool stacked_header = false;
+
+	desc = ctx->pctx.protocol[base].desc;
+
+	assert(desc);
+	if (desc) {
+		next = proto_find_upper(desc, proto);
+		stacked_header = next && next->base == base;
+	}
+
+	if (stacked_header) {
+		ctx->pctx.protocol[base].desc = next;
+		ctx->pctx.protocol[base].offset += desc->length;
+		payload_dependency_store(ctx, nstmt, base - 1);
+	} else {
+		payload_dependency_store(ctx, nstmt, base);
+	}
+}
+
 static void payload_match_expand(struct rule_pp_ctx *ctx,
 				 struct expr *expr,
 				 struct expr *payload)
@@ -1069,26 +1093,11 @@ static void payload_match_expand(struct rule_pp_ctx *ctx,
 		if (ctx->pbase == PROTO_BASE_INVALID &&
 		    expr->op == OP_EQ &&
 		    left->flags & EXPR_F_PROTOCOL) {
-			unsigned int proto = mpz_get_be16(tmp->value);
-			const struct proto_desc *desc, *next;
-			bool stacked_header = false;
-
-			desc = ctx->pctx.protocol[base].desc;
-			assert(desc);
-			if (desc) {
-				next = proto_find_upper(desc, proto);
-				stacked_header = next && next->base == base;
-			}
-
-			if (stacked_header) {
-				ctx->pctx.protocol[base].desc = next;
-				ctx->pctx.protocol[base].offset += desc->length;
-				payload_dependency_store(ctx, nstmt, base - 1);
-			} else {
-				payload_dependency_store(ctx, nstmt, base);
-			}
+			payload_dependency_save(ctx, base, nstmt, tmp);
 		} else {
 			payload_dependency_kill(ctx, nexpr->left);
+			if (left->flags & EXPR_F_PROTOCOL)
+				payload_dependency_save(ctx, base, nstmt, tmp);
 		}
 	}
 	list_del(&ctx->stmt->list);
