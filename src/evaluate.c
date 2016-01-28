@@ -392,6 +392,7 @@ static int resolve_protocol_conflict(struct eval_ctx *ctx,
 				     struct expr *payload)
 {
 	enum proto_bases base = payload->payload.base;
+	const struct proto_desc *next;
 	struct stmt *nstmt = NULL;
 	int link, err;
 
@@ -402,18 +403,17 @@ static int resolve_protocol_conflict(struct eval_ctx *ctx,
 			return err;
 	}
 
-	if (base < PROTO_BASE_MAX) {
-		const struct proto_desc *next = ctx->pctx.protocol[base + 1].desc;
+	assert(base < PROTO_BASE_MAX);
+	next = ctx->pctx.protocol[base + 1].desc;
 
-		if (payload->payload.desc == next) {
-			ctx->pctx.protocol[base + 1].desc = NULL;
-			ctx->pctx.protocol[base].desc = next;
-			ctx->pctx.protocol[base].offset += desc->length;
-			payload->payload.offset += desc->length;
-			return 0;
-		} else if (next) {
-			return 1;
-		}
+	if (payload->payload.desc == next) {
+		ctx->pctx.protocol[base + 1].desc = NULL;
+		ctx->pctx.protocol[base].desc = next;
+		ctx->pctx.protocol[base].offset += desc->length;
+		payload->payload.offset += desc->length;
+		return 0;
+	} else if (next) {
+		return 1;
 	}
 
 	link = proto_find_num(desc, payload->payload.desc);
