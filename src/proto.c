@@ -94,12 +94,20 @@ static const struct dev_proto_desc dev_proto_desc[] = {
  */
 int proto_dev_type(const struct proto_desc *desc, uint16_t *res)
 {
-	unsigned int i;
+	const struct proto_desc *base;
+	unsigned int i, j;
 
 	for (i = 0; i < array_size(dev_proto_desc); i++) {
-		if (dev_proto_desc[i].desc == desc) {
+		base = dev_proto_desc[i].desc;
+		if (base == desc) {
 			*res = dev_proto_desc[i].type;
 			return 0;
+		}
+		for (j = 0; j < array_size(base->protocols); j++) {
+			if (base->protocols[j].desc == desc) {
+				*res = dev_proto_desc[i].type;
+				return 0;
+			}
 		}
 	}
 	return -1;
