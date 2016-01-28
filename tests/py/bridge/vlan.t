@@ -1,6 +1,8 @@
 :input;type filter hook input priority 0
+:ingress;type filter hook ingress device lo priority 0
 
 *bridge;test-bridge;input
+*netdev;test-netdev;ingress
 
 vlan id 4094;ok
 vlan id 0;ok
