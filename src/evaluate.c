@@ -359,18 +359,13 @@ conflict_resolution_gen_dependency(struct eval_ctx *ctx, int protocol,
  * ip saddr adds meta dependency on ipv4 packets
  * ether saddr adds another dependeny on ethernet frames.
  */
-static int supersede_dep(struct eval_ctx *ctx, const struct proto_desc *have,
-			 struct expr *payload)
+static int meta_iiftype_gen_dependency(struct eval_ctx *ctx,
+				       const struct proto_desc *have,
+				       struct expr *payload)
 {
 	enum proto_bases base = payload->payload.base;
 	struct stmt *nstmt;
 	uint16_t type;
-
-	if (payload->payload.base != PROTO_BASE_LL_HDR || have->length)
-		return 1;
-
-	if (have != &proto_inet && have != &proto_netdev)
-		return 1;
 
 	if (proto_dev_type(payload->payload.desc, &type) < 0)
 		return expr_error(ctx->msgs, payload,
@@ -387,6 +382,11 @@ static int supersede_dep(struct eval_ctx *ctx, const struct proto_desc *have,
 	return 0;
 }
 
+static bool proto_is_dummy(const struct proto_desc *desc)
+{
+	return desc == &proto_inet || desc == &proto_netdev;
+}
+
 static int resolve_protocol_conflict(struct eval_ctx *ctx,
 				     const struct proto_desc *desc,
 				     struct expr *payload)
@@ -395,9 +395,12 @@ static int resolve_protocol_conflict(struct eval_ctx *ctx,
 	struct stmt *nstmt = NULL;
 	int link, err;
 
-	err = supersede_dep(ctx, desc, payload);
-	if (err <= 0)
-		return err;
+	if (payload->payload.base == PROTO_BASE_LL_HDR &&
+	    proto_is_dummy(desc)) {
+		err = meta_iiftype_gen_dependency(ctx, desc, payload);
+		if (err <= 0)
+			return err;
+	}
 
 	if (base < PROTO_BASE_MAX) {
 		const struct proto_desc *next = ctx->pctx.protocol[base + 1].desc;
