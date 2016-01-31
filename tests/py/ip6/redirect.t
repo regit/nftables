@@ -22,6 +22,7 @@ udp dport 53 redirect persistent,fully-random,random;ok;udp dport 53 redirect ra
 # port specification
 udp dport 1234 redirect to 1234;ok
 ip6 daddr fe00::cafe udp dport 9998 redirect to 6515;ok
+ip6 nexthdr tcp redirect to 100-200;ok;ip6 nexthdr 6 redirect to 100-200
 tcp dport 39128 redirect to 993;ok
 redirect to 1234;fail
 redirect to 12341111;fail
@@ -43,3 +44,6 @@ ip6 saddr ::1 redirect drop;fail
 tcp dport { 1, 2, 3, 4, 5, 6, 7, 8, 101, 202, 303, 1001, 2002, 3003} redirect;ok
 ip6 daddr fe00::1-fe00::200 udp dport 53 counter packets 0 bytes 0 redirect;ok
 iifname eth0 ct state new,established tcp dport vmap {22 : drop, 222 : drop } redirect;ok
+
+# redirect with maps
+ip6 nexthdr 6 redirect to tcp dport map { 22 : 8000, 80 : 8080};ok
