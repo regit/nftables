@@ -1229,13 +1229,12 @@ static void binop_postprocess(struct rule_pp_ctx *ctx, struct expr *expr)
 			value->len = payload->len;
 		}
 
-		payload_match_postprocess(ctx, expr, payload);
-
 		assert(expr->left->ops->type == EXPR_BINOP);
-
 		assert(binop->left == payload);
 		expr->left = expr_get(payload);
 		expr_free(binop);
+
+		payload_match_postprocess(ctx, expr, payload);
 	}
 }
 
