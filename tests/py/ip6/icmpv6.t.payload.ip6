@@ -102,6 +102,14 @@ ip6 test-ip6 input
   [ cmp eq reg 1 0x00000089 ]
   [ immediate reg 0 accept ]
 
+# icmpv6 type parameter-problem accept
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 1b @ transport header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000004 ]
+  [ immediate reg 0 accept ]
+
 # icmpv6 type router-renumbering accept
 ip6 test-ip6 input
   [ payload load 1b @ network header + 6 => reg 1 ]

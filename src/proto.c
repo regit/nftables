@@ -542,7 +542,7 @@ static const struct symbol_table icmp6_type_tbl = {
 		SYMBOL("destination-unreachable",	ICMP6_DST_UNREACH),
 		SYMBOL("packet-too-big",		ICMP6_PACKET_TOO_BIG),
 		SYMBOL("time-exceeded",			ICMP6_TIME_EXCEEDED),
-		SYMBOL("param-problem",			ICMP6_PARAM_PROB),
+		SYMBOL("parameter-problem",		ICMP6_PARAM_PROB),
 		SYMBOL("echo-request",			ICMP6_ECHO_REQUEST),
 		SYMBOL("echo-reply",			ICMP6_ECHO_REPLY),
 		SYMBOL("mld-listener-query",		MLD_LISTENER_QUERY),
