@@ -100,17 +100,17 @@ static struct error_record *tchandle_type_parse(const struct expr *sym,
 	else if (strcmp(sym->identifier, "none") == 0)
 		handle = TC_H_UNSPEC;
 	else if (sym->identifier[0] == ':') {
-		if (sscanf(sym->identifier, ":%04x", &handle) < 0)
+		if (sscanf(sym->identifier, ":%04x", &handle) != 1)
 			goto err;
 	} else if (sym->identifier[strlen(sym->identifier)-1] == ':') {
-		if (sscanf(sym->identifier, "%04x:", &handle) < 0)
+		if (sscanf(sym->identifier, "%04x:", &handle) != 1)
 			goto err;
 
 		handle <<= 16;
 	} else {
 		uint32_t min, max;
 
-		if (sscanf(sym->identifier, "%04x:%04x", &min, &max) < 0)
+		if (sscanf(sym->identifier, "%04x:%04x", &max, &min) != 2)
 			goto err;
 
 		handle = max << 16 | min;
