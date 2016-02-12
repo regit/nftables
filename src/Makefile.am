@@ -27,8 +27,9 @@ parser_bison.o scanner.o: AM_CFLAGS += -Wno-missing-prototypes -Wno-missing-decl
 
 BUILT_SOURCES = parser_bison.h
 
-nft_SOURCES =	main.c				\
-		rule.c				\
+lib_LTLIBRARIES = libnftables.la
+
+libnftables_la_SOURCES =	rule.c				\
 		statement.c			\
 		datatype.c			\
 		expression.c			\
@@ -51,19 +52,23 @@ nft_SOURCES =	main.c				\
 		scanner.l			\
 		parser_bison.y
 
+if BUILD_MINIGMP
+mini-gmp.o: AM_CFLAGS += -Wno-sign-compare
+
+libnftables_la_SOURCES +=	mini-gmp.c
+endif
+
+nft_SOURCES = main.c
+
 if BUILD_CLI
 nft_SOURCES +=	cli.c
 endif
 
-if BUILD_MINIGMP
-mini-gmp.o: AM_CFLAGS += -Wno-sign-compare
-
-nft_SOURCES +=	mini-gmp.c
-endif
-
-nft_LDADD	= ${LIBMNL_LIBS} ${LIBNFTNL_LIBS}
+libnftables_la_LIBADD	= ${LIBMNL_LIBS} ${LIBNFTNL_LIBS}
 
 if BUILD_XTABLES
-nft_SOURCES +=	xt.c
-nft_LDADD   +=  ${XTABLES_LIBS}
+libnftables_la_SOURCES  +=	xt.c
+libnftables_la_LIBADD   +=  ${XTABLES_LIBS}
 endif
+
+nft_LDADD		= libnftables.la
