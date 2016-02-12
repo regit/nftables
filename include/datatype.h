@@ -246,4 +246,9 @@ extern struct error_record *rate_parse(const struct location *loc,
 extern struct error_record *data_unit_parse(const struct location *loc,
 					    const char *str, uint64_t *rate);
 
+extern void mark_table_init(void);
+extern void mark_table_exit(void);
+
+const struct datatype * get_datatype(uint8_t type);
+
 #endif /* NFTABLES_DATATYPE_H */

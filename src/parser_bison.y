@@ -34,7 +34,7 @@
 
 #include "parser_bison.h"
 
-void parser_init(struct parser_state *state, struct list_head *msgs)
+void parser_init(struct parser_state *state, struct list_head *msgs, nft_context_t *nft_ctx)
 {
 	memset(state, 0, sizeof(*state));
 	init_list_head(&state->cmds);
@@ -42,6 +42,7 @@ void parser_init(struct parser_state *state, struct list_head *msgs)
 	state->msgs = msgs;
 	state->scopes[0] = scope_init(&state->top_scope, NULL);
 	state->ectx.msgs = msgs;
+	state->ectx.nft_ctx = nft_ctx;
 }
 
 static void yyerror(struct location *loc, void *scanner,

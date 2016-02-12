@@ -672,12 +672,12 @@ void rt_symbol_table_free(struct symbol_table *tbl)
 }
 
 static struct symbol_table *mark_tbl;
-static void __init mark_table_init(void)
+void mark_table_init(void)
 {
 	mark_tbl = rt_symbol_table_init("/etc/iproute2/rt_marks");
 }
 
-static void __exit mark_table_exit(void)
+void mark_table_exit(void)
 {
 	rt_symbol_table_free(mark_tbl);
 }
@@ -1033,4 +1033,11 @@ struct error_record *rate_parse(const struct location *loc, const char *str,
 		return erec;
 
 	return NULL;
+}
+
+const struct datatype * get_datatype(uint8_t type)
+{
+	if (type >= TYPE_MAX)
+		return NULL;
+	return datatypes[type];
 }

@@ -28,6 +28,10 @@ extern struct expr *meta_expr_alloc(const struct location *loc,
 
 struct stmt *meta_stmt_meta_iiftype(const struct location *loc, uint16_t type);
 
-const struct datatype ifindex_type;
+extern void meta_init(void);
+extern void devgroup_table_init(void);
+extern void devgroup_table_exit(void);
+extern void realm_table_init(void);
+extern void realm_table_exit(void);
 
 #endif /* NFTABLES_META_H */

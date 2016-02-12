@@ -937,7 +937,7 @@ const struct proto_desc proto_netdev = {
 	},
 };
 
-static void __init proto_init(void)
+void proto_init(void)
 {
 	datatype_register(&icmp_type_type);
 	datatype_register(&tcp_flag_type);

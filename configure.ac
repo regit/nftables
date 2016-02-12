@@ -56,6 +56,9 @@ then
         exit 1
 fi
 
+AM_PROG_AR
+AM_PROG_LIBTOOL
+
 AC_CHECK_PROG(DOCBOOK2X_MAN, [docbook2x-man], [docbook2x-man], [no])
 AC_CHECK_PROG(DOCBOOK2MAN, [docbook2man], [docbook2man], [no])
 AC_CHECK_PROG(DB2X_DOCBOOK2MAN, [db2x_docbook2man], [db2x_docbook2man], [no])
@@ -146,6 +149,7 @@ AC_CONFIG_FILES([					\
 		include/linux/netfilter_bridge/Makefile	\
 		include/linux/netfilter_ipv4/Makefile	\
 		include/linux/netfilter_ipv6/Makefile	\
+		include/nftables/Makefile		\
 		doc/Makefile				\
 		files/Makefile				\
 		files/nftables/Makefile			\

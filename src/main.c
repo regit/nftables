@@ -172,76 +172,7 @@ static const struct input_descriptor indesc_cmdline = {
 	.name	= "<cmdline>",
 };
 
-static int nft_netlink(struct parser_state *state, struct list_head *msgs)
-{
-	struct netlink_ctx ctx;
-	struct cmd *cmd;
-	struct mnl_err *err, *tmp;
-	LIST_HEAD(err_list);
-	uint32_t batch_seqnum;
-	bool batch_supported = netlink_batch_supported();
-	int ret = 0;
 
-	mnl_batch_init();
-
-	batch_seqnum = mnl_batch_begin();
-	list_for_each_entry(cmd, &state->cmds, list) {
-		memset(&ctx, 0, sizeof(ctx));
-		ctx.msgs = msgs;
-		ctx.seqnum = cmd->seqnum = mnl_seqnum_alloc();
-		ctx.batch_supported = batch_supported;
-		init_list_head(&ctx.list);
-		ret = do_command(&ctx, cmd);
-		if (ret < 0)
-			goto out;
-	}
-	mnl_batch_end();
-
-	if (!mnl_batch_ready())
-		goto out;
-
-	ret = netlink_batch_send(&err_list);
-
-	list_for_each_entry_safe(err, tmp, &err_list, head) {
-		list_for_each_entry(cmd, &state->cmds, list) {
-			if (err->seqnum == cmd->seqnum ||
-			    err->seqnum == batch_seqnum) {
-				netlink_io_error(&ctx, &cmd->location,
-						 "Could not process rule: %s",
-						 strerror(err->err));
-				ret = -1;
-				errno = err->err;
-				if (err->seqnum == cmd->seqnum) {
-					mnl_err_list_free(err);
-					break;
-				}
-			}
-		}
-	}
-out:
-	mnl_batch_reset();
-	return ret;
-}
-
-int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs)
-{
-	struct cmd *cmd, *next;
-	int ret;
-
-	ret = nft_parse(scanner, state);
-	if (ret != 0 || state->nerrs > 0) {
-		ret = -1;
-		goto err1;
-	}
-	ret = nft_netlink(state, msgs);
-err1:
-	list_for_each_entry_safe(cmd, next, &state->cmds, list) {
-		list_del(&cmd->list);
-		cmd_free(cmd);
-	}
-
-	return ret;
-}
 
 int main(int argc, char * const *argv)
 {
@@ -252,6 +183,7 @@ int main(int argc, char * const *argv)
 	unsigned int len;
 	bool interactive = false;
 	int i, val, rc = NFT_EXIT_SUCCESS;
+	nft_context_t *nft_ctx;
 
 	while (1) {
 		val = getopt_long(argc, argv, OPTSTRING, options, NULL);
@@ -324,7 +256,9 @@ int main(int argc, char * const *argv)
 		}
 	}
 
+	nft_global_init();
 	if (optind != argc) {
+		nft_ctx = nft_open();
 		for (len = 0, i = optind; i < argc; i++)
 			len += strlen(argv[i]) + strlen(" ");
 
@@ -334,15 +268,16 @@ int main(int argc, char * const *argv)
 			if (i + 1 < argc)
 				strcat(buf, " ");
 		}
-		parser_init(&state, &msgs);
+		parser_init(&state, &msgs, nft_ctx);
 		scanner = scanner_init(&state);
 		scanner_push_buffer(scanner, &indesc_cmdline, buf);
 	} else if (filename != NULL) {
-		rc = cache_update(CMD_INVALID, &msgs);
+		nft_ctx = nft_open();
+		rc = cache_update(nft_ctx, CMD_INVALID, &msgs);
 		if (rc < 0)
 			return rc;
 
-		parser_init(&state, &msgs);
+		parser_init(&state, &msgs, nft_ctx);
 		scanner = scanner_init(&state);
 		if (scanner_read_file(scanner, filename, &internal_location) < 0)
 			goto out;
@@ -358,14 +293,15 @@ int main(int argc, char * const *argv)
 		exit(NFT_EXIT_FAILURE);
 	}
 
-	if (nft_run(scanner, &state, &msgs) != 0)
+	if (nft_run(nft_ctx, scanner, &state, &msgs) != 0)
 		rc = NFT_EXIT_FAILURE;
 out:
 	scanner_destroy(scanner);
 	erec_print_list(stderr, &msgs);
 	xfree(buf);
-	cache_release();
+	cache_release(nft_ctx);
 	iface_cache_release();
 
+	nft_global_deinit();
 	return rc;
 }

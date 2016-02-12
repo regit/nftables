@@ -185,7 +185,7 @@ static int expr_evaluate_symbol(struct eval_ctx *ctx, struct expr **expr)
 		new = expr_clone(sym->expr);
 		break;
 	case SYMBOL_SET:
-		ret = cache_update(ctx->cmd->op, ctx->msgs);
+		ret = cache_update(ctx->nft_ctx, ctx->cmd->op, ctx->msgs);
 		if (ret < 0)
 			return ret;
 
@@ -2149,7 +2149,7 @@ static int stmt_evaluate_dup(struct eval_ctx *ctx, struct stmt *stmt)
 			return err;
 
 		if (stmt->dup.dev != NULL) {
-			err = stmt_evaluate_arg(ctx, stmt, &ifindex_type,
+			err = stmt_evaluate_arg(ctx, stmt, get_datatype(TYPE_IFINDEX),
 						sizeof(uint32_t) * BITS_PER_BYTE,
 						&stmt->dup.dev);
 			if (err < 0)
@@ -2163,7 +2163,7 @@ static int stmt_evaluate_dup(struct eval_ctx *ctx, struct stmt *stmt)
 		if (stmt->dup.dev != NULL)
 			return stmt_error(ctx, stmt, "cannot specify device");
 
-		err = stmt_evaluate_arg(ctx, stmt, &ifindex_type,
+		err = stmt_evaluate_arg(ctx, stmt, get_datatype(TYPE_IFINDEX),
 					sizeof(uint32_t) * BITS_PER_BYTE,
 					&stmt->dup.to);
 		if (err < 0)
@@ -2185,7 +2185,7 @@ static int stmt_evaluate_fwd(struct eval_ctx *ctx, struct stmt *stmt)
 			return stmt_error(ctx, stmt,
 					  "missing destination interface");
 
-		err = stmt_evaluate_arg(ctx, stmt, &ifindex_type,
+		err = stmt_evaluate_arg(ctx, stmt, get_datatype(TYPE_IFINDEX),
 					sizeof(uint32_t) * BITS_PER_BYTE,
 					&stmt->fwd.to);
 		if (err < 0)
@@ -2576,13 +2576,13 @@ static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 
 	switch (cmd->obj) {
 	case CMD_OBJ_SETELEM:
-		ret = cache_update(cmd->op, ctx->msgs);
+		ret = cache_update(ctx->nft_ctx, cmd->op, ctx->msgs);
 		if (ret < 0)
 			return ret;
 
 		return setelem_evaluate(ctx, &cmd->expr);
 	case CMD_OBJ_SET:
-		ret = cache_update(cmd->op, ctx->msgs);
+		ret = cache_update(ctx->nft_ctx, cmd->op, ctx->msgs);
 		if (ret < 0)
 			return ret;
 
@@ -2592,7 +2592,7 @@ static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 		handle_merge(&cmd->rule->handle, &cmd->handle);
 		return rule_evaluate(ctx, cmd->rule);
 	case CMD_OBJ_CHAIN:
-		ret = cache_update(cmd->op, ctx->msgs);
+		ret = cache_update(ctx->nft_ctx, cmd->op, ctx->msgs);
 		if (ret < 0)
 			return ret;
 
@@ -2610,7 +2610,7 @@ static int cmd_evaluate_delete(struct eval_ctx *ctx, struct cmd *cmd)
 
 	switch (cmd->obj) {
 	case CMD_OBJ_SETELEM:
-		ret = cache_update(cmd->op, ctx->msgs);
+		ret = cache_update(ctx->nft_ctx, cmd->op, ctx->msgs);
 		if (ret < 0)
 			return ret;
 
@@ -2634,7 +2634,7 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 	struct set *set;
 	int ret;
 
-	ret = cache_update(cmd->op, ctx->msgs);
+	ret = cache_update(ctx->nft_ctx, cmd->op, ctx->msgs);
 	if (ret < 0)
 		return ret;
 
@@ -2705,7 +2705,7 @@ static int cmd_evaluate_rename(struct eval_ctx *ctx, struct cmd *cmd)
 
 	switch (cmd->obj) {
 	case CMD_OBJ_CHAIN:
-		ret = cache_update(cmd->op, ctx->msgs);
+		ret = cache_update(ctx->nft_ctx, cmd->op, ctx->msgs);
 		if (ret < 0)
 			return ret;
 
@@ -2791,7 +2791,7 @@ static int cmd_evaluate_monitor(struct eval_ctx *ctx, struct cmd *cmd)
 	uint32_t event;
 	int ret;
 
-	ret = cache_update(cmd->op, ctx->msgs);
+	ret = cache_update(ctx->nft_ctx, cmd->op, ctx->msgs);
 	if (ret < 0)
 		return ret;
 
@@ -2814,7 +2814,7 @@ static int cmd_evaluate_monitor(struct eval_ctx *ctx, struct cmd *cmd)
 
 static int cmd_evaluate_export(struct eval_ctx *ctx, struct cmd *cmd)
 {
-	return cache_update(cmd->op, ctx->msgs);
+	return cache_update(ctx->nft_ctx, cmd->op, ctx->msgs);
 }
 
 int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)

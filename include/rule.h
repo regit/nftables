@@ -412,6 +412,7 @@ struct eval_ctx {
 	struct stmt		*stmt;
 	struct expr_ctx		ectx;
 	struct proto_ctx	pctx;
+	nft_context_t		*nft_ctx;
 };
 
 extern int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd);
@@ -419,10 +420,10 @@ extern int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd);
 extern struct error_record *rule_postprocess(struct rule *rule);
 
 struct netlink_ctx;
-extern int do_command(struct netlink_ctx *ctx, struct cmd *cmd);
+extern int do_command(nft_context_t *nft_ctx, struct cmd *cmd);
 
-extern int cache_update(enum cmd_ops cmd, struct list_head *msgs);
-extern void cache_release(void);
+extern int cache_update(nft_context_t *ctx, enum cmd_ops cmd, struct list_head *msgs);
+extern void cache_release(nft_context_t *ctx);
 
 enum udata_type {
 	UDATA_TYPE_COMMENT,

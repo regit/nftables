@@ -35,12 +35,12 @@
 #include <iface.h>
 
 static struct symbol_table *realm_tbl;
-static void __init realm_table_init(void)
+void realm_table_init(void)
 {
 	realm_tbl = rt_symbol_table_init("/etc/iproute2/rt_realms");
 }
 
-static void __exit realm_table_exit(void)
+void realm_table_exit(void)
 {
 	rt_symbol_table_free(realm_tbl);
 }
@@ -164,7 +164,7 @@ static struct error_record *ifindex_type_parse(const struct expr *sym,
 	return NULL;
 }
 
-const struct datatype ifindex_type = {
+static const struct datatype ifindex_type = {
 	.type		= TYPE_IFINDEX,
 	.name		= "iface_index",
 	.desc		= "network interface index",
@@ -329,12 +329,12 @@ static const struct datatype pkttype_type = {
 };
 
 static struct symbol_table *devgroup_tbl;
-static void __init devgroup_table_init(void)
+void devgroup_table_init(void)
 {
 	devgroup_tbl = rt_symbol_table_init("/etc/iproute2/group");
 }
 
-static void __exit devgroup_table_exit(void)
+void devgroup_table_exit(void)
 {
 	rt_symbol_table_free(devgroup_tbl);
 }
@@ -582,7 +582,7 @@ struct stmt *meta_stmt_alloc(const struct location *loc, enum nft_meta_keys key,
 	return stmt;
 }
 
-static void __init meta_init(void)
+void meta_init(void)
 {
 	datatype_register(&ifindex_type);
 	datatype_register(&realm_type);
