@@ -20,18 +20,18 @@ define tcp_ports = { ssh, domain, https, 123-125 }
 
 delete table filter
 table filter {
-	# named set of type ifindex
+	# named set of type iface_index
 	set local_ifs {
-		type ifindex
+		type iface_index
 	}
 
-	# named map of type ifindex : ipv4_address
+	# named map of type iface_index : ipv4_addr
 	map nat_map {
-		type ifindex : ipv4_address
+		type iface_index : ipv4_addr
 	}
 
 	map jump_map {
-		type ifindex : verdict
+		type iface_index : verdict
 	}
 
 	chain input_1 { counter; }
