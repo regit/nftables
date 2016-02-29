@@ -920,6 +920,11 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 		if (list_member_evaluate(ctx, &i) < 0)
 			return -1;
 
+		if (i->ops->type == EXPR_SET_ELEM &&
+		    i->key->ops->type == EXPR_SET_REF)
+			return expr_error(ctx->msgs, i,
+					  "Set reference cannot be part of another set");
+
 		if (!expr_is_constant(i))
 			return expr_error(ctx->msgs, i,
 					  "Set member is not constant");
