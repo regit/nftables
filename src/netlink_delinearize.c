@@ -1213,12 +1213,12 @@ static struct expr *binop_tree_to_list(struct expr *list, struct expr *expr)
 static void binop_postprocess(struct rule_pp_ctx *ctx, struct expr *expr)
 {
 	struct expr *binop = expr->left, *value = expr->right;
-
-	struct expr *payload = binop->left;
+	struct expr *left = binop->left;
 	struct expr *mask = binop->right;
 	unsigned int shift;
 
-	if (payload_expr_trim(payload, mask, &ctx->pctx, &shift)) {
+	if ((left->ops->type == EXPR_PAYLOAD &&
+	    payload_expr_trim(left, mask, &ctx->pctx, &shift))) {
 		/* mask is implicit, binop needs to be removed.
 		 *
 		 * Fix all values of the expression according to the mask
@@ -1231,15 +1231,15 @@ static void binop_postprocess(struct rule_pp_ctx *ctx, struct expr *expr)
 		if (value->ops->type == EXPR_VALUE) {
 			assert(value->len >= expr->left->right->len);
 			mpz_rshift_ui(value->value, shift);
-			value->len = payload->len;
+			value->len = left->len;
 		}
 
 		assert(expr->left->ops->type == EXPR_BINOP);
-		assert(binop->left == payload);
-		expr->left = expr_get(payload);
+		assert(binop->left == left);
+		expr->left = expr_get(left);
 		expr_free(binop);
 
-		payload_match_postprocess(ctx, expr, payload);
+		payload_match_postprocess(ctx, expr, left);
 	}
 }
 
@@ -1285,7 +1285,6 @@ static void relational_binop_postprocess(struct rule_pp_ctx *ctx, struct expr *e
 		expr_free(value);
 		expr_free(binop);
 	} else if (binop->op == OP_AND &&
-		   binop->left->ops->type == EXPR_PAYLOAD &&
 		   binop->right->ops->type == EXPR_VALUE) {
 		/*
 		 * This *might* be a payload match testing header fields that
