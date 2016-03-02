@@ -103,12 +103,13 @@ static void netlink_gen_concat(struct netlink_linearize_ctx *ctx,
 	}
 }
 
-static unsigned int payload_shift_calc(const struct expr *expr)
+static unsigned int payload_shift_calc(const struct expr *expr,
+				       unsigned int offset)
 {
-	unsigned int offset, len;
+	unsigned int len;
 	int shift;
 
-	offset = expr->payload.offset % BITS_PER_BYTE;
+	offset %= BITS_PER_BYTE;
 	len = round_up(expr->len, BITS_PER_BYTE);
 	shift = len - (offset + expr->len);
 	assert(shift >= 0);
@@ -116,18 +117,15 @@ static unsigned int payload_shift_calc(const struct expr *expr)
 	return shift;
 }
 
-static void netlink_gen_payload_mask(struct netlink_linearize_ctx *ctx,
-				     const struct expr *expr,
-				     enum nft_registers dreg)
+static void netlink_gen_mask(struct netlink_linearize_ctx *ctx,
+			     const struct expr *expr,
+			     unsigned int shift,
+			     enum nft_registers dreg)
 {
 	struct nft_data_linearize nld, zero = {};
-	unsigned int shift, len, masklen;
+	unsigned int len, masklen;
 	struct nftnl_expr *nle;
 	mpz_t mask;
-
-	shift = payload_shift_calc(expr);
-	if (!shift && expr->payload.offset % BITS_PER_BYTE == 0)
-		return;
 
 	masklen = expr->len + shift;
 	assert(masklen <= NFT_REG_SIZE * BITS_PER_BYTE);
@@ -149,6 +147,18 @@ static void netlink_gen_payload_mask(struct netlink_linearize_ctx *ctx,
 
 	mpz_clear(mask);
 	nftnl_rule_add_expr(ctx->nlr, nle);
+}
+
+static void netlink_gen_payload_mask(struct netlink_linearize_ctx *ctx,
+				     const struct expr *expr,
+				     enum nft_registers dreg)
+{
+	unsigned int shift, offset;
+
+	offset = expr->payload.offset % BITS_PER_BYTE;
+	shift = payload_shift_calc(expr, offset);
+	if (shift || offset)
+		netlink_gen_mask(ctx, expr, shift, dreg);
 }
 
 static void netlink_gen_payload(struct netlink_linearize_ctx *ctx,
@@ -300,7 +310,8 @@ static void payload_shift_value(const struct expr *left, struct expr *right)
 	    left->ops->type != EXPR_PAYLOAD)
 		return;
 
-	mpz_lshift_ui(right->value, payload_shift_calc(left));
+	mpz_lshift_ui(right->value,
+			payload_shift_calc(left, left->payload.offset));
 }
 
 static struct expr *netlink_gen_prefix(struct netlink_linearize_ctx *ctx,
