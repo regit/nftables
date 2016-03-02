@@ -344,18 +344,29 @@ conflict_resolution_gen_dependency(struct eval_ctx *ctx, int protocol,
 }
 
 /*
- * Exthdr expression: check whether dependencies are fulfilled.
+ * Exthdr expression: check whether dependencies are fulfilled, otherwise
+ * generate the necessary relational expression and prepend it to the current
+ * statement.
  */
 static int expr_evaluate_exthdr(struct eval_ctx *ctx, struct expr **expr)
 {
 	const struct proto_desc *base;
+	struct stmt *nstmt;
 
 	base = ctx->pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
 	if (base == &proto_ip6)
 		return expr_evaluate_primary(ctx, expr);
 
-	return expr_error(ctx->msgs, *expr,
-			  "exthdr can only be used with ipv6");
+	if (base)
+		return expr_error(ctx->msgs, *expr,
+				  "cannot use exthdr with %s", base->name);
+
+	if (exthdr_gen_dependency(ctx, *expr, &nstmt) < 0)
+		return -1;
+
+	list_add(&nstmt->list, &ctx->rule->stmts);
+
+	return expr_evaluate_primary(ctx, expr);
 }
 
 /* dependency supersede.
