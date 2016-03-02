@@ -1,109 +1,109 @@
 # frag nexthdr tcp
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 0 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
 
 # frag nexthdr != icmp
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 0 => reg 1 ]
   [ cmp neq reg 1 0x00000001 ]
 
 # frag nexthdr {esp, ah, comp, udp, udplite, tcp, dccp, sctp}
-set%d test-ip4 3
-set%d test-ip4 0
+set%d test-ip6 3
+set%d test-ip6 0
 	element 00000032  : 0 [end]	element 00000033  : 0 [end]	element 0000006c  : 0 [end]	element 00000011  : 0 [end]	element 00000088  : 0 [end]	element 00000006  : 0 [end]	element 00000021  : 0 [end]	element 00000084  : 0 [end]
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 0 => reg 1 ]
   [ lookup reg 1 set set%d ]
 
 # frag nexthdr esp
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 0 => reg 1 ]
   [ cmp eq reg 1 0x00000032 ]
 
 # frag nexthdr ah
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 0 => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
 
 # frag reserved 22
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 1 => reg 1 ]
   [ cmp eq reg 1 0x00000016 ]
 
 # frag reserved != 233
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 1 => reg 1 ]
   [ cmp neq reg 1 0x000000e9 ]
 
 # frag reserved 33-45
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 1 => reg 1 ]
   [ cmp gte reg 1 0x00000021 ]
   [ cmp lte reg 1 0x0000002d ]
 
 # frag reserved != 33-45
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 1 => reg 1 ]
   [ cmp lt reg 1 0x00000021 ]
   [ cmp gt reg 1 0x0000002d ]
 
 # frag reserved { 33, 55, 67, 88}
-set%d test-ip4 3
-set%d test-ip4 0
+set%d test-ip6 3
+set%d test-ip6 0
 	element 00000021  : 0 [end]	element 00000037  : 0 [end]	element 00000043  : 0 [end]	element 00000058  : 0 [end]
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 1 => reg 1 ]
   [ lookup reg 1 set set%d ]
 
 # frag reserved { 33-55}
-set%d test-ip4 7
-set%d test-ip4 0
+set%d test-ip6 7
+set%d test-ip6 0
 	element 00000000  : 1 [end]	element 00000021  : 0 [end]	element 00000038  : 1 [end]
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 1 => reg 1 ]
   [ lookup reg 1 set set%d ]
 
 # frag id 1
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 4b @ 44 + 4 => reg 1 ]
   [ cmp eq reg 1 0x01000000 ]
 
 # frag id 22
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 4b @ 44 + 4 => reg 1 ]
   [ cmp eq reg 1 0x16000000 ]
 
 # frag id != 33
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 4b @ 44 + 4 => reg 1 ]
   [ cmp neq reg 1 0x21000000 ]
 
 # frag id 33-45
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 4b @ 44 + 4 => reg 1 ]
   [ cmp gte reg 1 0x21000000 ]
   [ cmp lte reg 1 0x2d000000 ]
 
 # frag id != 33-45
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 4b @ 44 + 4 => reg 1 ]
   [ cmp lt reg 1 0x21000000 ]
   [ cmp gt reg 1 0x2d000000 ]
 
 # frag id { 33, 55, 67, 88}
-set%d test-ip4 3
-set%d test-ip4 0
+set%d test-ip6 3
+set%d test-ip6 0
 	element 21000000  : 0 [end]	element 37000000  : 0 [end]	element 43000000  : 0 [end]	element 58000000  : 0 [end]
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 4b @ 44 + 4 => reg 1 ]
   [ lookup reg 1 set set%d ]
 
 # frag id { 33-55}
-set%d test-ip4 7
-set%d test-ip4 0
+set%d test-ip6 7
+set%d test-ip6 0
 	element 00000000  : 1 [end]	element 21000000  : 0 [end]	element 38000000  : 1 [end]
-ip test-ip4 output
+ip6 test-ip6 output
   [ exthdr load 4b @ 44 + 4 => reg 1 ]
   [ lookup reg 1 set set%d ]
 

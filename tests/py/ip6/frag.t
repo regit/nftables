@@ -1,12 +1,8 @@
 :output;type filter hook output priority 0
 :ingress;type filter hook ingress device lo priority 0
 
-*ip;test-ip4;output
 *ip6;test-ip6;output
 *inet;test-inet;output
-*arp;test-arp;output
-*bridge;test-bridge;output
-*netdev;test-netdev;ingress
 
 frag nexthdr tcp;ok;frag nexthdr 6
 frag nexthdr != icmp;ok;frag nexthdr != 1

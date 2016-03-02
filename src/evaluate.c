@@ -343,6 +343,21 @@ conflict_resolution_gen_dependency(struct eval_ctx *ctx, int protocol,
 	return 0;
 }
 
+/*
+ * Exthdr expression: check whether dependencies are fulfilled.
+ */
+static int expr_evaluate_exthdr(struct eval_ctx *ctx, struct expr **expr)
+{
+	const struct proto_desc *base;
+
+	base = ctx->pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
+	if (base == &proto_ip6)
+		return expr_evaluate_primary(ctx, expr);
+
+	return expr_error(ctx->msgs, *expr,
+			  "exthdr can only be used with ipv6");
+}
+
 /* dependency supersede.
  *
  * 'inet' is a 'phony' l2 dependeny used by NFPROTO_INET to fulfill network
@@ -1320,8 +1335,9 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 		return 0;
 	case EXPR_VALUE:
 		return expr_evaluate_value(ctx, expr);
-	case EXPR_VERDICT:
 	case EXPR_EXTHDR:
+		return expr_evaluate_exthdr(ctx, expr);
+	case EXPR_VERDICT:
 	case EXPR_META:
 		return expr_evaluate_primary(ctx, expr);
 	case EXPR_PAYLOAD:
