@@ -1218,7 +1218,9 @@ static void binop_postprocess(struct rule_pp_ctx *ctx, struct expr *expr)
 	unsigned int shift;
 
 	if ((left->ops->type == EXPR_PAYLOAD &&
-	    payload_expr_trim(left, mask, &ctx->pctx, &shift))) {
+	    payload_expr_trim(left, mask, &ctx->pctx, &shift)) ||
+	    (left->ops->type == EXPR_EXTHDR &&
+	     exthdr_find_template(left, mask, &shift))) {
 		/* mask is implicit, binop needs to be removed.
 		 *
 		 * Fix all values of the expression according to the mask
@@ -1226,7 +1228,7 @@ static void binop_postprocess(struct rule_pp_ctx *ctx, struct expr *expr)
 		 * sizes and offsets we're interested in.
 		 *
 		 * Finally, convert the expression to 1) by replacing
-		 * the binop with the binop payload expr.
+		 * the binop with the binop payload/exthdr expression.
 		 */
 		if (value->ops->type == EXPR_VALUE) {
 			assert(value->len >= expr->left->right->len);
@@ -1238,8 +1240,10 @@ static void binop_postprocess(struct rule_pp_ctx *ctx, struct expr *expr)
 		assert(binop->left == left);
 		expr->left = expr_get(left);
 		expr_free(binop);
-
-		payload_match_postprocess(ctx, expr, left);
+		if (left->ops->type == EXPR_PAYLOAD)
+			payload_match_postprocess(ctx, expr, left);
+		else if (left->ops->type == EXPR_EXTHDR)
+			expr_set_type(expr->right, left->dtype, left->byteorder);
 	}
 }
 

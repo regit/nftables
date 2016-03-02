@@ -102,6 +102,37 @@ void exthdr_init_raw(struct expr *expr, uint8_t type,
 	}
 }
 
+static unsigned int mask_length(const struct expr *mask)
+{
+	unsigned long off = mpz_scan1(mask->value, 0);
+
+	return mpz_scan0(mask->value, off + 1);
+}
+
+bool exthdr_find_template(struct expr *expr, const struct expr *mask, unsigned int *shift)
+{
+	unsigned int off, mask_offset, mask_len;
+
+	if (expr->exthdr.tmpl != &exthdr_unknown_template)
+		return false;
+
+	mask_offset = mpz_scan1(mask->value, 0);
+	mask_len = mask_length(mask);
+
+	off = expr->exthdr.offset;
+	off += round_up(mask->len, BITS_PER_BYTE) - mask_len;
+
+	exthdr_init_raw(expr, expr->exthdr.desc->type,
+			off, mask_len - mask_offset);
+
+	/* still failed to find a template... Bug. */
+	if (expr->exthdr.tmpl == &exthdr_unknown_template)
+		return false;
+
+	*shift = mask_offset;
+	return true;
+}
+
 #define HDR_TEMPLATE(__name, __dtype, __type, __member)			\
 	PROTO_HDR_TEMPLATE(__name, __dtype,				\
 			   BYTEORDER_BIG_ENDIAN,			\
