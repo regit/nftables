@@ -982,10 +982,10 @@ struct rule_pp_ctx {
 /*
  * Kill a redundant payload dependecy that is implied by a higher layer payload expression.
  */
-static void payload_dependency_kill(struct rule_pp_ctx *ctx, struct expr *expr)
+static void __payload_dependency_kill(struct rule_pp_ctx *ctx, enum proto_bases base)
 {
 	if (ctx->pbase != PROTO_BASE_INVALID &&
-	    ctx->pbase == expr->payload.base &&
+	    ctx->pbase == base &&
 	    ctx->pdep != NULL) {
 		list_del(&ctx->pdep->list);
 		stmt_free(ctx->pdep);
@@ -994,6 +994,11 @@ static void payload_dependency_kill(struct rule_pp_ctx *ctx, struct expr *expr)
 			ctx->prev = NULL;
 		ctx->pdep = NULL;
 	}
+}
+
+static void payload_dependency_kill(struct rule_pp_ctx *ctx, const struct expr *expr)
+{
+	__payload_dependency_kill(ctx, expr->payload.base);
 }
 
 static void payload_dependency_store(struct rule_pp_ctx *ctx,
@@ -1505,8 +1510,10 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 	case EXPR_SET_ELEM:
 		expr_postprocess(ctx, &expr->key);
 		break;
-	case EXPR_SET_REF:
 	case EXPR_EXTHDR:
+		__payload_dependency_kill(ctx, PROTO_BASE_NETWORK_HDR);
+		break;
+	case EXPR_SET_REF:
 	case EXPR_META:
 	case EXPR_VERDICT:
 		break;
