@@ -37,6 +37,7 @@ static void exthdr_expr_clone(struct expr *new, const struct expr *expr)
 {
 	new->exthdr.desc = expr->exthdr.desc;
 	new->exthdr.tmpl = expr->exthdr.tmpl;
+	new->exthdr.offset = expr->exthdr.offset;
 }
 
 static const struct expr_ops exthdr_expr_ops = {
@@ -86,6 +87,7 @@ void exthdr_init_raw(struct expr *expr, uint8_t type,
 	assert(expr->ops->type == EXPR_EXTHDR);
 
 	expr->len = len;
+	expr->exthdr.offset = offset;
 	expr->exthdr.desc = exthdr_protocols[type];
 	assert(expr->exthdr.desc != NULL);
 

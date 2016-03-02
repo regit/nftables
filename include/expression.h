@@ -264,6 +264,7 @@ struct expr {
 			/* EXPR_EXTHDR */
 			const struct exthdr_desc	*desc;
 			const struct proto_hdr_template	*tmpl;
+			unsigned int			offset;
 		} exthdr;
 		struct {
 			/* EXPR_META */
