@@ -162,6 +162,43 @@ struct stmt *payload_stmt_alloc(const struct location *loc,
 	return stmt;
 }
 
+static int payload_add_dependency(struct eval_ctx *ctx,
+				  const struct proto_desc *desc,
+				  const struct proto_desc *upper,
+				  const struct expr *expr,
+				  struct stmt **res)
+{
+	const struct proto_hdr_template *tmpl;
+	struct expr *dep, *left, *right;
+	struct stmt *stmt;
+	int protocol = proto_find_num(desc, upper);
+
+	if (protocol < 0)
+		return expr_error(ctx->msgs, expr,
+				  "conflicting protocols specified: %s vs. %s",
+				  desc->name, upper->name);
+
+	tmpl = &desc->templates[desc->protocol_key];
+	if (tmpl->meta_key)
+		left = meta_expr_alloc(&expr->location, tmpl->meta_key);
+	else
+		left = payload_expr_alloc(&expr->location, desc, desc->protocol_key);
+
+	right = constant_expr_alloc(&expr->location, tmpl->dtype,
+				    tmpl->dtype->byteorder, tmpl->len,
+				    constant_data_ptr(protocol, tmpl->len));
+
+	dep = relational_expr_alloc(&expr->location, OP_EQ, left, right);
+	stmt = expr_stmt_alloc(&dep->location, dep);
+	if (stmt_evaluate(ctx, stmt) < 0) {
+		return expr_error(ctx->msgs, expr,
+					  "dependency statement is invalid");
+	}
+	left->ops->pctx_update(&ctx->pctx, dep);
+	*res = stmt;
+	return 0;
+}
+
 /**
  * payload_gen_dependency - generate match expression on payload dependency
  *
@@ -190,10 +227,7 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 {
 	const struct hook_proto_desc *h = &hook_proto_desc[ctx->pctx.family];
 	const struct proto_desc *desc;
-	const struct proto_hdr_template *tmpl;
-	struct expr *dep, *left, *right;
 	struct stmt *stmt;
-	int protocol;
 	uint16_t type;
 
 	if (expr->payload.base < h->base) {
@@ -265,31 +299,7 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 				  "no %s protocol specified",
 				  proto_base_names[expr->payload.base - 1]);
 
-	protocol = proto_find_num(desc, expr->payload.desc);
-	if (protocol < 0)
-		return expr_error(ctx->msgs, expr,
-				  "conflicting protocols specified: %s vs. %s",
-				  desc->name, expr->payload.desc->name);
-
-	tmpl = &desc->templates[desc->protocol_key];
-	if (tmpl->meta_key)
-		left = meta_expr_alloc(&expr->location, tmpl->meta_key);
-	else
-		left = payload_expr_alloc(&expr->location, desc, desc->protocol_key);
-
-	right = constant_expr_alloc(&expr->location, tmpl->dtype,
-				    tmpl->dtype->byteorder, tmpl->len,
-				    constant_data_ptr(protocol, tmpl->len));
-
-	dep = relational_expr_alloc(&expr->location, OP_EQ, left, right);
-	stmt = expr_stmt_alloc(&dep->location, dep);
-	if (stmt_evaluate(ctx, stmt) < 0) {
-		return expr_error(ctx->msgs, expr,
-					  "dependency statement is invalid");
-	}
-	left->ops->pctx_update(&ctx->pctx, dep);
-	*res = stmt;
-	return 0;
+	return payload_add_dependency(ctx, desc, expr->payload.desc, expr, res);
 }
 
 /**
