@@ -15,6 +15,10 @@ udp dport 53 masquerade persistent,random,fully-random;ok;udp dport 53 masquerad
 udp dport 53 masquerade persistent,fully-random;ok;udp dport 53 masquerade fully-random,persistent
 udp dport 53 masquerade persistent,fully-random,random;ok;udp dport 53 masquerade random,fully-random,persistent
 
+# using ports
+ip protocol 6 masquerade to :1024;ok
+ip protocol 6 masquerade to :1024-2048;ok
+
 # masquerade is a terminal statement
 tcp dport 22 masquerade counter packets 0 bytes 0 accept;fail
 tcp sport 22 masquerade accept;fail

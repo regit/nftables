@@ -125,3 +125,18 @@ ip6 test-ip6 postrouting
   [ lookup reg 1 set map%d dreg 0 ]
   [ masq ]
 
+# meta l4proto 6 masquerade to :1024
+ip6 test-ip6 postrouting
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ immediate reg 1 0x00000004 ]
+  [ masq proto_min reg 1 proto_max reg 0 ]
+
+# meta l4proto 6 masquerade to :1024-2048
+ip6 test-ip6 postrouting
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ immediate reg 1 0x00000004 ]
+  [ immediate reg 2 0x00000008 ]
+  [ masq proto_min reg 1 proto_max reg 2 ]
+
