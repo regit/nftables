@@ -269,9 +269,6 @@ static void set_print_declaration(const struct set *set,
 
 	printf(" %s {%s", set->handle.set, opts->nl);
 
-	if (!opts->nl[0])
-		printf(" ");
-
 	printf("%s%stype %s", opts->tab, opts->tab, set->keytype->name);
 	if (set->flags & SET_F_MAP)
 		printf(" : %s", set->datatype->name);
@@ -352,7 +349,7 @@ void set_print_plain(const struct set *s)
 {
 	struct print_fmt_options opts = {
 		.tab		= "",
-		.nl		= "",
+		.nl		= " ",
 		.table		= s->handle.table,
 		.family		= family2str(s->handle.family),
 		.stmt_separator	= ";",
