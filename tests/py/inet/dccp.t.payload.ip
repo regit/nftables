@@ -80,3 +80,30 @@ ip test-ip4 input
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set set%d ]
 
+# dccp type {request, response, data, ack, dataack, closereq, close, reset, sync, syncack}
+set%d test-ip4 3
+set%d test-ip4 0
+	element 00000000  : 0 [end]     element 00000001  : 0 [end]     element 00000002  : 0 [end]     element 00000003  : 0 [end]     element 00000004  : 0 [end]     element 00000005  : 0 [end]     element 00000006  : 0 [end]     element 00000007  : 0 [end]     element 00000008  : 0 [end]     element 00000009  : 0 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 1b @ transport header + 8 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x0000001e ) ^ 0x00000000 ]
+  [ lookup reg 1 set set%d ]
+
+# dccp type request
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 1b @ transport header + 8 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x0000001e ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x00000000 ]
+
+# dccp type != request
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 1b @ transport header + 8 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x0000001e ) ^ 0x00000000 ]
+  [ cmp neq reg 1 0x00000000 ]
+

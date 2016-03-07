@@ -29,8 +29,7 @@ dccp dport {23, 24, 25};ok
 dccp dport { 20-50};ok
 # dccp dport != {27-34};ok
 
-# BUG dccp type
-# dccp type {request, response, data, ack, dataack, closereq, close, reset, sync, syncack};ok
+dccp type {request, response, data, ack, dataack, closereq, close, reset, sync, syncack};ok
 # dccp type != {request, response, data, ack, dataack, closereq, close, reset, sync, syncack};ok
-# dccp type request;ok
-# dccp type != request;ok
+dccp type request;ok
+dccp type != request;ok
