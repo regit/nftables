@@ -23,13 +23,13 @@ frag reserved { 33-55};ok
 # BUG: frag frag-off 22 and frag frag-off { 33-55}
 # This breaks table listing: "netlink: Error: Relational expression size mismatch"
 
-- frag frag-off 22;ok
-- frag frag-off != 233;ok
+frag frag-off 22;ok
+frag frag-off != 233;ok
 - frag frag-off 33-45;ok
 - frag frag-off != 33-45;ok
-- frag frag-off { 33, 55, 67, 88};ok
+frag frag-off { 33, 55, 67, 88};ok
 - frag frag-off != { 33, 55, 67, 88};ok
-- frag frag-off { 33-55};ok
+frag frag-off { 33-55};ok
 - frag frag-off != { 33-55};ok
 
 # BUG  frag reserved2 33 and frag reserved2 1
