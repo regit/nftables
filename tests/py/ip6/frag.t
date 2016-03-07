@@ -25,8 +25,8 @@ frag reserved { 33-55};ok
 
 frag frag-off 22;ok
 frag frag-off != 233;ok
-- frag frag-off 33-45;ok
-- frag frag-off != 33-45;ok
+frag frag-off 33-45;ok
+frag frag-off != 33-45;ok
 frag frag-off { 33, 55, 67, 88};ok
 - frag frag-off != { 33, 55, 67, 88};ok
 frag frag-off { 33-55};ok
@@ -43,7 +43,7 @@ frag frag-off { 33-55};ok
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 # BUG more-fragments 1 and frag more-fragments 4
-# frag more-fragments 1
+frag more-fragments 1;ok
 # <cmdline>:1:1-44: Error: Could not process rule: Invalid argument
 # add rule ip test input frag more-fragments 1
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -102,6 +102,24 @@ inet test-inet output
   [ bitwise reg 1 = (reg=1 & 0x0000f8ff ) ^ 0x00000000 ]
   [ cmp neq reg 1 0x00004807 ]
 
+# frag frag-off 33-45
+inet test-inet output
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ exthdr load 2b @ 44 + 2 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x0000f8ff ) ^ 0x00000000 ]
+  [ cmp gte reg 1 0x00000801 ]
+  [ cmp lte reg 1 0x00006801 ]
+
+# frag frag-off != 33-45
+inet test-inet output
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ exthdr load 2b @ 44 + 2 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x0000f8ff ) ^ 0x00000000 ]
+  [ cmp lt reg 1 0x00000801 ]
+  [ cmp gt reg 1 0x00006801 ]
+
 # frag frag-off { 33, 55, 67, 88}
 set%d test-inet 3
 set%d test-inet 0
@@ -123,6 +141,14 @@ inet test-inet output
   [ exthdr load 2b @ 44 + 2 => reg 1 ]
   [ bitwise reg 1 = (reg=1 & 0x0000f8ff ) ^ 0x00000000 ]
   [ lookup reg 1 set set%d ]
+
+# frag more-fragments 1
+inet test-inet output
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ exthdr load 1b @ 44 + 3 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x00000001 ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x00000001 ]
 
 # frag id 1
 inet test-inet output
