@@ -436,21 +436,27 @@ def set_check_element(rule1, rule2):
         list2.sort()
         if cmp(list1, list2) == 0:
             ret = 0
-    return ret
 
+    if ret != 0:
+        return ret
+
+    return cmp(rule1[end1:], rule2[end2:])
 
 def output_clean(pre_output, chain):
-    pos_chain = pre_output[0].find(chain.name)
+    pos_chain = pre_output.find(chain.name)
     if pos_chain == -1:
         return ""
-    output_intermediate = pre_output[0][pos_chain:]
+    output_intermediate = pre_output[pos_chain:]
     brace_start = output_intermediate.find("{")
     brace_end = output_intermediate.find("}")
     pre_rule = output_intermediate[brace_start:brace_end]
     if pre_rule[1:].find("{") > -1:  # this rule has a set.
         set = pre_rule[1:].replace("\t", "").replace("\n", "").strip()
         set = set.split(";")[2].strip() + "}"
-        return set
+        remainder = output_clean(chain.name + " {;;" + output_intermediate[brace_end+1:], chain)
+        if len(remainder) <= 0:
+            return set
+        return set + " " + remainder
     else:
         rule = pre_rule.split(";")[2].replace("\t", "").replace("\n", "").\
             strip()
@@ -604,7 +610,7 @@ def rule_add(rule, filename, lineno, force_all_family_option, filename_path):
                     if not force_all_family_option:
                         return [ret, warning, error, unit_tests]
                 else:
-                    rule_output = output_clean(pre_output, chain)
+                    rule_output = output_clean(pre_output[0], chain)
                     if len(rule) == 3:
                         teoric_exit = rule[2]
                     else:
@@ -612,7 +618,7 @@ def rule_add(rule, filename, lineno, force_all_family_option, filename_path):
 
                     if rule_output.rstrip() != teoric_exit.rstrip():
                         if rule[0].find("{") != -1:  # anonymous sets
-                            if set_check_element(teoric_exit, rule_output) != 0:
+                            if set_check_element(teoric_exit.rstrip(), rule_output.rstrip()) != 0:
                                 warning += 1
                                 print_differences_warning(filename, lineno,
                                                           rule[0], rule_output,
