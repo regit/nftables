@@ -446,6 +446,7 @@ static void netlink_gen_range(struct netlink_linearize_ctx *ctx,
 		BUG("invalid range operation %u\n", expr->op);
 	}
 
+	payload_shift_value(expr->left, range->left);
 	netlink_gen_data(range->left, &nld);
 	nftnl_expr_set(nle, NFTNL_EXPR_CMP_DATA, nld.value, nld.len);
 	nftnl_rule_add_expr(ctx->nlr, nle);
@@ -466,6 +467,7 @@ static void netlink_gen_range(struct netlink_linearize_ctx *ctx,
 		BUG("invalid range operation %u\n", expr->op);
 	}
 
+	payload_shift_value(expr->left, range->right);
 	netlink_gen_data(range->right, &nld);
 	nftnl_expr_set(nle, NFTNL_EXPR_CMP_DATA, nld.value, nld.len);
 	nftnl_rule_add_expr(ctx->nlr, nle);
