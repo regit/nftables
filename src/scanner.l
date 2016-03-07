@@ -326,7 +326,6 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 "reject"		{ return _REJECT; }
 "with"			{ return WITH; }
-"reset"			{ return RESET; }
 "icmpx"			{ return ICMPX; }
 
 "snat"			{ return SNAT; }

@@ -380,7 +380,6 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token WEEK			"week"
 
 %token _REJECT			"reject"
-%token RESET			"reset"
 %token WITH			"with"
 %token ICMPX			"icmpx"
 
@@ -1573,9 +1572,15 @@ reject_opts		:       /* empty */
 							  $4);
 				$<stmt>0->reject.expr->dtype = &icmpx_code_type;
 			}
-			|	WITH	TCP	RESET
+			|	WITH	TCP	STRING
 			{
-				$<stmt>0->reject.type = NFT_REJECT_TCP_RST;
+				if (strcmp($3, "reset") == 0) {
+					$<stmt>0->reject.type = NFT_REJECT_TCP_RST;
+				} else {
+					erec_queue(error(&@2, "unsupported reject type", $3),
+						   state->msgs);
+					YYERROR;
+				}
 			}
 			;
 
