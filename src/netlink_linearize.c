@@ -320,19 +320,24 @@ static void netlink_gen_range(struct netlink_linearize_ctx *ctx,
 
 static void payload_shift_value(const struct expr *left, struct expr *right)
 {
+	unsigned int offset;
+
 	if (right->ops->type != EXPR_VALUE)
 		return;
 
 	switch (left->ops->type) {
 	case EXPR_PAYLOAD:
+		offset = left->payload.offset;
+		break;
 	case EXPR_EXTHDR:
+		offset = left->exthdr.tmpl->offset;
 		break;
 	default:
 		return;
 	}
 
 	mpz_lshift_ui(right->value,
-			payload_shift_calc(left, left->payload.offset));
+			payload_shift_calc(left, offset));
 }
 
 static struct expr *netlink_gen_prefix(struct netlink_linearize_ctx *ctx,
