@@ -34,19 +34,19 @@ vi:ts=4 sw=4
 		<cmdsynopsis>
 			<command>nft</command>
 			<arg choice="opt">
-				<option>-n/--numeric</option>
+				<option>-n | --numeric</option>
 			</arg>
 			<arg choice="opt">
-				<option>-I/--includepath</option>
+				<option>[-I | --includepath]</option>
 				<replaceable>directory</replaceable>
 			</arg>
 			<group>
 				<arg choice="opt">
-					<option>-f/--file</option>
+					<option>[-f | --file]</option>
 					<replaceable>filename</replaceable>
 				</arg>
 				<arg choice="opt">
-					<option>-i/--interactive</option>
+					<option>[-i | --interactive]</option>
 				</arg>
 				<arg choice="opt" rep="repeat">
 					<replaceable>cmd</replaceable>
@@ -56,10 +56,10 @@ vi:ts=4 sw=4
 		<cmdsynopsis>
 			<command>nft</command>
 			<arg choice="opt">
-				<option>-h/--help</option>
+				<option>-h | --help</option>
 			</arg>
 			<arg choice="opt">
-				<option>-v/--version</option>
+				<option>-v | --version</option>
 			</arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
@@ -80,7 +80,7 @@ vi:ts=4 sw=4
 
 		<variablelist>
 			<varlistentry>
-				<term><option>-h/--help</option></term>
+				<term><option>-h, --help</option></term>
 				<listitem>
 					<para>
 						Show help message and all options.
@@ -88,7 +88,7 @@ vi:ts=4 sw=4
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>-v/--version</option></term>
+				<term><option>-v, --version</option></term>
 				<listitem>
 					<para>
 						Show version.
@@ -96,7 +96,7 @@ vi:ts=4 sw=4
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>-n/--numeric</option></term>
+				<term><option>-n, --numeric</option></term>
 				<listitem>
 					<para>
 						Numeric output: Addresses and other information
@@ -117,7 +117,7 @@ vi:ts=4 sw=4
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>-a/--handle</option></term>
+				<term><option>-a, --handle</option></term>
 				<listitem>
 					<para>
 						Show rule handles in output.
@@ -125,15 +125,15 @@ vi:ts=4 sw=4
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>-I/--includepath <replaceable>directory</replaceable></option></term>
+				<term><option>-I, --includepath <replaceable>directory</replaceable></option></term>
 				<listitem>
 					<para>
-						Add the directory <replaceable>directory</replaceable> to the list of directories to by searched for included files.
+						Add the directory <replaceable>directory</replaceable> to the list of directories to be searched for included files.
 					</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>-f/--file <replaceable>filename</replaceable></option></term>
+				<term><option>-f, --file <replaceable>filename</replaceable></option></term>
 				<listitem>
 					<para>
 						Read input from <replaceable>filename</replaceable>.
@@ -141,7 +141,7 @@ vi:ts=4 sw=4
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>-i/--interactive</option></term>
+				<term><option>-i, --interactive</option></term>
 				<listitem>
 					<para>
 						Read input from an interactive readline CLI.
@@ -156,8 +156,8 @@ vi:ts=4 sw=4
 		<refsect2>
 			<title>Lexical conventions</title>
 			<para>
-				Input is parsed line-wise. When the last character of a line just before
-				the newline character is a non-quoted backslash (<literal>\</literal>),
+				Input is parsed line-wise. When the last character of a line, just before
+				the newline character, is a non-quoted backslash (<literal>\</literal>),
 				the next line is treated as a continuation. Multiple commands on the
 				same line can be separated using a semicolon (<literal>;</literal>).
 			</para>
