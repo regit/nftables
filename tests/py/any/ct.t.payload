@@ -304,3 +304,22 @@ ip test-ip4 output
   [ ct load bytes => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 8, 8) ]
   [ cmp gt reg 1 0x00000000 0xa0860100 ]
+
+# ct status expected,seen-reply,assured,confirmed,snat,dnat,dying
+ip test-ip4 output
+  [ ct load status => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x0000023f ) ^ 0x00000000 ]
+  [ cmp neq reg 1 0x00000000 ]
+
+# ct status snat
+ip test-ip4 output
+  [ ct load status => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x00000010 ) ^ 0x00000000 ]
+  [ cmp neq reg 1 0x00000000 ]
+
+# ct status dnat
+ip test-ip4 output
+  [ ct load status => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x00000020 ) ^ 0x00000000 ]
+  [ cmp neq reg 1 0x00000000 ]
+

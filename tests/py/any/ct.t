@@ -26,12 +26,10 @@ ct status != expected;ok
 ct status seen-reply;ok
 ct status != seen-reply;ok
 ct status {expected, seen-reply, assured, confirmed, dying};ok
+ct status expected,seen-reply,assured,confirmed,snat,dnat,dying;ok
+ct status snat;ok
+ct status dnat;ok
 ct status xxx;fail
-
-# SYMBOL("snat", IPS_SRC_NAT)
-# SYMBOL("dnat", IPS_DST_NAT)
-- ct status snat;ok
-- ct status dnat;ok
 
 ct mark 0;ok;ct mark 0x00000000
 ct mark or 0x23 == 0x11;ok;ct mark | 0x00000023 == 0x00000011
