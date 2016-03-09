@@ -299,6 +299,8 @@ static const struct symbol_table icmp_type_tbl = {
 		SYMBOL("source-quench",			ICMP_SOURCE_QUENCH),
 		SYMBOL("redirect",			ICMP_REDIRECT),
 		SYMBOL("echo-request",			ICMP_ECHO),
+		SYMBOL("router-advertisement",		ICMP_ROUTERADVERT),
+		SYMBOL("router-solicitation",		ICMP_ROUTERSOLICIT),
 		SYMBOL("time-exceeded",			ICMP_TIME_EXCEEDED),
 		SYMBOL("parameter-problem",		ICMP_PARAMETERPROB),
 		SYMBOL("timestamp-request",		ICMP_TIMESTAMP),
