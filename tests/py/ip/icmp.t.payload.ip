@@ -461,3 +461,30 @@ ip test-ip4 input
   [ payload load 4b @ transport header + 4 => reg 1 ]
   [ cmp neq reg 1 0x22000000 ]
 
+# icmp type router-advertisement accept
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ payload load 1b @ transport header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000009 ]
+  [ immediate reg 0 accept ]
+
+# icmp type router-solicitation accept
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ payload load 1b @ transport header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ immediate reg 0 accept ]
+
+# icmp type {echo-reply, destination-unreachable, source-quench, redirect, echo-request, time-exceeded, parameter-problem, timestamp-request, timestamp-reply, info-request, info-reply, address-mask-request, address-mask-reply, router-advertisement, router-solicitation} accept
+set%d test-ip4 3
+set%d test-ip4 0
+	element 00000000  : 0 [end]     element 00000003  : 0 [end]     element 00000004  : 0 [end]     element 00000005  : 0 [end]     element 00000008  : 0 [end]     element 0000000b  : 0 [end]     element 0000000c  : 0 [end]     element 0000000d  : 0 [end]     element 0000000e  : 0 [end]     element 0000000f  : 0 [end]     element 00000010  : 0 [end]     element 00000011  : 0 [end]     element 00000012  : 0 [end]     element 00000009  : 0 [end]     element 0000000a  : 0 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ payload load 1b @ transport header + 0 => reg 1 ]
+  [ lookup reg 1 set set%d ]
+  [ immediate reg 0 accept ]
+

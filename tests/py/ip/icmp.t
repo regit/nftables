@@ -17,7 +17,9 @@ icmp type info-request accept;ok
 icmp type info-reply accept;ok
 icmp type address-mask-request accept;ok
 icmp type address-mask-reply accept;ok
-icmp type {echo-reply, destination-unreachable, source-quench, redirect, echo-request, time-exceeded, parameter-problem, timestamp-request, timestamp-reply, info-request, info-reply, address-mask-request, address-mask-reply} accept;ok
+icmp type router-advertisement accept;ok
+icmp type router-solicitation accept;ok
+icmp type {echo-reply, destination-unreachable, source-quench, redirect, echo-request, time-exceeded, parameter-problem, timestamp-request, timestamp-reply, info-request, info-reply, address-mask-request, address-mask-reply, router-advertisement, router-solicitation} accept;ok
 - icmp type != {echo-reply, destination-unreachable, source-quench};ok
 # BUG: icmp type != {echo-reply, destination-unreachable, source-quench}
 # BUG: invalid expression type set
