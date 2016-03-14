@@ -155,6 +155,20 @@ static int byteorder_conversion(struct eval_ctx *ctx, struct expr **expr,
 	return 0;
 }
 
+static struct table *table_lookup_global(struct eval_ctx *ctx)
+{
+	struct table *table;
+
+	if (ctx->table != NULL)
+		return ctx->cmd->table;
+
+	table = table_lookup(&ctx->cmd->handle);
+	if (table == NULL)
+		return NULL;
+
+	return table;
+}
+
 /*
  * Symbol expression: parse symbol and evaluate resulting expression.
  */
@@ -189,7 +203,7 @@ static int expr_evaluate_symbol(struct eval_ctx *ctx, struct expr **expr)
 		if (ret < 0)
 			return ret;
 
-		table = table_lookup(&ctx->cmd->handle);
+		table = table_lookup_global(ctx);
 		if (table == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 ctx->cmd->handle.table);
@@ -2071,20 +2085,6 @@ int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 	default:
 		BUG("unknown statement type %s\n", stmt->ops->name);
 	}
-}
-
-static struct table *table_lookup_global(struct eval_ctx *ctx)
-{
-	struct table *table;
-
-	if (ctx->table != NULL)
-		return ctx->cmd->table;
-
-	table = table_lookup(&ctx->cmd->handle);
-	if (table == NULL)
-		return NULL;
-
-	return table;
 }
 
 static int setelem_evaluate(struct eval_ctx *ctx, struct expr **expr)
