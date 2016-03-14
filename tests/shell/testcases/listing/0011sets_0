@@ -6,11 +6,11 @@ EXPECTED="table ip nat {
 }
 table ip6 test {
 }
-table inet filter {
-}
 table arp test_arp {
 }
 table bridge test_bridge {
+}
+table inet filter {
 }"
 
 set -e

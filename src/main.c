@@ -338,6 +338,10 @@ int main(int argc, char * const *argv)
 		scanner = scanner_init(&state);
 		scanner_push_buffer(scanner, &indesc_cmdline, buf);
 	} else if (filename != NULL) {
+		rc = cache_update(CMD_INVALID, &msgs);
+		if (rc < 0)
+			return rc;
+
 		parser_init(&state, &msgs);
 		scanner = scanner_init(&state);
 		if (scanner_read_file(scanner, filename, &internal_location) < 0)

@@ -12,18 +12,6 @@ table ip6 test {
 		type ipv6_addr
 	}
 }
-table inet filter {
-	set set0 {
-		type inet_service
-	}
-	set set1 {
-		type inet_service
-		flags constant
-	}
-	set set2 {
-		type icmpv6_type
-	}
-}
 table arp test_arp {
 	set test_set_arp00 {
 		type inet_service
@@ -36,6 +24,18 @@ table arp test_arp {
 table bridge test_bridge {
 	set test_set_bridge {
 		type inet_service
+	}
+}
+table inet filter {
+	set set0 {
+		type inet_service
+	}
+	set set1 {
+		type inet_service
+		flags constant
+	}
+	set set2 {
+		type icmpv6_type
 	}
 }"
 
