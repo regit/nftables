@@ -1161,6 +1161,23 @@ static void payload_match_postprocess(struct rule_pp_ctx *ctx,
 	}
 }
 
+static void ct_meta_common_postprocess(const struct expr *expr)
+{
+	const struct expr *left = expr->left;
+	struct expr *right = expr->right;
+
+	switch (expr->op) {
+	case OP_LOOKUP:
+		expr_set_type(right, left->dtype, left->byteorder);
+		if (right->dtype == &integer_type)
+			integer_type_postprocess(right);
+		break;
+
+	default:
+		break;
+	}
+}
+
 static void meta_match_postprocess(struct rule_pp_ctx *ctx,
 				   const struct expr *expr)
 {
@@ -1178,13 +1195,8 @@ static void meta_match_postprocess(struct rule_pp_ctx *ctx,
 			payload_dependency_store(&ctx->pdctx, ctx->stmt,
 						 left->meta.base);
 		break;
-	case OP_LOOKUP:
-		expr_set_type(expr->right, expr->left->dtype,
-			      expr->left->byteorder);
-		if (expr->right->dtype == &integer_type)
-			integer_type_postprocess(expr->right);
-		break;
 	default:
+		ct_meta_common_postprocess(expr);
 		break;
 	}
 }
@@ -1192,7 +1204,17 @@ static void meta_match_postprocess(struct rule_pp_ctx *ctx,
 static void ct_match_postprocess(struct rule_pp_ctx *ctx,
 				 const struct expr *expr)
 {
-	return meta_match_postprocess(ctx, expr);
+	switch (expr->op) {
+	case OP_EQ:
+		if (expr->right->ops->type == EXPR_RANGE)
+			break;
+
+		expr->left->ops->pctx_update(&ctx->pctx, expr);
+		break;
+	default:
+		ct_meta_common_postprocess(expr);
+		break;
+	}
 }
 
 /* Convert a bitmask to a prefix length */
