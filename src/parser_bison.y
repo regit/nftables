@@ -423,7 +423,10 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { handle_free(&$$); } table_spec chain_spec chain_identifier ruleid_spec ruleset_spec
 %type <handle>			set_spec set_identifier
 %destructor { handle_free(&$$); } set_spec set_identifier
-%type <val>			handle_spec family_spec family_spec_explicit position_spec chain_policy
+%type <val>			handle_spec family_spec family_spec_explicit position_spec chain_policy prio_spec
+
+%type <string>			dev_spec
+%destructor { xfree($$); }	dev_spec
 
 %type <table>			table_block_alloc table_block
 %destructor { close_scope(state); table_free($$); }	table_block_alloc
@@ -1096,7 +1099,7 @@ type_identifier		:	STRING	{ $$ = $1; }
 			|	MARK	{ $$ = xstrdup("mark"); }
 			;
 
-hook_spec		:	TYPE		STRING		HOOK		STRING		PRIORITY	NUM
+hook_spec		:	TYPE		STRING		HOOK		STRING		dev_spec	PRIORITY	prio_spec
 			{
 				$<chain>0->type		= chain_type_name_lookup($2);
 				if ($<chain>0->type == NULL) {
@@ -1110,57 +1113,18 @@ hook_spec		:	TYPE		STRING		HOOK		STRING		PRIORITY	NUM
 						   state->msgs);
 					YYERROR;
 				}
-				$<chain>0->priority	= $6;
+				$<chain>0->dev		= $5;
+				$<chain>0->priority	= $7;
 				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
 			}
-			|	TYPE		STRING		HOOK		STRING		PRIORITY	DASH	NUM
-			{
-				$<chain>0->type		= chain_type_name_lookup($2);
-				if ($<chain>0->type == NULL) {
-					erec_queue(error(&@2, "unknown type name %s", $2),
-						   state->msgs);
-					YYERROR;
-				}
-				$<chain>0->hookstr	= chain_hookname_lookup($4);
-				if ($<chain>0->hookstr == NULL) {
-					erec_queue(error(&@4, "unknown hook name %s", $4),
-						   state->msgs);
-					YYERROR;
-				}
-				$<chain>0->priority	= -$7;
-				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
-			}
-			|	TYPE		STRING		HOOK		STRING		DEVICE	STRING	PRIORITY	NUM
-			{
-				$<chain>0->type		= chain_type_name_lookup($2);
-				if ($<chain>0->type == NULL) {
-					erec_queue(error(&@2, "unknown chain type %s", $2),
-						   state->msgs);
-					YYERROR;
-				}
-				$<chain>0->hookstr	= chain_hookname_lookup($4);
-				if ($<chain>0->hookstr == NULL) {
-					erec_queue(error(&@4, "unknown chain hook %s", $4),
-						   state->msgs);
-					YYERROR;
-				}
-				$<chain>0->dev		= $6;
-				$<chain>0->priority	= $8;
-				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
-			}
-			|	TYPE		STRING		HOOK		STRING		DEVICE	STRING	PRIORITY	DASH	NUM
-			{
-				$<chain>0->type		= chain_type_name_lookup($2);
-				if ($<chain>0->type == NULL) {
-					erec_queue(error(&@2, "unknown type name %s", $2),
-						   state->msgs);
-					YYERROR;
-				}
-				$<chain>0->hookstr	= chain_hookname_lookup($4);
-				$<chain>0->dev		= $6;
-				$<chain>0->priority	= -$9;
-				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
-			}
+			;
+
+prio_spec		:	NUM			{ $$ = $1; }
+			|	DASH	NUM		{ $$ = -$2; }
+			;
+
+dev_spec		:	DEVICE	STRING		{ $$ = $2; }
+			|	/* empty */		{ $$ = NULL; }
 			;
 
 policy_spec		:	POLICY		chain_policy
