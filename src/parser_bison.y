@@ -1107,12 +1107,16 @@ hook_spec		:	TYPE		STRING		HOOK		STRING		dev_spec	PRIORITY	prio_spec
 						   state->msgs);
 					YYERROR;
 				}
+				xfree($2);
+
 				$<chain>0->hookstr	= chain_hookname_lookup($4);
 				if ($<chain>0->hookstr == NULL) {
 					erec_queue(error(&@4, "unknown chain hook %s", $4),
 						   state->msgs);
 					YYERROR;
 				}
+				xfree($4);
+
 				$<chain>0->dev		= $5;
 				$<chain>0->priority	= $7;
 				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
