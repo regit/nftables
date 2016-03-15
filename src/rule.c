@@ -510,6 +510,9 @@ void chain_free(struct chain *chain)
 		rule_free(rule);
 	handle_free(&chain->handle);
 	scope_release(&chain->scope);
+	xfree(chain->type);
+	if (chain->dev != NULL)
+		xfree(chain->dev);
 	xfree(chain);
 }
 
