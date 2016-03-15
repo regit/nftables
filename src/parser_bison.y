@@ -1101,7 +1101,7 @@ type_identifier		:	STRING	{ $$ = $1; }
 
 hook_spec		:	TYPE		STRING		HOOK		STRING		dev_spec	PRIORITY	prio_spec
 			{
-				$<chain>0->type		= chain_type_name_lookup($2);
+				$<chain>0->type		= xstrdup(chain_type_name_lookup($2));
 				if ($<chain>0->type == NULL) {
 					erec_queue(error(&@2, "unknown chain type %s", $2),
 						   state->msgs);
