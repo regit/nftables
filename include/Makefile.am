@@ -3,6 +3,7 @@ SUBDIRS = linux
 noinst_HEADERS = 	cli.h		\
 			datatype.h	\
 			expression.h	\
+			mini-gmp.h	\
 			gmputil.h	\
 			iface.h		\
 			mnl.h		\
