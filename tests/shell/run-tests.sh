@@ -37,16 +37,37 @@ if [ ! -x "$FIND" ] ; then
 	msg_error "no find binary found"
 fi
 
+MODPROBE="$(which modprobe)"
+if [ ! -x "$MODPROBE" ] ; then
+	msg_error "no modprobe binary found"
+fi
+
 if [ "$1" == "-v" ] ; then
 	VERBOSE=y
 fi
+
+kernel_cleanup() {
+	$NFT flush ruleset
+	$MODPROBE -rq \
+	nft_reject_ipv4 nft_reject_ipv6 nft_bridge_reject \
+	nft_reject_ipv6 nft_reject \
+	nft_redir_ipv4 nft_redir_ipv6 nft_redir \
+	nft_dup_ipv4 nft_dup_ipv6 nft_dup \
+	nft_nat_ipv4 nft_nat_ipv6 nft_nat \
+	nft_masq_ipv4 nft_masq_ipv6 nft_masq \
+	nft_exthdr nft_payload nft_cmp \
+	nft_meta nft_bridge_meta nft_counter nft_log nft_limit \
+	nft_hash nft_rbtree nft_ct nft_compat \
+	nf_tables_inet nf_tables_bridge nf_tables_arp \
+	nf_tables_ipv4 nf_tables_ipv6 nf_tables
+}
 
 echo ""
 ok=0
 failed=0
 for testfile in $(${FIND} ${TESTDIR} -executable -regex .*${RETURNCODE_SEPARATOR}[0-9]+)
 do
-	$NFT flush ruleset
+	kernel_cleanup
 
 	rc_spec=$(awk -F${RETURNCODE_SEPARATOR} '{print $NF}' <<< $testfile)
 	test_output=$(NFT=$NFT ${testfile} ${TESTS_OUTPUT} 2>&1)
@@ -69,4 +90,4 @@ done
 echo ""
 msg_info "results: [OK] $ok [FAILED] $failed [TOTAL] $((ok+failed))"
 
-$NFT flush ruleset
+kernel_cleanup
