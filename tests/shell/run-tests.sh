@@ -48,15 +48,13 @@ fi
 
 kernel_cleanup() {
 	$NFT flush ruleset
-	$MODPROBE -rq \
-	nft_reject_ipv4 nft_reject_ipv6 nft_bridge_reject \
-	nft_reject_ipv6 nft_reject \
+	$MODPROBE -raq \
+	nft_reject_ipv4 nft_reject_bridge nft_reject_ipv6 nft_reject \
 	nft_redir_ipv4 nft_redir_ipv6 nft_redir \
-	nft_dup_ipv4 nft_dup_ipv6 nft_dup \
-	nft_nat_ipv4 nft_nat_ipv6 nft_nat \
+	nft_dup_ipv4 nft_dup_ipv6 nft_dup nft_nat \
 	nft_masq_ipv4 nft_masq_ipv6 nft_masq \
 	nft_exthdr nft_payload nft_cmp \
-	nft_meta nft_bridge_meta nft_counter nft_log nft_limit \
+	nft_meta nft_meta_bridge nft_counter nft_log nft_limit \
 	nft_hash nft_rbtree nft_ct nft_compat \
 	nf_tables_inet nf_tables_bridge nf_tables_arp \
 	nf_tables_ipv4 nf_tables_ipv6 nf_tables
@@ -91,3 +89,4 @@ echo ""
 msg_info "results: [OK] $ok [FAILED] $failed [TOTAL] $((ok+failed))"
 
 kernel_cleanup
+exit 0
