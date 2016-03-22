@@ -21,6 +21,7 @@
 #include <netinet/in.h>
 
 #include <linux/netfilter.h>
+#include <libnftnl/udata.h>
 
 
 struct netlink_linearize_ctx {
@@ -1171,9 +1172,27 @@ void netlink_linearize_rule(struct netlink_ctx *ctx, struct nftnl_rule *nlr,
 	list_for_each_entry(stmt, &rule->stmts, list)
 		netlink_gen_stmt(&lctx, stmt);
 
-	if (rule->comment)
-		nftnl_rule_set_data(nlr, NFTNL_RULE_USERDATA,
-				    rule->comment, strlen(rule->comment) + 1);
+	if (rule->comment) {
+		struct nftnl_udata_buf *udata;
+		uint32_t udlen;
+		void *ud;
+
+		udata = nftnl_udata_buf_alloc(NFT_USERDATA_MAXLEN);
+		if (!udata)
+			memory_allocation_error();
+
+		if (!nftnl_udata_put_strz(udata, UDATA_TYPE_COMMENT,
+					  rule->comment))
+			memory_allocation_error();
+
+		udlen = nftnl_udata_buf_len(udata);
+		ud = xmalloc(udlen);
+		memcpy(ud, nftnl_udata_buf_data(udata), udlen);
+
+		nftnl_rule_set_data(nlr, NFTNL_RULE_USERDATA, ud, udlen);
+
+		nftnl_udata_buf_free(udata);
+	}
 
 	netlink_dump_rule(nlr);
 }

@@ -25,6 +25,7 @@
 #include <utils.h>
 #include <erec.h>
 #include <sys/socket.h>
+#include <libnftnl/udata.h>
 
 struct netlink_parse_ctx {
 	struct list_head	*msgs;
@@ -1746,6 +1747,38 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 	}
 }
 
+static int parse_udata_cb(const struct nftnl_udata *attr, void *data)
+{
+	unsigned char *value = nftnl_udata_get(attr);
+	uint8_t type = nftnl_udata_type(attr);
+	uint8_t len = nftnl_udata_len(attr);
+	const struct nftnl_udata **tb = data;
+
+	switch (type) {
+	case UDATA_TYPE_COMMENT:
+		if (value[len - 1] != '\0')
+			return -1;
+		break;
+	default:
+		return 0;
+	}
+	tb[type] = attr;
+	return 0;
+}
+
+static char *udata_get_comment(const void *data, uint32_t data_len)
+{
+	const struct nftnl_udata *tb[UDATA_TYPE_MAX + 1] = {};
+
+	if (nftnl_udata_parse(data, data_len, parse_udata_cb, tb) < 0)
+		return NULL;
+
+	if (!tb[UDATA_TYPE_COMMENT])
+		return NULL;
+
+	return xstrdup(nftnl_udata_get(tb[UDATA_TYPE_COMMENT]));
+}
+
 struct rule *netlink_delinearize_rule(struct netlink_ctx *ctx,
 				      const struct nftnl_rule *nlr)
 {
@@ -1773,8 +1806,7 @@ struct rule *netlink_delinearize_rule(struct netlink_ctx *ctx,
 		uint32_t len;
 
 		data = nftnl_rule_get_data(nlr, NFTNL_RULE_USERDATA, &len);
-		pctx->rule->comment = xmalloc(len);
-		memcpy((char *)pctx->rule->comment, data, len);
+		pctx->rule->comment = udata_get_comment(data, len);
 	}
 
 	nftnl_expr_foreach((struct nftnl_rule *)nlr, netlink_parse_expr, pctx);
