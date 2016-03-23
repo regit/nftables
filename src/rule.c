@@ -385,14 +385,15 @@ void rule_print(const struct rule *rule)
 
 	list_for_each_entry(stmt, &rule->stmts, list) {
 		stmt->ops->print(stmt);
-		printf(" ");
+		if (!list_is_last(&stmt->list, &rule->stmts))
+			printf(" ");
 	}
 
 	if (rule->comment)
-		printf("comment \"%s\" ", rule->comment);
+		printf(" comment \"%s\"", rule->comment);
 
 	if (handle_output > 0)
-		printf("# handle %" PRIu64, rule->handle.handle);
+		printf(" # handle %" PRIu64, rule->handle.handle);
 }
 
 struct scope *scope_init(struct scope *scope, const struct scope *parent)
