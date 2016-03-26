@@ -396,6 +396,17 @@ void rule_print(const struct rule *rule)
 		printf(" # handle %" PRIu64, rule->handle.handle.id);
 }
 
+struct rule *rule_lookup(const struct chain *chain, uint64_t handle)
+{
+	struct rule *rule;
+
+	list_for_each_entry(rule, &chain->rules, list) {
+		if (rule->handle.handle.id == handle)
+			return rule;
+	}
+	return NULL;
+}
+
 struct scope *scope_init(struct scope *scope, const struct scope *parent)
 {
 	scope->parent = parent;
@@ -1198,27 +1209,59 @@ static int do_command_rename(struct netlink_ctx *ctx, struct cmd *cmd)
 	return 0;
 }
 
-static int do_command_monitor(struct netlink_ctx *ctx, struct cmd *cmd)
+static bool need_cache(const struct cmd *cmd)
 {
-	struct table *t;
-	struct set *s;
-	struct netlink_mon_handler monhandler;
-
-	/* cache only needed if monitoring:
+	/*
 	 *  - new rules in default format
 	 *  - new elements
 	 */
 	if (((cmd->monitor->flags & (1 << NFT_MSG_NEWRULE)) &&
 	    (cmd->monitor->format == NFTNL_OUTPUT_DEFAULT)) ||
 	    (cmd->monitor->flags & (1 << NFT_MSG_NEWSETELEM)))
-		monhandler.cache_needed = true;
-	else
-		monhandler.cache_needed = false;
+		return true;
 
+	if (cmd->monitor->flags & (1 << NFT_MSG_TRACE))
+		return true;
+
+	return false;
+}
+
+static int do_command_monitor(struct netlink_ctx *ctx, struct cmd *cmd)
+{
+	struct table *t;
+	struct set *s;
+	struct netlink_mon_handler monhandler;
+
+	monhandler.cache_needed = need_cache(cmd);
 	if (monhandler.cache_needed) {
+		struct rule *rule, *nrule;
+		struct chain *chain;
+		int ret;
+
 		list_for_each_entry(t, &table_list, list) {
 			list_for_each_entry(s, &t->sets, list)
 				s->init = set_expr_alloc(&cmd->location);
+
+			if (!(cmd->monitor->flags & (1 << NFT_MSG_TRACE)))
+				continue;
+
+			/* When tracing we'd like to translate the rule handle
+			 * we receive in the trace messages to the actual rule
+			 * struct to print that out.  Populate rule cache now.
+			 */
+			ret = netlink_list_table(ctx, &t->handle,
+						 &internal_location);
+
+			if (ret != 0)
+				/* Shouldn't happen and doesn't break things
+				 * too badly
+				 */
+				continue;
+
+			list_for_each_entry_safe(rule, nrule, &ctx->list, list) {
+				chain = chain_lookup(t, &rule->handle);
+				list_move_tail(&rule->list, &chain->rules);
+			}
 		}
 	}
 

@@ -142,6 +142,11 @@ void payload_init_raw(struct expr *expr, enum proto_bases base,
 	expr->len		= len;
 }
 
+unsigned int payload_hdr_field(const struct expr *expr)
+{
+	return expr->payload.tmpl - expr->payload.desc->templates;
+}
+
 static void payload_stmt_print(const struct stmt *stmt)
 {
 	expr_print(stmt->payload.expr);

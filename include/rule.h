@@ -192,6 +192,7 @@ extern struct rule *rule_alloc(const struct location *loc,
 			       const struct handle *h);
 extern void rule_free(struct rule *rule);
 extern void rule_print(const struct rule *rule);
+extern struct rule *rule_lookup(const struct chain *chain, uint64_t handle);
 
 /**
  * enum set_flags

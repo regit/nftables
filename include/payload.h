@@ -9,6 +9,7 @@ extern struct expr *payload_expr_alloc(const struct location *loc,
 				       unsigned int type);
 extern void payload_init_raw(struct expr *expr, enum proto_bases base,
 			     unsigned int offset, unsigned int len);
+extern unsigned int payload_hdr_field(const struct expr *expr);
 
 struct eval_ctx;
 struct stmt;
