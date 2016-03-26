@@ -322,6 +322,50 @@ int exthdr_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 }
 
 /**
+ * payload_dependency_store - store a possibly redundant protocol match
+ *
+ * @ctx: payload dependency context
+ * @stmt: payload match
+ * @base: base of payload match
+ */
+void payload_dependency_store(struct payload_dep_ctx *ctx,
+			      struct stmt *stmt, enum proto_bases base)
+{
+	ctx->pbase = base + 1;
+	ctx->pdep  = stmt;
+}
+
+/**
+ * __payload_dependency_kill - kill a redundant payload depedency
+ *
+ * @ctx: payload dependency context
+ * @expr: higher layer payload expression
+ *
+ * Kill a redundant payload expression if a higher layer payload expression
+ * implies its existance.
+ */
+void __payload_dependency_kill(struct payload_dep_ctx *ctx,
+			       enum proto_bases base)
+{
+	if (ctx->pbase != PROTO_BASE_INVALID &&
+	    ctx->pbase == base &&
+	    ctx->pdep != NULL) {
+		list_del(&ctx->pdep->list);
+		stmt_free(ctx->pdep);
+
+		ctx->pbase = PROTO_BASE_INVALID;
+		if (ctx->pdep == ctx->prev)
+			ctx->prev = NULL;
+		ctx->pdep  = NULL;
+	}
+}
+
+void payload_dependency_kill(struct payload_dep_ctx *ctx, struct expr *expr)
+{
+	__payload_dependency_kill(ctx, expr->payload.base);
+}
+
+/**
  * payload_expr_complete - fill in type information of a raw payload expr
  *
  * @expr:	the payload expression
