@@ -244,6 +244,12 @@ const struct proto_desc proto_ah = {
 		[AHHDR_SPI]		= AHHDR_FIELD("spi", spi),
 		[AHHDR_SEQUENCE]	= AHHDR_FIELD("sequence", seq_no),
 	},
+	.format		= {
+		.order	= {
+			AHHDR_SPI, AHHDR_HDRLENGTH, AHHDR_NEXTHDR,
+		},
+		.filter	= (1 << AHHDR_RESERVED) | (1 << AHHDR_SEQUENCE)
+	},
 };
 
 /*
@@ -431,6 +437,11 @@ const struct proto_desc proto_tcp = {
 		[TCPHDR_CHECKSUM]	= TCPHDR_FIELD("checksum", check),
 		[TCPHDR_URGPTR]		= TCPHDR_FIELD("urgptr", urg_ptr),
 	},
+	.format		= {
+		.filter	= (1 << TCPHDR_SEQ) | (1 << TCPHDR_ACKSEQ) |
+			  (1 << TCPHDR_DOFF) | (1 << TCPHDR_RESERVED) |
+			  (1 << TCPHDR_URGPTR),
+	},
 };
 
 /*
@@ -535,6 +546,14 @@ const struct proto_desc proto_ip = {
 		[IPHDR_SADDR]		= IPHDR_ADDR("saddr",		saddr),
 		[IPHDR_DADDR]		= IPHDR_ADDR("daddr",		daddr),
 	},
+	.format		= {
+		.order	= {
+			IPHDR_SADDR, IPHDR_DADDR, IPHDR_TOS, IPHDR_TTL,
+			IPHDR_ID, IPHDR_PROTOCOL, IPHDR_LENGTH,
+		},
+		.filter	= (1 << IPHDR_VERSION)  | (1 << IPHDR_HDRLENGTH) |
+			  (1 << IPHDR_FRAG_OFF),
+	},
 };
 
 /*
@@ -631,6 +650,14 @@ const struct proto_desc proto_ip6 = {
 		[IP6HDR_SADDR]		= IP6HDR_ADDR("saddr",		saddr),
 		[IP6HDR_DADDR]		= IP6HDR_ADDR("daddr",		daddr),
 	},
+	.format		= {
+		.order	= {
+			IP6HDR_SADDR, IP6HDR_DADDR, IP6HDR_PRIORITY,
+			IP6HDR_HOPLIMIT, IP6HDR_FLOWLABEL, IP6HDR_NEXTHDR,
+			IP6HDR_LENGTH,
+		},
+		.filter	= (1 << IP6HDR_VERSION),
+	},
 };
 
 /*
@@ -718,6 +745,10 @@ const struct proto_desc proto_arp = {
 		[ARPHDR_HLN]		= ARPHDR_FIELD("hlen", ar_hln),
 		[ARPHDR_PLN]		= ARPHDR_FIELD("plen", ar_pln),
 		[ARPHDR_OP]		= ARPHDR_TYPE("operation", &arpop_type, ar_op),
+	},
+	.format		= {
+		.filter	= (1 << ARPHDR_HRD) | (1 << ARPHDR_PRO) |
+			  (1 << ARPHDR_HLN) | (1 << ARPHDR_PLN),
 	},
 };
 
@@ -818,6 +849,12 @@ const struct proto_desc proto_eth = {
 		[ETHHDR_SADDR]		= ETHHDR_ADDR("saddr", ether_shost),
 		[ETHHDR_TYPE]		= ETHHDR_TYPE("type", ether_type),
 	},
+	.format		= {
+		.order	= {
+			ETHHDR_SADDR, ETHHDR_DADDR, ETHHDR_TYPE,
+		},
+	},
+
 };
 
 /*

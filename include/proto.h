@@ -85,6 +85,11 @@ struct proto_desc {
 		const struct proto_desc		*desc;
 	}				protocols[PROTO_UPPER_MAX];
 	struct proto_hdr_template	templates[PROTO_HDRS_MAX];
+	struct {
+		uint8_t				order[PROTO_HDRS_MAX];
+		uint32_t			filter;
+	}				format;
+
 };
 
 #define PROTO_LINK(__num, __desc)	{ .num = (__num), .desc = (__desc), }
