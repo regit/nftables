@@ -6,6 +6,28 @@
 #include <list.h>
 
 /**
+ * struct handle_spec - handle ID
+ *
+ * @location:	location this handle was defined at
+ * @id:		handle ID value
+ */
+struct handle_spec {
+	struct location		location;
+	uint64_t		id;
+};
+
+/**
+ * struct position_spec - position ID
+ *
+ * @location:	location this position was defined at
+ * @id:		position ID value
+ */
+struct position_spec {
+	struct location		location;
+	uint64_t		id;
+};
+
+/**
  * struct handle - handle for tables, chains, rules and sets
  *
  * @family:	protocol family
@@ -21,8 +43,8 @@ struct handle {
 	const char		*table;
 	const char		*chain;
 	const char		*set;
-	uint64_t		handle;
-	uint64_t		position;
+	struct handle_spec	handle;
+	struct position_spec	position;
 	uint32_t		set_id;
 };
 

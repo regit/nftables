@@ -1759,10 +1759,10 @@ struct rule *netlink_delinearize_rule(struct netlink_ctx *ctx,
 	h.family = nftnl_rule_get_u32(nlr, NFTNL_RULE_FAMILY);
 	h.table  = xstrdup(nftnl_rule_get_str(nlr, NFTNL_RULE_TABLE));
 	h.chain  = xstrdup(nftnl_rule_get_str(nlr, NFTNL_RULE_CHAIN));
-	h.handle = nftnl_rule_get_u64(nlr, NFTNL_RULE_HANDLE);
+	h.handle.id = nftnl_rule_get_u64(nlr, NFTNL_RULE_HANDLE);
 
 	if (nftnl_rule_is_set(nlr, NFTNL_RULE_POSITION))
-		h.position = nftnl_rule_get_u64(nlr, NFTNL_RULE_POSITION);
+		h.position.id = nftnl_rule_get_u64(nlr, NFTNL_RULE_POSITION);
 
 	pctx->rule = rule_alloc(&netlink_location, &h);
 	pctx->table = table_lookup(&h);

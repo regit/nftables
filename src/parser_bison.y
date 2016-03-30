@@ -133,6 +133,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 	struct expr		*expr;
 	struct set		*set;
 	const struct datatype	*datatype;
+	struct handle_spec	handle_spec;
+	struct position_spec	position_spec;
 }
 
 %token TOKEN_EOF 0		"end of file"
@@ -423,7 +425,10 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { handle_free(&$$); } table_spec chain_spec chain_identifier ruleid_spec ruleset_spec
 %type <handle>			set_spec set_identifier
 %destructor { handle_free(&$$); } set_spec set_identifier
-%type <val>			handle_spec family_spec family_spec_explicit position_spec chain_policy prio_spec
+%type <val>			family_spec family_spec_explicit chain_policy prio_spec
+
+%type <handle_spec>		handle_spec
+%type <position_spec>		position_spec
 
 %type <string>			dev_spec
 %destructor { xfree($$); }	dev_spec
@@ -1218,21 +1223,25 @@ set_identifier		:	identifier
 
 handle_spec		:	/* empty */
 			{
-				$$ = 0;
+				memset(&$$, 0, sizeof($$));
 			}
 			|	HANDLE		NUM
 			{
-				$$ = $2;
+				memset(&$$, 0, sizeof($$));
+				$$.location	= @$;
+				$$.id		= $2;
 			}
 			;
 
 position_spec		:	/* empty */
 			{
-				$$ = 0;
+				memset(&$$, 0, sizeof($$));
 			}
 			|	POSITION	NUM
 			{
-				$$ = $2;
+				memset(&$$, 0, sizeof($$));
+				$$.location	= @$;
+				$$.id		= $2;
 			}
 			;
 

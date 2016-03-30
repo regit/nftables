@@ -143,8 +143,8 @@ struct nftnl_chain *alloc_nftnl_chain(const struct handle *h)
 
 	nftnl_chain_set_u32(nlc, NFTNL_CHAIN_FAMILY, h->family);
 	nftnl_chain_set_str(nlc, NFTNL_CHAIN_TABLE, h->table);
-	if (h->handle != 0)
-		nftnl_chain_set_u64(nlc, NFTNL_CHAIN_HANDLE, h->handle);
+	if (h->handle.id != 0)
+		nftnl_chain_set_u64(nlc, NFTNL_CHAIN_HANDLE, h->handle.id);
 	if (h->chain != NULL)
 		nftnl_chain_set_str(nlc, NFTNL_CHAIN_NAME, h->chain);
 
@@ -163,10 +163,10 @@ struct nftnl_rule *alloc_nftnl_rule(const struct handle *h)
 	nftnl_rule_set_str(nlr, NFTNL_RULE_TABLE, h->table);
 	if (h->chain != NULL)
 		nftnl_rule_set_str(nlr, NFTNL_RULE_CHAIN, h->chain);
-	if (h->handle)
-		nftnl_rule_set_u64(nlr, NFTNL_RULE_HANDLE, h->handle);
-	if (h->position)
-		nftnl_rule_set_u64(nlr, NFTNL_RULE_POSITION, h->position);
+	if (h->handle.id)
+		nftnl_rule_set_u64(nlr, NFTNL_RULE_HANDLE, h->handle.id);
+	if (h->position.id)
+		nftnl_rule_set_u64(nlr, NFTNL_RULE_POSITION, h->position.id);
 
 	return nlr;
 }
@@ -700,7 +700,7 @@ static struct chain *netlink_delinearize_chain(struct netlink_ctx *ctx,
 		nftnl_chain_get_u32(nlc, NFTNL_CHAIN_FAMILY);
 	chain->handle.table  =
 		xstrdup(nftnl_chain_get_str(nlc, NFTNL_CHAIN_TABLE));
-	chain->handle.handle =
+	chain->handle.handle.id =
 		nftnl_chain_get_u64(nlc, NFTNL_CHAIN_HANDLE);
 
 	if (nftnl_chain_is_set(nlc, NFTNL_CHAIN_HOOKNUM) &&

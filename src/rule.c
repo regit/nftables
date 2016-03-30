@@ -44,9 +44,9 @@ void handle_merge(struct handle *dst, const struct handle *src)
 		dst->chain = xstrdup(src->chain);
 	if (dst->set == NULL && src->set != NULL)
 		dst->set = xstrdup(src->set);
-	if (dst->handle == 0)
+	if (dst->handle.id == 0)
 		dst->handle = src->handle;
-	if (dst->position == 0)
+	if (dst->position.id == 0)
 		dst->position = src->position;
 }
 
@@ -393,7 +393,7 @@ void rule_print(const struct rule *rule)
 		printf(" comment \"%s\"", rule->comment);
 
 	if (handle_output > 0)
-		printf(" # handle %" PRIu64, rule->handle.handle);
+		printf(" # handle %" PRIu64, rule->handle.handle.id);
 }
 
 struct scope *scope_init(struct scope *scope, const struct scope *parent)
