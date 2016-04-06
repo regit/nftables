@@ -1,0 +1,115 @@
+#!/bin/bash
+
+# test a kernel netns loading a simple ruleset
+
+IP=$(which ip)
+if [ ! -x "$IP" ] ; then
+	echo "E: no ip binary" >&2
+	exit 1
+fi
+
+MKTEMP=$(which mktemp)
+if [ -x $MKTEMP ] ; then
+	tmpfile=$(${MKTEMP})
+else
+	tmpfile=$(/tmp/${RANDOM})
+fi
+
+if [ ! -w $tmpfile ] ; then
+	echo "Failed to create tmp file" >&2
+	exit 0
+fi
+
+trap "rm -rf $tmpfile" EXIT # cleanup if aborted
+
+RULESET="table ip t {
+	set s {
+		type ipv4_addr
+		elements = { 1.1.0.0}
+	}
+
+	chain c {
+		ct state new
+		udp dport { 12345}
+		ip saddr @s drop
+		jump other
+	}
+
+	chain other {
+	}
+}
+table ip6 t {
+	set s {
+		type ipv6_addr
+		elements = { fe00::1}
+	}
+
+	chain c {
+		ct state new
+		udp dport { 12345}
+		ip6 saddr @s drop
+		jump other
+	}
+
+	chain other {
+	}
+}
+table inet t {
+	set s {
+		type ipv6_addr
+		elements = { fe00::1}
+	}
+
+	chain c {
+		ct state new
+		udp dport { 12345}
+		ip6 saddr @s drop
+		jump other
+	}
+
+	chain other {
+	}
+}
+table bridge t {
+	chain c {
+		jump other
+	}
+
+	chain other {
+		accept
+	}
+}
+table arp t {
+	chain c {
+		jump other
+	}
+
+	chain other {
+		accept
+	}
+}"
+
+# netns
+NETNS_NAME=$(basename "$0")
+$IP netns add $NETNS_NAME
+if [ $? -ne 0 ] ; then
+	echo "E: unable to create netns" >&2
+	exit 1
+fi
+
+echo "$RULESET" > $tmpfile
+$IP netns exec $NETNS_NAME $NFT -f $tmpfile
+if [ $? -ne 0 ] ; then
+	echo "E: unable to load ruleset in netns" >&2
+	$IP netns del $NETNS_NAME
+	exit 1
+fi
+
+KERNEL_RULESET="$($IP netns exec $NETNS_NAME $NFT list ruleset)"
+$IP netns del $NETNS_NAME
+if [ "$RULESET" != "$KERNEL_RULESET" ] ; then
+        DIFF="$(which diff)"
+        [ -x $DIFF ] && $DIFF -u <(echo "$RULESET") <(echo "$KERNEL_RULESET")
+        exit 1
+fi
+exit 0
