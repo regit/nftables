@@ -1722,6 +1722,7 @@ queue_stmt_args		:	queue_stmt_arg
 queue_stmt_arg		:	QUEUENUM	stmt_expr
 			{
 				$<stmt>0->queue.queue = $2;
+				$<stmt>0->queue.queue->location = @$;
 			}
 			|	queue_stmt_flags
 			{

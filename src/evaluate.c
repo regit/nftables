@@ -2006,6 +2006,11 @@ static int stmt_evaluate_queue(struct eval_ctx *ctx, struct stmt *stmt)
 		if (!expr_is_constant(stmt->queue.queue))
 			return expr_error(ctx->msgs, stmt->queue.queue,
 					  "queue number is not constant");
+		if (stmt->queue.queue->ops->type != EXPR_RANGE &&
+		    (stmt->queue.flags & NFT_QUEUE_FLAG_CPU_FANOUT))
+			return expr_error(ctx->msgs, stmt->queue.queue,
+					  "fanout requires a range to be "
+					  "specified");
 	}
 	return 0;
 }
