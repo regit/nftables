@@ -65,6 +65,12 @@ static int __fmtstring(4, 5) __stmt_binary_error(struct eval_ctx *ctx,
 	__stmt_binary_error(ctx, &(s1)->location, NULL, fmt, ## args)
 #define cmd_error(ctx, fmt, args...) \
 	__stmt_binary_error(ctx, &(ctx->cmd)->location, NULL, fmt, ## args)
+#define handle_error(ctx, fmt, args...) \
+	__stmt_binary_error(ctx, &ctx->cmd->handle.handle.location, NULL, fmt, ## args)
+#define position_error(ctx, fmt, args...) \
+	__stmt_binary_error(ctx, &ctx->cmd->handle.position.location, NULL, fmt, ## args)
+#define handle_position_error(ctx, fmt, args...) \
+	__stmt_binary_error(ctx, &ctx->cmd->handle.handle.location, &ctx->cmd->handle.position.location, fmt, ## args)
 
 static int __fmtstring(3, 4) set_error(struct eval_ctx *ctx,
 				       const struct set *set,
@@ -2160,10 +2166,67 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 	return 0;
 }
 
+static int rule_evaluate_cmd(struct eval_ctx *ctx)
+{
+	struct handle *handle = &ctx->cmd->handle;
+
+	/* allowed:
+	 * - insert [position] (no handle)
+	 * - add [position] (no handle)
+	 * - replace <handle> (no position)
+	 * - delete <handle> (no position)
+	 */
+
+	switch (ctx->cmd->op) {
+	case CMD_INSERT:
+		if (handle->handle.id && handle->position.id)
+			return handle_position_error(ctx, "use only `position'"
+						     " instead");
+
+		if (handle->handle.id)
+			return handle_error(ctx, "use `position' instead");
+		break;
+	case CMD_ADD:
+		if (handle->handle.id && handle->position.id)
+			return handle_position_error(ctx, "use only `position'"
+						     " instead");
+
+		if (handle->handle.id)
+			return handle_error(ctx, "use `position' instead");
+
+		break;
+	case CMD_REPLACE:
+		if (handle->handle.id && handle->position.id)
+			return handle_position_error(ctx, "use only `handle' "
+						     "instead");
+		if (handle->position.id)
+			return position_error(ctx, "use `handle' instead");
+		if (!handle->handle.id)
+			return cmd_error(ctx, "missing `handle'");
+		break;
+	case CMD_DELETE:
+		if (handle->handle.id && handle->position.id)
+			return handle_position_error(ctx, "use only `handle' "
+						     "instead");
+		if (handle->position.id)
+			return position_error(ctx, "use `handle' instead");
+		if (!handle->handle.id)
+			return cmd_error(ctx, "missing `handle'");
+		break;
+	default:
+		BUG("unkown command type %u\n", ctx->cmd->op);
+	}
+
+	return 0;
+}
+
 static int rule_evaluate(struct eval_ctx *ctx, struct rule *rule)
 {
 	struct stmt *stmt, *tstmt = NULL;
 	struct error_record *erec;
+
+	if (rule_evaluate_cmd(ctx) < 0)
+		return -1;
 
 	proto_ctx_init(&ctx->pctx, rule->handle.family);
 	memset(&ctx->ectx, 0, sizeof(ctx->ectx));
@@ -2345,8 +2408,11 @@ static int cmd_evaluate_delete(struct eval_ctx *ctx, struct cmd *cmd)
 			return ret;
 
 		return setelem_evaluate(ctx, &cmd->expr);
-	case CMD_OBJ_SET:
 	case CMD_OBJ_RULE:
+		if (rule_evaluate_cmd(ctx) < 0)
+			return -1;
+		/* fall through */
+	case CMD_OBJ_SET:
 	case CMD_OBJ_CHAIN:
 	case CMD_OBJ_TABLE:
 		return 0;
