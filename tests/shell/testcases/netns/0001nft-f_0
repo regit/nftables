@@ -8,13 +8,7 @@ if [ ! -x "$IP" ] ; then
 	exit 1
 fi
 
-MKTEMP=$(which mktemp)
-if [ -x $MKTEMP ] ; then
-	tmpfile=$(${MKTEMP})
-else
-	tmpfile=$(/tmp/${RANDOM})
-fi
-
+tmpfile=$(mktemp)
 if [ ! -w $tmpfile ] ; then
 	echo "Failed to create tmp file" >&2
 	exit 0
