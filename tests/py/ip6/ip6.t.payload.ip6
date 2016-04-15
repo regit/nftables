@@ -329,6 +329,13 @@ ip6 test-ip6 input
   [ bitwise reg 1 = (reg=1 & 0xffffffff 0xffffffff 0x00000000 0x00000000 ) ^ 0x00000000 0x00000000 0x00000000 0x00000000 ]
   [ cmp eq reg 1 0x00000000 0x00000000 0x00000000 0x00000000 ]
 
+# ip6 saddr ::1 ip6 daddr ::2
+ip6 test-ip6 input
+  [ payload load 16b @ network header + 8 => reg 1 ]
+  [ cmp eq reg 1 0x00000000 0x00000000 0x00000000 0x01000000 ]
+  [ payload load 16b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0x00000000 0x00000000 0x00000000 0x02000000 ]
+
 # ip6 daddr != ::1234:1234:1234:1234:1234:1234:1234-1234:1234::1234:1234:1234:1234:1234
 ip6 test-ip6 input
   [ payload load 16b @ network header + 24 => reg 1 ]

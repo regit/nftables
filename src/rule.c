@@ -1292,7 +1292,7 @@ static void payload_do_merge(struct stmt *sa[], unsigned int n)
 		stmt = sa[i];
 		this = stmt->expr;
 
-		if (!payload_is_adjacent(last->left, this->left) ||
+		if (!payload_can_merge(last->left, this->left) ||
 		    last->op != this->op) {
 			last = this;
 			j = i;

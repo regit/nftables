@@ -483,23 +483,36 @@ raw:
 	list_add_tail(&new->list, list);
 }
 
-/**
- * payload_is_adjacent - return whether two payload expressions refer to
- * 			 adjacent header locations
- *
- * @e1:		first payload expression
- * @e2:		second payload expression
- */
-bool payload_is_adjacent(const struct expr *e1, const struct expr *e2)
+static bool payload_is_adjacent(const struct expr *e1, const struct expr *e2)
 {
-	if (e1->payload.offset % BITS_PER_BYTE || e1->len % BITS_PER_BYTE ||
-	    e2->payload.offset % BITS_PER_BYTE || e2->len % BITS_PER_BYTE)
-		return false;
-
 	if (e1->payload.base		 == e2->payload.base &&
 	    e1->payload.offset + e1->len == e2->payload.offset)
 		return true;
 	return false;
+}
+
+/**
+ * payload_can_merge - return whether two payload expressions can be merged
+ *
+ * @e1:		first payload expression
+ * @e2:		second payload expression
+ */
+bool payload_can_merge(const struct expr *e1, const struct expr *e2)
+{
+	unsigned int total;
+
+	if (!payload_is_adjacent(e1, e2))
+		return false;
+
+	if (e1->payload.offset % BITS_PER_BYTE || e1->len % BITS_PER_BYTE ||
+	    e2->payload.offset % BITS_PER_BYTE || e2->len % BITS_PER_BYTE)
+		return false;
+
+	total = e1->len + e2->len;
+	if (total < e1->len || total > (NFT_REG_SIZE * BITS_PER_BYTE))
+		return false;
+
+	return true;
 }
 
 /**

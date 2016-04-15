@@ -17,7 +17,7 @@ extern int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 extern int exthdr_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 				  struct stmt **res);
 
-extern bool payload_is_adjacent(const struct expr *e1, const struct expr *e2);
+extern bool payload_can_merge(const struct expr *e1, const struct expr *e2);
 extern struct expr *payload_expr_join(const struct expr *e1,
 				      const struct expr *e2);
 
