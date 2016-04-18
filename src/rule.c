@@ -878,7 +878,7 @@ static int __do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
 			     struct set *set, struct expr *expr)
 {
 	if (set->flags & SET_F_INTERVAL &&
-	    set_to_intervals(ctx->msgs, set, expr) < 0)
+	    set_to_intervals(ctx->msgs, set, expr, true) < 0)
 		return -1;
 
 	if (netlink_add_setelems(ctx, h, expr) < 0)
@@ -995,7 +995,7 @@ static int do_delete_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	set = set_lookup(table, h->set);
 
 	if (set->flags & SET_F_INTERVAL &&
-	    set_to_intervals(ctx->msgs, set, expr) < 0)
+	    set_to_intervals(ctx->msgs, set, expr, false) < 0)
 		return -1;
 
 	if (netlink_delete_setelems(ctx, h, expr) < 0)

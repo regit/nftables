@@ -345,10 +345,40 @@ static int set_to_segtree(struct list_head *msgs, struct expr *set,
 	return 0;
 }
 
-static void segtree_linearize(struct list_head *list, struct seg_tree *tree)
+static bool segtree_needs_first_segment(const struct set *set,
+					const struct expr *init, bool add)
 {
-	struct rb_node *node, *next;
+	if (add) {
+		/* Add the first segment in three situations:
+		 *
+		 * 1) This is an anonymous set.
+		 * 2) This set exists and it is empty.
+		 * 3) This set is created with a number of initial elements.
+		 */
+		if ((set->flags & SET_F_ANONYMOUS) ||
+		    (set->init && set->init->size == 0) ||
+		    (set->init == init))
+			return true;
+	} else {
+		/* If the set is empty after the removal, we have to
+		 * remove the first non-matching segment too.
+		 */
+		if (set->init && set->init->size - init->size == 0)
+			return true;
+	}
+	/* This is an update for a set that already contains elements, so don't
+	 * add the first non-matching elements otherwise we hit EEXIST.
+	 */
+	return false;
+}
+
+static void segtree_linearize(struct list_head *list, const struct set *set,
+			      const struct expr *init, struct seg_tree *tree,
+			      bool add)
+{
+	bool needs_first_segment = segtree_needs_first_segment(set, init, add);
 	struct elementary_interval *ei, *nei, *prev = NULL;
+	struct rb_node *node, *next;
 	mpz_t p, q;
 
 	mpz_init2(p, tree->keylen);
@@ -366,7 +396,7 @@ static void segtree_linearize(struct list_head *list, struct seg_tree *tree)
 			 * If the first segment doesn't begin at zero, insert a
 			 * non-matching segment to cover [0, first_left).
 			 */
-			if (mpz_cmp_ui(ei->left, 0)) {
+			if (needs_first_segment && mpz_cmp_ui(ei->left, 0)) {
 				mpz_set_ui(p, 0);
 				mpz_sub_ui(q, ei->left, 1);
 				nei = ei_alloc(p, q, NULL, EI_F_INTERVAL_END);
@@ -383,7 +413,10 @@ static void segtree_linearize(struct list_head *list, struct seg_tree *tree)
 				mpz_sub_ui(q, ei->left, 1);
 				nei = ei_alloc(p, q, NULL, EI_F_INTERVAL_END);
 				list_add_tail(&nei->list, list);
-			} else if (ei->expr->ops->type != EXPR_MAPPING) {
+			} else if (add && ei->expr->ops->type != EXPR_MAPPING) {
+				/* Merge contiguous segments only in case of
+				 * new additions.
+				 */
 				mpz_set(prev->right, ei->right);
 				ei_remove(tree, ei);
 				ei_destroy(ei);
@@ -432,7 +465,8 @@ static void set_insert_interval(struct expr *set, struct seg_tree *tree,
 	compound_expr_add(set, expr);
 }
 
-int set_to_intervals(struct list_head *errs, struct set *set, struct expr *init)
+int set_to_intervals(struct list_head *errs, struct set *set,
+		     struct expr *init, bool add)
 {
 	struct elementary_interval *ei, *next;
 	struct seg_tree tree;
@@ -441,7 +475,7 @@ int set_to_intervals(struct list_head *errs, struct set *set, struct expr *init)
 	seg_tree_init(&tree, set, init);
 	if (set_to_segtree(errs, init, &tree) < 0)
 		return -1;
-	segtree_linearize(&list, &tree);
+	segtree_linearize(&list, set, init, &tree, add);
 
 	list_for_each_entry_safe(ei, next, &list, list) {
 		if (segtree_debug()) {
