@@ -929,6 +929,22 @@ static int expr_evaluate_set_elem(struct eval_ctx *ctx, struct expr **expr)
 	if (expr_evaluate(ctx, &elem->key) < 0)
 		return -1;
 
+	if (ctx->set &&
+	    !(ctx->set->flags & (SET_F_ANONYMOUS | SET_F_INTERVAL))) {
+		switch (elem->key->ops->type) {
+		case EXPR_PREFIX:
+			return expr_error(ctx->msgs, elem,
+					  "Set member cannot be prefix, "
+					  "missing interval flag on declaration");
+		case EXPR_RANGE:
+			return expr_error(ctx->msgs, elem,
+					  "Set member cannot be range, "
+					  "missing interval flag on declaration");
+		default:
+			break;
+		}
+	}
+
 	elem->dtype = elem->key->dtype;
 	elem->len   = elem->key->len;
 	elem->flags = elem->key->flags;
