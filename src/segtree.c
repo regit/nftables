@@ -487,8 +487,15 @@ static int expr_value_cmp(const void *p1, const void *p2)
 {
 	struct expr *e1 = *(void * const *)p1;
 	struct expr *e2 = *(void * const *)p2;
+	int ret;
 
-	return mpz_cmp(expr_value(e1)->value, expr_value(e2)->value);
+	ret = mpz_cmp(expr_value(e1)->value, expr_value(e2)->value);
+	if (ret == 0 && (e1->flags & EXPR_F_INTERVAL_END))
+		return -1;
+	else
+		return 1;
+
+	return ret;
 }
 
 void interval_map_decompose(struct expr *set)
