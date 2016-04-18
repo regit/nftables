@@ -473,10 +473,14 @@ extern void interval_map_decompose(struct expr *set);
 
 static struct expr *expr_value(struct expr *expr)
 {
-	if (expr->ops->type == EXPR_MAPPING)
+	switch (expr->ops->type) {
+	case EXPR_MAPPING:
 		return expr->left->key;
-	else
+	case EXPR_SET_ELEM:
 		return expr->key;
+	default:
+		BUG("invalid expression type %s\n", expr->ops->name);
+	}
 }
 
 static int expr_value_cmp(const void *p1, const void *p2)
