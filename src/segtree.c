@@ -64,11 +64,12 @@ struct elementary_interval {
 	struct expr			*expr;
 };
 
-static void seg_tree_init(struct seg_tree *tree, const struct set *set)
+static void seg_tree_init(struct seg_tree *tree, const struct set *set,
+			  struct expr *init)
 {
 	struct expr *first;
 
-	first = list_entry(set->init->expressions.next, struct expr, list);
+	first = list_entry(init->expressions.next, struct expr, list);
 	tree->root	= RB_ROOT;
 	tree->keytype	= set->keytype;
 	tree->keylen	= set->keylen;
@@ -431,14 +432,14 @@ static void set_insert_interval(struct expr *set, struct seg_tree *tree,
 	compound_expr_add(set, expr);
 }
 
-int set_to_intervals(struct list_head *errs, struct set *set)
+int set_to_intervals(struct list_head *errs, struct set *set, struct expr *init)
 {
 	struct elementary_interval *ei, *next;
 	struct seg_tree tree;
 	LIST_HEAD(list);
 
-	seg_tree_init(&tree, set);
-	if (set_to_segtree(errs, set->init, &tree) < 0)
+	seg_tree_init(&tree, set, init);
+	if (set_to_segtree(errs, init, &tree) < 0)
 		return -1;
 	segtree_linearize(&list, &tree);
 
@@ -448,12 +449,12 @@ int set_to_intervals(struct list_head *errs, struct set *set)
 				     2 * tree.keylen / BITS_PER_BYTE, ei->left,
 				     2 * tree.keylen / BITS_PER_BYTE, ei->right);
 		}
-		set_insert_interval(set->init, &tree, ei);
+		set_insert_interval(init, &tree, ei);
 		ei_destroy(ei);
 	}
 
 	if (segtree_debug()) {
-		expr_print(set->init);
+		expr_print(init);
 		pr_gmp_debug("\n");
 	}
 	return 0;

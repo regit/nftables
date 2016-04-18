@@ -364,7 +364,8 @@ extern struct expr *concat_expr_alloc(const struct location *loc);
 extern struct expr *list_expr_alloc(const struct location *loc);
 
 extern struct expr *set_expr_alloc(const struct location *loc);
-extern int set_to_intervals(struct list_head *msgs, struct set *set);
+extern int set_to_intervals(struct list_head *msgs, struct set *set,
+			    struct expr *init);
 
 extern struct expr *mapping_expr_alloc(const struct location *loc,
 				       struct expr *from, struct expr *to);
