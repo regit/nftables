@@ -874,12 +874,29 @@ static int do_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 	return 0;
 }
 
-static int do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
-			   const struct expr *expr)
+static int __do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
+			     struct set *set, struct expr *expr)
 {
+	if (set->flags & SET_F_INTERVAL &&
+	    set_to_intervals(ctx->msgs, set, expr) < 0)
+		return -1;
+
 	if (netlink_add_setelems(ctx, h, expr) < 0)
 		return -1;
+
 	return 0;
+}
+
+static int do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
+			   struct expr *init)
+{
+	struct table *table;
+	struct set *set;
+
+	table = table_lookup(h);
+	set = set_lookup(table, h->set);
+
+	return __do_add_setelems(ctx, h, set, init);
 }
 
 static int do_add_set(struct netlink_ctx *ctx, const struct handle *h,
@@ -887,13 +904,9 @@ static int do_add_set(struct netlink_ctx *ctx, const struct handle *h,
 {
 	if (netlink_add_set(ctx, h, set) < 0)
 		return -1;
-	if (set->init != NULL) {
-		if (set->flags & SET_F_INTERVAL &&
-		    set_to_intervals(ctx->msgs, set, set->init) < 0)
-			return -1;
-		if (do_add_setelems(ctx, &set->handle, set->init) < 0)
-			return -1;
-	}
+	if (set->init != NULL)
+		return __do_add_setelems(ctx, &set->handle, set, set->init);
+
 	return 0;
 }
 
@@ -972,6 +985,25 @@ static int do_command_insert(struct netlink_ctx *ctx, struct cmd *cmd)
 	return 0;
 }
 
+static int do_delete_setelems(struct netlink_ctx *ctx, const struct handle *h,
+			      struct expr *expr)
+{
+	struct table *table;
+	struct set *set;
+
+	table = table_lookup(h);
+	set = set_lookup(table, h->set);
+
+	if (set->flags & SET_F_INTERVAL &&
+	    set_to_intervals(ctx->msgs, set, expr) < 0)
+		return -1;
+
+	if (netlink_delete_setelems(ctx, h, expr) < 0)
+		return -1;
+
+	return 0;
+}
+
 static int do_command_delete(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	switch (cmd->obj) {
@@ -985,7 +1017,7 @@ static int do_command_delete(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_SET:
 		return netlink_delete_set(ctx, &cmd->handle, &cmd->location);
 	case CMD_OBJ_SETELEM:
-		return netlink_delete_setelems(ctx, &cmd->handle, cmd->expr);
+		return do_delete_setelems(ctx, &cmd->handle, cmd->expr);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
