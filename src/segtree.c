@@ -520,7 +520,7 @@ void interval_map_decompose(struct expr *set)
 		if (i->flags & EXPR_F_INTERVAL_END)
 			interval = false;
 		else if (interval) {
-			end = expr_clone(expr_value(i));
+			end = expr_clone(i);
 			end->flags |= EXPR_F_INTERVAL_END;
 			ranges[n++] = end;
 		} else
