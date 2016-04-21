@@ -19,7 +19,7 @@ import subprocess
 import argparse
 import signal
 
-NFT_BIN = "src/nft"
+NFT_BIN = os.getenv('NFT', "src/nft")
 TESTS_PATH = os.path.dirname(os.path.abspath(__file__))
 TESTS_DIRECTORY = ["any", "arp", "bridge", "inet", "ip", "ip6"]
 LOGFILE = "/tmp/nftables-test.log"
