@@ -299,20 +299,20 @@ static bool interval_conflict(const struct elementary_interval *e1,
 		return false;
 }
 
-static int set_to_segtree(struct list_head *msgs, struct expr *set,
-			  struct seg_tree *tree)
+static unsigned int expr_to_intervals(const struct expr *set,
+				      unsigned int keylen,
+				      struct elementary_interval **intervals)
 {
-	struct elementary_interval *intervals[set->size];
 	struct elementary_interval *ei;
 	struct expr *i, *next;
 	unsigned int n;
 	mpz_t low, high;
 
-	mpz_init2(low, tree->keylen);
-	mpz_init2(high, tree->keylen);
+	mpz_init2(low, keylen);
+	mpz_init2(high, keylen);
 
 	/*
-	 * Convert elements to intervals and sort by priority.
+	 * Convert elements to intervals.
 	 */
 	n = 0;
 	list_for_each_entry_safe(i, next, &set->expressions, list) {
@@ -320,10 +320,30 @@ static int set_to_segtree(struct list_head *msgs, struct expr *set,
 		range_expr_value_high(high, i);
 		ei = ei_alloc(low, high, i, 0);
 		intervals[n++] = ei;
+	}
+	mpz_clear(high);
+	mpz_clear(low);
 
+	return n;
+}
+
+static int set_to_segtree(struct list_head *msgs, struct expr *set,
+			  struct seg_tree *tree)
+{
+	struct elementary_interval *intervals[set->size];
+	struct expr *i, *next;
+	unsigned int n;
+
+	n = expr_to_intervals(set, tree->keylen, intervals);
+
+	list_for_each_entry_safe(i, next, &set->expressions, list) {
 		list_del(&i->list);
 		expr_free(i);
 	}
+
+	/*
+	 * Sort intervals by priority.
+	 */
 	qsort(intervals, n, sizeof(intervals[0]), interval_cmp);
 
 	/*
@@ -340,8 +360,6 @@ static int set_to_segtree(struct list_head *msgs, struct expr *set,
 		ei_insert(tree, intervals[n]);
 	}
 
-	mpz_clear(high);
-	mpz_clear(low);
 	return 0;
 }
 
