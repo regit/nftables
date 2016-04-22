@@ -327,16 +327,16 @@ static unsigned int expr_to_intervals(const struct expr *set,
 	return n;
 }
 
-static int set_to_segtree(struct list_head *msgs, struct expr *set,
+static int set_to_segtree(struct list_head *msgs, struct expr *init,
 			  struct seg_tree *tree)
 {
-	struct elementary_interval *intervals[set->size];
+	struct elementary_interval *intervals[init->size];
 	struct expr *i, *next;
 	unsigned int n;
 
-	n = expr_to_intervals(set, tree->keylen, intervals);
+	n = expr_to_intervals(init, tree->keylen, intervals);
 
-	list_for_each_entry_safe(i, next, &set->expressions, list) {
+	list_for_each_entry_safe(i, next, &init->expressions, list) {
 		list_del(&i->list);
 		expr_free(i);
 	}
@@ -349,9 +349,9 @@ static int set_to_segtree(struct list_head *msgs, struct expr *set,
 	/*
 	 * Insert elements into tree
 	 */
-	for (n = 0; n < set->size; n++) {
-		if (set->set_flags & SET_F_MAP &&
-		    n < set->size - 1 &&
+	for (n = 0; n < init->size; n++) {
+		if (init->set_flags & SET_F_MAP &&
+		    n < init->size - 1 &&
 		    interval_conflict(intervals[n], intervals[n+1]))
 			return expr_binary_error(msgs,
 					intervals[n]->expr,
