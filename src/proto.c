@@ -148,11 +148,15 @@ static void proto_ctx_debug(const struct proto_ctx *ctx, enum proto_bases base)
 
 	pr_debug("update %s protocol context:\n", proto_base_names[base]);
 	for (i = PROTO_BASE_LL_HDR; i <= PROTO_BASE_MAX; i++) {
-		pr_debug(" %-20s: %s%s\n",
+		pr_debug(" %-20s: %s",
 			 proto_base_names[i],
 			 ctx->protocol[i].desc ? ctx->protocol[i].desc->name :
-						 "none",
-			 i == base ? " <-" : "");
+						 "none");
+		if (ctx->protocol[i].offset)
+			pr_debug(" (offset: %u)", ctx->protocol[i].offset);
+		if (i == base)
+			pr_debug(" <-");
+		pr_debug("\n");
 	}
 	pr_debug("\n");
 #endif

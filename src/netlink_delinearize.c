@@ -1077,13 +1077,10 @@ static void payload_dependency_save(struct rule_pp_ctx *ctx, unsigned int base,
 		stacked_header = next && next->base == base;
 	}
 
-	if (stacked_header) {
-		ctx->pctx.protocol[base].desc = next;
-		ctx->pctx.protocol[base].offset += desc->length;
+	if (stacked_header)
 		payload_dependency_store(ctx, nstmt, base - 1);
-	} else {
+	else
 		payload_dependency_store(ctx, nstmt, base);
-	}
 }
 
 static void payload_match_expand(struct rule_pp_ctx *ctx,

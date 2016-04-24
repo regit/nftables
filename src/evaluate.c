@@ -358,12 +358,6 @@ conflict_resolution_gen_dependency(struct eval_ctx *ctx, int protocol,
 		return expr_error(ctx->msgs, expr,
 					  "dependency statement is invalid");
 
-	ctx->pctx.protocol[base].desc = expr->payload.desc;
-	assert(ctx->pctx.protocol[base].offset == 0);
-
-	assert(desc->length);
-	ctx->pctx.protocol[base].offset += desc->length;
-
 	*res = stmt;
 	return 0;
 }
@@ -430,17 +424,6 @@ static int meta_iiftype_gen_dependency(struct eval_ctx *ctx,
 	return 0;
 }
 
-static void proto_ctx_debunk(struct eval_ctx *ctx,
-			     const struct proto_desc *desc,
-			     const struct proto_desc *next,
-			     struct expr *payload, enum proto_bases base)
-{
-	ctx->pctx.protocol[base + 1].desc = NULL;
-	ctx->pctx.protocol[base].desc = next;
-	ctx->pctx.protocol[base].offset += desc->length;
-	payload->payload.offset += desc->length;
-}
-
 static bool proto_is_dummy(const struct proto_desc *desc)
 {
 	return desc == &proto_inet || desc == &proto_netdev;
@@ -451,7 +434,6 @@ static int resolve_protocol_conflict(struct eval_ctx *ctx,
 				     struct expr *payload)
 {
 	enum proto_bases base = payload->payload.base;
-	const struct proto_desc *next;
 	struct stmt *nstmt = NULL;
 	int link, err;
 
@@ -465,27 +447,17 @@ static int resolve_protocol_conflict(struct eval_ctx *ctx,
 	}
 
 	assert(base < PROTO_BASE_MAX);
-	next = ctx->pctx.protocol[base + 1].desc;
-
-	/* ether type vlan sets vlan as network protocol, debunk ethernet if it
-	 * is already there.
-	 */
-	if (payload->payload.desc == next) {
-		proto_ctx_debunk(ctx, desc, next, payload, base);
-		return 0;
-	}
-
 	/* This payload and the existing context don't match, conflict. */
-	if (next != NULL)
+	if (ctx->pctx.protocol[base + 1].desc != NULL)
 		return 1;
 
 	link = proto_find_num(desc, payload->payload.desc);
-	if (link < 0 || conflict_resolution_gen_dependency(ctx, link, payload, &nstmt) < 0)
+	if (link < 0 ||
+	    conflict_resolution_gen_dependency(ctx, link, payload, &nstmt) < 0)
 		return 1;
 
 	payload->payload.offset += ctx->pctx.protocol[base].offset;
 	list_add_tail(&nstmt->list, &ctx->stmt->list);
-	ctx->pctx.protocol[base + 1].desc = NULL;
 
 	return 0;
 }
@@ -1622,7 +1594,7 @@ static int stmt_evaluate_reject_bridge_family(struct eval_ctx *ctx,
 		default:
 			return stmt_binary_error(ctx, stmt,
 				    &ctx->pctx.protocol[PROTO_BASE_NETWORK_HDR],
-				    "cannot reject this ether type");
+				    "cannot reject this network family");
 		}
 		break;
 	case NFT_REJECT_ICMP_UNREACH:
@@ -1644,7 +1616,7 @@ static int stmt_evaluate_reject_bridge_family(struct eval_ctx *ctx,
 		default:
 			return stmt_binary_error(ctx, stmt,
 				    &ctx->pctx.protocol[PROTO_BASE_NETWORK_HDR],
-				    "cannot reject this ether type");
+				    "cannot reject this network family");
 		}
 		break;
 	}
@@ -1656,6 +1628,12 @@ static int stmt_evaluate_reject_bridge(struct eval_ctx *ctx, struct stmt *stmt,
 				       struct expr *expr)
 {
 	const struct proto_desc *desc;
+
+	desc = ctx->pctx.protocol[PROTO_BASE_LL_HDR].desc;
+	if (desc != &proto_eth)
+		return stmt_binary_error(ctx,
+					 &ctx->pctx.protocol[PROTO_BASE_LL_HDR],
+					 stmt, "unsupported link layer protocol");
 
 	desc = ctx->pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
 	if (desc != NULL &&
