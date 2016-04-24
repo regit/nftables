@@ -322,6 +322,26 @@ int exthdr_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 }
 
 /**
+ * payload_is_stacked - return whether a payload protocol match defines a stacked
+ * 			protocol on the same layer
+ *
+ * @desc: current protocol description on this layer
+ * @expr: payload match
+ */
+bool payload_is_stacked(const struct proto_desc *desc, const struct expr *expr)
+{
+	const struct proto_desc *next;
+
+	if (expr->left->ops->type != EXPR_PAYLOAD ||
+	    !(expr->left->flags & EXPR_F_PROTOCOL) ||
+	    expr->op != OP_EQ)
+		return false;
+
+	next = proto_find_upper(desc, mpz_get_be16(expr->right->value));
+	return next && next->base == desc->base;
+}
+
+/**
  * payload_dependency_store - store a possibly redundant protocol match
  *
  * @ctx: payload dependency context
