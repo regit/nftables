@@ -619,14 +619,9 @@ static void netlink_gen_expr(struct netlink_linearize_ctx *ctx,
 	}
 }
 
-static void netlink_gen_verdict_stmt(struct netlink_linearize_ctx *ctx,
-				     const struct stmt *stmt)
-{
-	return netlink_gen_expr(ctx, stmt->expr, NFT_REG_VERDICT);
-}
-
-static void netlink_gen_counter_stmt(struct netlink_linearize_ctx *ctx,
-				     const struct stmt *stmt)
+static struct nftnl_expr *
+netlink_gen_counter_stmt(struct netlink_linearize_ctx *ctx,
+			 const struct stmt *stmt)
 {
 	struct nftnl_expr *nle;
 
@@ -639,7 +634,46 @@ static void netlink_gen_counter_stmt(struct netlink_linearize_ctx *ctx,
 		nftnl_expr_set_u64(nle, NFTNL_EXPR_CTR_BYTES,
 				   stmt->counter.bytes);
 	}
-	nftnl_rule_add_expr(ctx->nlr, nle);
+
+	return nle;
+}
+
+static struct nftnl_expr *
+netlink_gen_limit_stmt(struct netlink_linearize_ctx *ctx,
+		       const struct stmt *stmt)
+{
+	struct nftnl_expr *nle;
+
+	nle = alloc_nft_expr("limit");
+	nftnl_expr_set_u64(nle, NFTNL_EXPR_LIMIT_RATE, stmt->limit.rate);
+	nftnl_expr_set_u64(nle, NFTNL_EXPR_LIMIT_UNIT, stmt->limit.unit);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_LIMIT_TYPE, stmt->limit.type);
+	if (stmt->limit.burst > 0)
+		nftnl_expr_set_u32(nle, NFTNL_EXPR_LIMIT_BURST,
+				   stmt->limit.burst);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_LIMIT_FLAGS, stmt->limit.flags);
+
+	return nle;
+}
+
+static struct nftnl_expr *
+netlink_gen_stmt_stateful(struct netlink_linearize_ctx *ctx,
+			  const struct stmt *stmt)
+{
+	switch (stmt->ops->type) {
+	case STMT_COUNTER:
+		return netlink_gen_counter_stmt(ctx, stmt);
+	case STMT_LIMIT:
+		return netlink_gen_limit_stmt(ctx, stmt);
+	default:
+		BUG("unknown stateful statement type %s\n", stmt->ops->name);
+	}
+}
+
+static void netlink_gen_verdict_stmt(struct netlink_linearize_ctx *ctx,
+				     const struct stmt *stmt)
+{
+	return netlink_gen_expr(ctx, stmt->expr, NFT_REG_VERDICT);
 }
 
 static void netlink_gen_payload_stmt(struct netlink_linearize_ctx *ctx,
@@ -719,23 +753,6 @@ static void netlink_gen_log_stmt(struct netlink_linearize_ctx *ctx,
 			nftnl_expr_set_u32(nle, NFTNL_EXPR_LOG_LEVEL,
 					   stmt->log.level);
 	}
-	nftnl_rule_add_expr(ctx->nlr, nle);
-}
-
-static void netlink_gen_limit_stmt(struct netlink_linearize_ctx *ctx,
-				   const struct stmt *stmt)
-{
-	struct nftnl_expr *nle;
-
-	nle = alloc_nft_expr("limit");
-	nftnl_expr_set_u64(nle, NFTNL_EXPR_LIMIT_RATE, stmt->limit.rate);
-	nftnl_expr_set_u64(nle, NFTNL_EXPR_LIMIT_UNIT, stmt->limit.unit);
-	nftnl_expr_set_u32(nle, NFTNL_EXPR_LIMIT_TYPE, stmt->limit.type);
-	if (stmt->limit.burst > 0)
-		nftnl_expr_set_u32(nle, NFTNL_EXPR_LIMIT_BURST,
-				   stmt->limit.burst);
-	nftnl_expr_set_u32(nle, NFTNL_EXPR_LIMIT_FLAGS, stmt->limit.flags);
-
 	nftnl_rule_add_expr(ctx->nlr, nle);
 }
 
@@ -1022,21 +1039,19 @@ static void netlink_gen_set_stmt(struct netlink_linearize_ctx *ctx,
 static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 			     const struct stmt *stmt)
 {
+	struct nftnl_expr *nle;
+
 	switch (stmt->ops->type) {
 	case STMT_EXPRESSION:
 		return netlink_gen_expr(ctx, stmt->expr, NFT_REG_VERDICT);
 	case STMT_VERDICT:
 		return netlink_gen_verdict_stmt(ctx, stmt);
-	case STMT_COUNTER:
-		return netlink_gen_counter_stmt(ctx, stmt);
 	case STMT_PAYLOAD:
 		return netlink_gen_payload_stmt(ctx, stmt);
 	case STMT_META:
 		return netlink_gen_meta_stmt(ctx, stmt);
 	case STMT_LOG:
 		return netlink_gen_log_stmt(ctx, stmt);
-	case STMT_LIMIT:
-		return netlink_gen_limit_stmt(ctx, stmt);
 	case STMT_REJECT:
 		return netlink_gen_reject_stmt(ctx, stmt);
 	case STMT_NAT:
@@ -1055,6 +1070,11 @@ static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 		return netlink_gen_set_stmt(ctx, stmt);
 	case STMT_FWD:
 		return netlink_gen_fwd_stmt(ctx, stmt);
+	case STMT_COUNTER:
+	case STMT_LIMIT:
+		nle = netlink_gen_stmt_stateful(ctx, stmt);
+		nftnl_rule_add_expr(ctx->nlr, nle);
+		break;
 	default:
 		BUG("unknown statement type %s\n", stmt->ops->name);
 	}

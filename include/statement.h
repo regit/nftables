@@ -197,6 +197,7 @@ struct stmt_ops {
 
 enum stmt_flags {
 	STMT_F_TERMINAL		= 0x1,
+	STMT_F_STATEFUL		= 0x2,
 };
 
 /**

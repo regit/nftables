@@ -117,7 +117,11 @@ static const struct stmt_ops counter_stmt_ops = {
 
 struct stmt *counter_stmt_alloc(const struct location *loc)
 {
-	return stmt_alloc(loc, &counter_stmt_ops);
+	struct stmt *stmt;
+
+	stmt = stmt_alloc(loc, &counter_stmt_ops);
+	stmt->flags |= STMT_F_STATEFUL;
+	return stmt;
 }
 
 static const char *syslog_level[LOG_DEBUG + 1] = {
@@ -249,7 +253,11 @@ static const struct stmt_ops limit_stmt_ops = {
 
 struct stmt *limit_stmt_alloc(const struct location *loc)
 {
-	return stmt_alloc(loc, &limit_stmt_ops);
+	struct stmt *stmt;
+
+	stmt = stmt_alloc(loc, &limit_stmt_ops);
+	stmt->flags |= STMT_F_STATEFUL;
+	return stmt;
 }
 
 static void queue_stmt_print(const struct stmt *stmt)
