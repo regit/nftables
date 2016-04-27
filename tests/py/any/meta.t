@@ -14,6 +14,8 @@ meta length != 233;ok
 meta length 33-45;ok
 meta length != 33-45;ok
 meta length { 33, 55, 67, 88};ok
+meta length { 33-55, 67-88};ok
+meta length { 33-55, 55-88, 100-120};ok;meta length { 33-88, 100-120}
 - meta length != { 33, 55, 67, 88};ok
 meta length { 33-55};ok
 - meta length != { 33-55};ok
@@ -162,6 +164,7 @@ meta cpu != 1;ok;cpu != 1
 meta cpu 1-3;ok;cpu 1-3
 meta cpu != 1-2;ok;cpu != 1-2
 meta cpu { 2,3};ok;cpu { 2,3}
+meta cpu { 2-3, 5-7};ok
 -meta cpu != { 2,3};ok; cpu != { 2,3}
 
 meta iifgroup 0;ok;iifgroup default

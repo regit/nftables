@@ -166,6 +166,15 @@ ip test-ip4 output
   [ ct load mark => reg 1 ]
   [ lookup reg 1 set set%d ]
 
+# ct mark {0x32-0x2222, 0x4444-0x42de3}
+set%d test-ip4 7
+set%d test-ip4 0
+        element 00000000  : 1 [end]     element 32000000  : 0 [end]     element 23220000  : 1 [end]     element 44440000  : 0 [end]     element e42d0400  : 1 [end]
+ip test-ip4 output
+  [ ct load mark => reg 1 ]
+  [ byteorder reg 1 = hton(reg 1, 4, 4) ]
+  [ lookup reg 1 set set%d ]
+
 # ct mark set 0x11 xor 0x1331
 ip test-ip4 output
   [ immediate reg 1 0x00001320 ]
