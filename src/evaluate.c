@@ -96,7 +96,7 @@ static struct expr *implicit_set_declaration(struct eval_ctx *ctx,
 	struct handle h;
 
 	set = set_alloc(&expr->location);
-	set->flags	= SET_F_CONSTANT | SET_F_ANONYMOUS | expr->set_flags;
+	set->flags	= SET_F_ANONYMOUS | expr->set_flags;
 	set->handle.set = xstrdup(set->flags & SET_F_MAP ? "map%d" : "set%d");
 	set->keytype 	= keytype;
 	set->keylen	= keylen;
@@ -1074,6 +1074,8 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 		} else if (!expr_is_singleton(i))
 			set->set_flags |= SET_F_INTERVAL;
 	}
+
+	set->set_flags |= SET_F_CONSTANT;
 
 	set->dtype = ctx->ectx.dtype;
 	set->len   = ctx->ectx.len;
