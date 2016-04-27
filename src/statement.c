@@ -41,6 +41,8 @@ struct stmt *stmt_alloc(const struct location *loc,
 
 void stmt_free(struct stmt *stmt)
 {
+	if (stmt == NULL)
+		return;
 	if (stmt->ops->destroy)
 		stmt->ops->destroy(stmt);
 	xfree(stmt);
@@ -101,6 +103,37 @@ struct stmt *verdict_stmt_alloc(const struct location *loc, struct expr *expr)
 	stmt = stmt_alloc(loc, &verdict_stmt_ops);
 	stmt->expr = expr;
 	return stmt;
+}
+
+static void flow_stmt_print(const struct stmt *stmt)
+{
+	printf("flow ");
+	if (stmt->flow.set) {
+		expr_print(stmt->flow.set);
+		printf(" ");
+	}
+	expr_print(stmt->flow.key);
+	printf(" ");
+	stmt_print(stmt->flow.stmt);
+}
+
+static void flow_stmt_destroy(struct stmt *stmt)
+{
+	expr_free(stmt->flow.key);
+	expr_free(stmt->flow.set);
+	stmt_free(stmt->flow.stmt);
+}
+
+static const struct stmt_ops flow_stmt_ops = {
+	.type		= STMT_FLOW,
+	.name		= "flow",
+	.print		= flow_stmt_print,
+	.destroy	= flow_stmt_destroy,
+};
+
+struct stmt *flow_stmt_alloc(const struct location *loc)
+{
+	return stmt_alloc(loc, &flow_stmt_ops);
 }
 
 static void counter_stmt_print(const struct stmt *stmt)

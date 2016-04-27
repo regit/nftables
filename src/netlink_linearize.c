@@ -1017,6 +1017,7 @@ static void netlink_gen_ct_stmt(struct netlink_linearize_ctx *ctx,
 static void netlink_gen_set_stmt(struct netlink_linearize_ctx *ctx,
 				 const struct stmt *stmt)
 {
+	struct set *set = stmt->flow.set->set;
 	struct nftnl_expr *nle;
 	enum nft_registers sreg_key;
 
@@ -1029,10 +1030,39 @@ static void netlink_gen_set_stmt(struct netlink_linearize_ctx *ctx,
 	nftnl_expr_set_u64(nle, NFTNL_EXPR_DYNSET_TIMEOUT,
 			   stmt->set.key->timeout);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_DYNSET_OP, stmt->set.op);
-	nftnl_expr_set_str(nle, NFTNL_EXPR_DYNSET_SET_NAME,
-			   stmt->set.set->set->handle.set);
-	nftnl_expr_set_u32(nle, NFTNL_EXPR_DYNSET_SET_ID,
-			   stmt->set.set->set->handle.set_id);
+	nftnl_expr_set_str(nle, NFTNL_EXPR_DYNSET_SET_NAME, set->handle.set);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_DYNSET_SET_ID, set->handle.set_id);
+	nftnl_rule_add_expr(ctx->nlr, nle);
+}
+
+static void netlink_gen_flow_stmt(struct netlink_linearize_ctx *ctx,
+				  const struct stmt *stmt)
+{
+	struct nftnl_expr *nle;
+	enum nft_registers sreg_key;
+	enum nft_dynset_ops op;
+	struct set *set;
+
+	sreg_key = get_register(ctx, stmt->flow.key);
+	netlink_gen_expr(ctx, stmt->flow.key, sreg_key);
+	release_register(ctx, stmt->flow.key);
+
+	set = stmt->flow.set->set;
+	if (stmt->flow.key->timeout)
+		op = NFT_DYNSET_OP_UPDATE;
+	else
+		op = NFT_DYNSET_OP_ADD;
+
+	nle = alloc_nft_expr("dynset");
+	netlink_put_register(nle, NFT_EXPR_DYNSET_SREG_KEY, sreg_key);
+	if (stmt->flow.key->timeout)
+		nftnl_expr_set_u64(nle, NFT_EXPR_DYNSET_TIMEOUT,
+				   stmt->flow.key->timeout);
+	nftnl_expr_set_u32(nle, NFT_EXPR_DYNSET_OP, op);
+	nftnl_expr_set_str(nle, NFT_EXPR_DYNSET_SET_NAME, set->handle.set);
+	nftnl_expr_set_u32(nle, NFT_EXPR_DYNSET_SET_ID, set->handle.set_id);
+	nftnl_expr_set(nle, NFT_EXPR_DYNSET_EXPR,
+		       netlink_gen_stmt_stateful(ctx, stmt->flow.stmt), 0);
 	nftnl_rule_add_expr(ctx->nlr, nle);
 }
 
@@ -1046,6 +1076,8 @@ static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 		return netlink_gen_expr(ctx, stmt->expr, NFT_REG_VERDICT);
 	case STMT_VERDICT:
 		return netlink_gen_verdict_stmt(ctx, stmt);
+	case STMT_FLOW:
+		return netlink_gen_flow_stmt(ctx, stmt);
 	case STMT_PAYLOAD:
 		return netlink_gen_payload_stmt(ctx, stmt);
 	case STMT_META:

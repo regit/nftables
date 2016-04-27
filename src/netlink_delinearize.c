@@ -35,6 +35,9 @@ struct netlink_parse_ctx {
 	struct expr		*registers[1 + NFT_REG32_15 - NFT_REG32_00 + 1];
 };
 
+static int netlink_parse_expr(const struct nftnl_expr *nle,
+			      struct netlink_parse_ctx *ctx);
+
 static void __fmtstring(3, 4) netlink_error(struct netlink_parse_ctx *ctx,
 					    const struct location *loc,
 					    const char *fmt, ...)
@@ -910,8 +913,9 @@ static void netlink_parse_dynset(struct netlink_parse_ctx *ctx,
 				 const struct location *loc,
 				 const struct nftnl_expr *nle)
 {
+	const struct nftnl_expr *dnle;
 	struct expr *expr;
-	struct stmt *stmt;
+	struct stmt *stmt, *dstmt;
 	struct set *set;
 	enum nft_registers sreg;
 	const char *name;
@@ -938,10 +942,28 @@ static void netlink_parse_dynset(struct netlink_parse_ctx *ctx,
 	expr = set_elem_expr_alloc(&expr->location, expr);
 	expr->timeout = nftnl_expr_get_u64(nle, NFTNL_EXPR_DYNSET_TIMEOUT);
 
-	stmt = set_stmt_alloc(loc);
-	stmt->set.set = set_ref_expr_alloc(loc, set);
-	stmt->set.op  = nftnl_expr_get_u32(nle, NFTNL_EXPR_DYNSET_OP);
-	stmt->set.key = expr;
+	dstmt = NULL;
+	dnle = nftnl_expr_get(nle, NFTNL_EXPR_DYNSET_EXPR, NULL);
+	if (dnle != NULL) {
+		if (netlink_parse_expr(dnle, ctx) < 0)
+			return;
+		if (ctx->stmt == NULL)
+			return netlink_error(ctx, loc,
+					     "Could not parse dynset stmt");
+		dstmt = ctx->stmt;
+	}
+
+	if (dstmt != NULL) {
+		stmt = flow_stmt_alloc(loc);
+		stmt->flow.set  = set_ref_expr_alloc(loc, set);
+		stmt->flow.key  = expr;
+		stmt->flow.stmt = dstmt;
+	} else {
+		stmt = set_stmt_alloc(loc);
+		stmt->set.set   = set_ref_expr_alloc(loc, set);
+		stmt->set.op    = nftnl_expr_get_u32(nle, NFTNL_EXPR_DYNSET_OP);
+		stmt->set.key   = expr;
+	}
 
 	ctx->stmt = stmt;
 }
@@ -1009,6 +1031,20 @@ static int netlink_parse_rule_expr(struct nftnl_expr *nle, void *arg)
 		ctx->stmt = NULL;
 	}
 	return 0;
+}
+
+struct stmt *netlink_parse_set_expr(const struct set *set,
+				    const struct nftnl_expr *nle)
+{
+	struct netlink_parse_ctx ctx, *pctx = &ctx;
+
+	pctx->rule = rule_alloc(&netlink_location, &set->handle);
+	pctx->table = table_lookup(&set->handle);
+	assert(pctx->table != NULL);
+
+	if (netlink_parse_expr(nle, pctx) < 0)
+		return NULL;
+	return pctx->stmt;
 }
 
 struct rule_pp_ctx {
@@ -1716,6 +1752,9 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 				      stmt->payload.expr->dtype,
 				      stmt->payload.expr->byteorder);
 			expr_postprocess(&rctx, &stmt->payload.val);
+			break;
+		case STMT_FLOW:
+			expr_postprocess(&rctx, &stmt->flow.key);
 			break;
 		case STMT_META:
 			if (stmt->meta.expr != NULL)

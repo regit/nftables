@@ -285,6 +285,8 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "performance"		{ return PERFORMANCE; }
 "memory"		{ return MEMORY; }
 
+"flow"			{ return FLOW; }
+
 "counter"		{ return COUNTER; }
 "packets"		{ return PACKETS; }
 "bytes"			{ return BYTES; }

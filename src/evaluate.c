@@ -1638,6 +1638,41 @@ static int stmt_evaluate_payload(struct eval_ctx *ctx, struct stmt *stmt)
 				 &stmt->payload.val);
 }
 
+static int stmt_evaluate_flow(struct eval_ctx *ctx, struct stmt *stmt)
+{
+	struct expr *key, *set, *setref;
+
+	expr_set_context(&ctx->ectx, NULL, 0);
+	if (expr_evaluate(ctx, &stmt->flow.key) < 0)
+		return -1;
+	if (expr_is_constant(stmt->flow.key))
+		return expr_error(ctx->msgs, stmt->flow.key,
+				  "Flow key expression can not be constant");
+	if (stmt->flow.key->comment)
+		return expr_error(ctx->msgs, stmt->flow.key,
+				  "Flow key expression can not contain comments");
+
+	/* Declare an empty set */
+	key = stmt->flow.key;
+	set = set_expr_alloc(&key->location);
+	set->set_flags |= SET_F_EVAL;
+	if (key->timeout)
+		set->set_flags |= SET_F_TIMEOUT;
+
+	setref = implicit_set_declaration(ctx, stmt->flow.table ?: "__ft%d",
+					  key->dtype, key->len, set);
+
+	stmt->flow.set = setref;
+
+	if (stmt_evaluate(ctx, stmt->flow.stmt) < 0)
+		return -1;
+	if (!(stmt->flow.stmt->flags & STMT_F_STATEFUL))
+		return stmt_binary_error(ctx, stmt->flow.stmt, stmt,
+					 "Per-flow statement must be stateful");
+
+	return 0;
+}
+
 static int stmt_evaluate_meta(struct eval_ctx *ctx, struct stmt *stmt)
 {
 	return stmt_evaluate_arg(ctx, stmt,
@@ -2257,6 +2292,8 @@ int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 		return stmt_evaluate_verdict(ctx, stmt);
 	case STMT_PAYLOAD:
 		return stmt_evaluate_payload(ctx, stmt);
+	case STMT_FLOW:
+		return stmt_evaluate_flow(ctx, stmt);
 	case STMT_META:
 		return stmt_evaluate_meta(ctx, stmt);
 	case STMT_CT:

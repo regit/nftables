@@ -206,6 +206,7 @@ enum set_flags {
 	SET_F_INTERVAL		= 0x4,
 	SET_F_MAP		= 0x8,
 	SET_F_TIMEOUT		= 0x10,
+	SET_F_EVAL		= 0x20,
 };
 
 /**

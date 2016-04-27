@@ -138,12 +138,22 @@ struct set_stmt {
 
 extern struct stmt *set_stmt_alloc(const struct location *loc);
 
+struct flow_stmt {
+	struct expr		*set;
+	struct expr		*key;
+	struct stmt		*stmt;
+	const char		*table;
+};
+
+extern struct stmt *flow_stmt_alloc(const struct location *loc);
+
 /**
  * enum stmt_types - statement types
  *
  * @STMT_INVALID:	uninitialised
  * @STMT_EXPRESSION:	expression statement (relational)
  * @STMT_VERDICT:	verdict statement
+ * @STMT_FLOW:		flow statement
  * @STMT_COUNTER:	counters
  * @STMT_PAYLOAD:	payload statement
  * @STMT_META:		meta statement
@@ -163,6 +173,7 @@ enum stmt_types {
 	STMT_INVALID,
 	STMT_EXPRESSION,
 	STMT_VERDICT,
+	STMT_FLOW,
 	STMT_COUNTER,
 	STMT_PAYLOAD,
 	STMT_META,
@@ -217,6 +228,7 @@ struct stmt {
 
 	union {
 		struct expr		*expr;
+		struct flow_stmt	flow;
 		struct counter_stmt	counter;
 		struct payload_stmt	payload;
 		struct meta_stmt	meta;

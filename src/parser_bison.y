@@ -216,6 +216,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token PERFORMANCE		"performance"
 %token SIZE			"size"
 
+%token FLOW			"flow"
+
 %token <val> NUM		"number"
 %token <string> STRING		"string"
 %token <string> QUOTED_STRING
@@ -484,6 +486,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <stmt>			set_stmt
 %destructor { stmt_free($$); }	set_stmt
 %type <val>			set_stmt_op
+%type <stmt>			flow_stmt flow_stmt_alloc
+%destructor { stmt_free($$); }	flow_stmt flow_stmt_alloc
 
 %type <expr>			symbol_expr verdict_expr integer_expr
 %destructor { expr_free($$); }	symbol_expr verdict_expr integer_expr
@@ -518,6 +522,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { expr_free($$); }	set_expr set_list_expr set_list_member_expr
 %type <expr>			set_elem_expr set_elem_expr_alloc set_lhs_expr set_rhs_expr
 %destructor { expr_free($$); }	set_elem_expr set_elem_expr_alloc set_lhs_expr set_rhs_expr
+
+%type <expr>			flow_key_expr flow_key_expr_alloc
+%destructor { expr_free($$); }	flow_key_expr flow_key_expr_alloc
 
 %type <expr>			expr initializer_expr
 %destructor { expr_free($$); }	expr initializer_expr
@@ -1306,6 +1313,7 @@ stmt_list		:	stmt
 
 stmt			:	verdict_stmt
 			|	match_stmt
+			|	flow_stmt
 			|	counter_stmt
 			|	payload_stmt
 			|	meta_stmt
@@ -1757,6 +1765,41 @@ set_stmt_op		:	ADD	{ $$ = NFT_DYNSET_OP_ADD; }
 			|	UPDATE	{ $$ = NFT_DYNSET_OP_UPDATE; }
 			;
 
+flow_stmt		:	flow_stmt_alloc		flow_stmt_opts	flow_key_expr	stmt
+			{
+				$1->flow.key  = $3;
+				$1->flow.stmt = $4;
+				$$->location  = @$;
+				$$ = $1;
+			}
+			|	flow_stmt_alloc		flow_key_expr	stmt
+			{
+				$1->flow.key  = $2;
+				$1->flow.stmt = $3;
+				$$->location  = @$;
+				$$ = $1;
+			}
+			;
+
+flow_stmt_alloc		:	FLOW
+			{
+				$$ = flow_stmt_alloc(&@$);
+			}
+			;
+
+flow_stmt_opts		:	flow_stmt_opt
+			{
+				$<stmt>$	= $<stmt>0;
+			}
+			|	flow_stmt_opts		flow_stmt_opt
+			;
+
+flow_stmt_opt		:	TABLE			identifier
+			{
+				$<stmt>0->flow.table = $2;
+			}
+			;
+
 match_stmt		:	relational_expr
 			{
 				$$ = expr_stmt_alloc(&@$, $1);
@@ -1938,6 +1981,20 @@ set_list_member_expr	:	opt_newline	set_expr	opt_newline
 			|	opt_newline	set_elem_expr	COLON	set_rhs_expr	opt_newline
 			{
 				$$ = mapping_expr_alloc(&@$, $2, $4);
+			}
+			;
+
+flow_key_expr		:	flow_key_expr_alloc
+			|	flow_key_expr_alloc		set_elem_options
+			{
+				$$->location = @$;
+				$$ = $1;
+			}
+			;
+
+flow_key_expr_alloc	:	concat_expr
+			{
+				$$ = set_elem_expr_alloc(&@1, $1);
 			}
 			;
 

@@ -1460,6 +1460,12 @@ static int netlink_delinearize_setelem(struct nftnl_set_elem *nlse,
 		expr->comment = xmalloc(len);
 		memcpy((char *)expr->comment, data, len);
 	}
+	if (nftnl_set_elem_is_set(nlse, NFT_SET_ELEM_ATTR_EXPR)) {
+		const struct nftnl_expr *nle;
+
+		nle = nftnl_set_elem_get(nlse, NFT_SET_ELEM_ATTR_EXPR, NULL);
+		expr->stmt = netlink_parse_set_expr(set, nle);
+	}
 
 	if (flags & NFT_SET_ELEM_INTERVAL_END) {
 		expr->flags |= EXPR_F_INTERVAL_END;

@@ -237,6 +237,7 @@ struct expr {
 			uint64_t		timeout;
 			uint64_t		expiration;
 			const char		*comment;
+			struct stmt		*stmt;
 		};
 		struct {
 			/* EXPR_UNARY */

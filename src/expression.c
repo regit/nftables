@@ -16,6 +16,7 @@
 #include <limits.h>
 
 #include <expression.h>
+#include <statement.h>
 #include <datatype.h>
 #include <rule.h>
 #include <gmputil.h>
@@ -852,10 +853,14 @@ struct expr *map_expr_alloc(const struct location *loc, struct expr *arg,
 
 static void set_ref_expr_print(const struct expr *expr)
 {
-	if (expr->set->flags & SET_F_ANONYMOUS)
-		expr_print(expr->set->init);
-	else
+	if (expr->set->flags & SET_F_ANONYMOUS) {
+		if (expr->set->flags & SET_F_EVAL)
+			printf("table %s", expr->set->handle.set);
+		else
+			expr_print(expr->set->init);
+	} else {
 		printf("@%s", expr->set->handle.set);
+	}
 }
 
 static void set_ref_expr_clone(struct expr *new, const struct expr *expr)
@@ -899,6 +904,11 @@ static void set_elem_expr_print(const struct expr *expr)
 	}
 	if (expr->comment)
 		printf(" comment \"%s\"", expr->comment);
+
+	if (expr->stmt) {
+		printf(" : ");
+		stmt_print(expr->stmt);
+	}
 }
 
 static void set_elem_expr_destroy(struct expr *expr)
