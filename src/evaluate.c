@@ -87,6 +87,7 @@ static int __fmtstring(3, 4) set_error(struct eval_ctx *ctx,
 }
 
 static struct expr *implicit_set_declaration(struct eval_ctx *ctx,
+					     const char *name,
 					     const struct datatype *keytype,
 					     unsigned int keylen,
 					     struct expr *expr)
@@ -97,7 +98,7 @@ static struct expr *implicit_set_declaration(struct eval_ctx *ctx,
 
 	set = set_alloc(&expr->location);
 	set->flags	= SET_F_ANONYMOUS | expr->set_flags;
-	set->handle.set = xstrdup(set->flags & SET_F_MAP ? "map%d" : "set%d");
+	set->handle.set = xstrdup(name),
 	set->keytype 	= keytype;
 	set->keylen	= keylen;
 	set->init	= expr;
@@ -1100,7 +1101,8 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 
 	switch (map->mappings->ops->type) {
 	case EXPR_SET:
-		mappings = implicit_set_declaration(ctx, ctx->ectx.dtype,
+		mappings = implicit_set_declaration(ctx, "__map%d",
+						    ctx->ectx.dtype,
 						    ctx->ectx.len, mappings);
 		mappings->set->datatype = ectx.dtype;
 		mappings->set->datalen  = ectx.len;
@@ -1389,7 +1391,8 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 			 * the set
 			 */
 			right = rel->right =
-				implicit_set_declaration(ctx, left->dtype,
+				implicit_set_declaration(ctx, "__set%d",
+							 left->dtype,
 							 left->len, right);
 			break;
 		case EXPR_SET_REF:
