@@ -23,3 +23,14 @@
 
 ip6 saddr @set2 drop;ok
 ip6 saddr @set33 drop;fail
+
+!set3 type ipv6_addr flags interval;ok
+?set3 1234:1234:1234:1234::/64;ok
+?set3 1324:1234:1234:1235::/64;ok
+?set3 1324:1234:1234:1233::/64;ok
+?set3 1234:1234:1234:1234:1234:1234:/96;fail
+?set3 1324:1234:1234:1236::/64;ok
+
+!set4 type ipv6_addr flags interval;ok
+?set4 1234:1234:1234:1234::/64 4321:1234:1234:1234::/64;ok
+?set4 4321:1234:1234:1234:1234:1234::/96;fail

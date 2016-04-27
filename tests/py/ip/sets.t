@@ -31,3 +31,15 @@
 ip saddr @set1 drop;ok
 ip saddr @set2 drop;ok
 ip saddr @set33 drop;fail
+
+!set3 type ipv4_addr flags interval;ok
+?set3 192.168.0.0/16;ok
+?set3 172.16.0.0/12;ok
+?set3 10.0.0.0/8;ok
+
+!set4 type ipv4_addr flags interval;ok
+?set4 192.168.1.0/24;ok
+?set4 192.168.0.0/24;ok
+?set4 192.168.2.0/24;ok
+?set4 192.168.1.1;fail
+?set4 192.168.3.0/24;ok
