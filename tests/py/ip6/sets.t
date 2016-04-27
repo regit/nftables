@@ -5,13 +5,13 @@
 *inet;test-inet;input
 *netdev;test-netdev;ingress
 
-!set_ipv6_add1 ipv6_addr;ok
-!set_inet1 inet_proto;ok
-!set_inet inet_service;ok
-!set_time time;ok
+!w type ipv6_addr;ok
+!x type inet_proto;ok
+!y type inet_service;ok
+!z type time;ok
 
 ?set2 192.168.3.4;fail
-!set2 ipv6_addr;ok
+!set2 type ipv6_addr;ok
 ?set2 1234:1234::1234:1234:1234:1234:1234;ok
 ?set2 1234:1234::1234:1234:1234:1234:1234;fail
 ?set2 1234::1234:1234:1234;ok

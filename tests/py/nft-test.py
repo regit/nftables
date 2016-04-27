@@ -69,6 +69,20 @@ class Table:
         return self.__dict__ == other.__dict__
 
 
+class Set:
+    """Class that represents a set"""
+
+    def __init__(self, family, table, name, type, flags):
+        self.family = family
+        self.table = table
+        self.name = name
+        self.type = type
+        self.flags = flags
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+
 def print_msg(reason, filename=None, lineno=None, color=None, errstr=None):
     '''
     Prints a message with nice colors, indicating file and line number.
@@ -277,7 +291,7 @@ def chain_get_by_name(name):
     return chain
 
 
-def set_add(set_info, filename, lineno):
+def set_add(s, test_result, filename, lineno):
     '''
     Adds a set.
     '''
@@ -287,25 +301,30 @@ def set_add(set_info, filename, lineno):
         return -1
 
     for table in table_list:
-        if set_exist(set_info[0], table, filename, lineno):
-            reason = "This set " + set_info + " exists in " + table.name + \
-                     ". I cannot add it again"
+        s.table = table.name
+        s.family = table.family
+        if _set_exist(s, filename, lineno):
+            reason = "Set " + s.name + " already exists in " + table.name
             print_error(reason, filename, lineno)
             return -1
 
-        table_info = " " + table.family + " " + table.name + " "
-        set_text = " " + set_info[0] + " { type " + set_info[1] + " \;}"
-        cmd = NFT_BIN + " add set" + table_info + set_text
+        table_handle = " " + table.family + " " + table.name + " "
+        if s.flags == "":
+            set_cmd = " " + s.name + " { type " + s.type + "\;}"
+        else:
+            set_cmd = " " + s.name + " { type " + s.type + "\; flags " + s.flags + "\; }"
+
+        cmd = NFT_BIN + " add set" + table_handle + set_cmd
         ret = execute_cmd(cmd, filename, lineno)
 
-        if (ret == 0 and set_info[2].rstrip() == "fail") or \
-                (ret != 0 and set_info[2].rstrip() == "ok"):
-            reason = cmd + ": " + "I cannot add the set " + set_info[0]
+        if (ret == 0 and test_result == "fail") or \
+                (ret != 0 and test_result == "ok"):
+            reason = cmd + ": " + "I cannot add the set " + s.name
             print_error(reason, filename, lineno)
             return -1
 
-        if not set_exist(set_info[0], table, filename, lineno):
-            reason = "I have just added the set " + set_info[0] + \
+        if not _set_exist(s, filename, lineno):
+            reason = "I have just added the set " + s.name + \
                      " to the table " + table.name + " but it does not exist"
             print_error(reason, filename, lineno)
             return -1
@@ -414,6 +433,17 @@ def set_exist(set_name, table, filename, lineno):
     '''
     table_info = " " + table.family + " " + table.name + " "
     cmd = NFT_BIN + " list -nnn set" + table_info + set_name
+    ret = execute_cmd(cmd, filename, lineno)
+
+    return True if (ret == 0) else False
+
+
+def _set_exist(s, filename, lineno):
+    '''
+    Check if the set exists.
+    '''
+    table_handle = " " + s.family + " " + s.table + " "
+    cmd = NFT_BIN + " list -nnn set" + table_handle + s.name
     ret = execute_cmd(cmd, filename, lineno)
 
     return True if (ret == 0) else False
@@ -717,14 +747,20 @@ def chain_process(chain_line, lineno):
 
 
 def set_process(set_line, filename, lineno):
-    set_info = []
-    set_name = "".join(set_line[0].rstrip()[1:])
-    set_info.append(set_name)
-    set_type = set_line[1].split(";")[0]
-    set_state = set_line[1].split(";")[1]  # ok or fail
-    set_info.append(set_type)
-    set_info.append(set_state)
-    ret = set_add(set_info, filename, lineno)
+    test_result = set_line[1]
+
+    tokens = set_line[0].split(" ")
+    set_name = tokens[0]
+    set_type = tokens[2]
+
+    if len(tokens) == 5 and tokens[3] == "flags":
+        set_flags = tokens[4]
+    else:
+        set_flags = ""
+
+    s = Set("", "", set_name, set_type, set_flags)
+
+    ret = set_add(s, test_result, filename, lineno)
     if ret == 0:
         all_set[set_name] = set()
 
@@ -808,7 +844,7 @@ def run_test_file(filename, force_all_family_option, specific_file):
             continue
 
         if line[0] == "!":  # Adds this set
-            set_line = line.rstrip()[0:].split(" ")
+            set_line = line.rstrip()[1:].split(";")
             ret = set_process(set_line, filename, lineno)
             tests += 1
             if ret == -1:
