@@ -1185,9 +1185,61 @@ static struct expr *binop_tree_to_list(struct expr *list, struct expr *expr)
 	return list;
 }
 
+static void binop_adjust_one(const struct expr *binop, struct expr *value,
+			     unsigned int shift)
+{
+	struct expr *left = binop->left;
+
+	assert(value->len >= binop->right->len);
+
+	mpz_rshift_ui(value->value, shift);
+	switch (left->ops->type) {
+	case EXPR_PAYLOAD:
+	case EXPR_EXTHDR:
+		value->len = left->len;
+		break;
+	default:
+		BUG("unknown expression type %s\n", left->ops->name);
+		break;
+	}
+}
+
+static void binop_adjust(struct expr *expr, unsigned int shift)
+{
+	const struct expr *binop = expr->left;
+	struct expr *right = expr->right, *i;
+
+	switch (right->ops->type) {
+	case EXPR_VALUE:
+		binop_adjust_one(binop, right, shift);
+		break;
+	case EXPR_SET_REF:
+		list_for_each_entry(i, &right->set->init->expressions, list) {
+			switch (i->key->ops->type) {
+			case EXPR_VALUE:
+				binop_adjust_one(binop, i->key, shift);
+				break;
+			case EXPR_RANGE:
+				binop_adjust_one(binop, i->key->left, shift);
+				binop_adjust_one(binop, i->key->right, shift);
+				break;
+			case EXPR_SET_ELEM:
+				binop_adjust_one(binop, i->key->key, shift);
+				break;
+			default:
+				BUG("unknown expression type %s\n", i->key->ops->name);
+			}
+		}
+		break;
+	default:
+		BUG("unknown expression type %s\n", expr->ops->name);
+		break;
+	}
+}
+
 static void binop_postprocess(struct rule_pp_ctx *ctx, struct expr *expr)
 {
-	struct expr *binop = expr->left, *value = expr->right;
+	struct expr *binop = expr->left;
 	struct expr *left = binop->left;
 	struct expr *mask = binop->right;
 	unsigned int shift;
@@ -1205,11 +1257,7 @@ static void binop_postprocess(struct rule_pp_ctx *ctx, struct expr *expr)
 		 * Finally, convert the expression to 1) by replacing
 		 * the binop with the binop payload/exthdr expression.
 		 */
-		if (value->ops->type == EXPR_VALUE) {
-			assert(value->len >= expr->left->right->len);
-			mpz_rshift_ui(value->value, shift);
-			value->len = left->len;
-		}
+		binop_adjust(expr, shift);
 
 		assert(expr->left->ops->type == EXPR_BINOP);
 		assert(binop->left == left);
