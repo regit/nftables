@@ -1393,9 +1393,9 @@ filter output oif eth0
 								<entry>integer (4 bit) FIXME scaling</entry>
 							</row>
 							<row>
-								<entry>tos</entry>
-								<entry>Type Of Service</entry>
-								<entry>FIXME</entry>
+								<entry>dscp</entry>
+								<entry>Differentiated Services Code Point</entry>
+								<entry>integer (6 bit)</entry>
 							</row>
 							<row>
 								<entry>length</entry>
@@ -1475,6 +1475,11 @@ filter output oif eth0
 								<entry>priority</entry>
 								<entry></entry>
 								<entry></entry>
+							</row>
+							<row>
+								<entry>dscp</entry>
+								<entry>Differentiated Services Code Point</entry>
+								<entry>integer (6 bit)</entry>
 							</row>
 							<row>
 								<entry>flowlabel</entry>

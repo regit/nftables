@@ -248,7 +248,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token IP			"ip"
 %token HDRVERSION		"version"
 %token HDRLENGTH		"hdrlength"
-%token TOS			"tos"
+%token DSCP			"dscp"
 %token LENGTH			"length"
 %token FRAG_OFF			"frag-off"
 %token TTL			"ttl"
@@ -1102,6 +1102,7 @@ type_identifier_list	:	type_identifier
 
 type_identifier		:	STRING	{ $$ = $1; }
 			|	MARK	{ $$ = xstrdup("mark"); }
+			|	DSCP	{ $$ = xstrdup("dscp"); }
 			;
 
 hook_spec		:	TYPE		STRING		HOOK		STRING		dev_spec	PRIORITY	prio_spec
@@ -2403,7 +2404,7 @@ ip_hdr_expr		:	IP	ip_hdr_field
 
 ip_hdr_field		:	HDRVERSION	{ $$ = IPHDR_VERSION; }
 			|	HDRLENGTH	{ $$ = IPHDR_HDRLENGTH; }
-			|	TOS		{ $$ = IPHDR_TOS; }
+			|	DSCP		{ $$ = IPHDR_DSCP; }
 			|	LENGTH		{ $$ = IPHDR_LENGTH; }
 			|	ID		{ $$ = IPHDR_ID; }
 			|	FRAG_OFF	{ $$ = IPHDR_FRAG_OFF; }
@@ -2436,7 +2437,7 @@ ip6_hdr_expr		:	IP6	ip6_hdr_field
 			;
 
 ip6_hdr_field		:	HDRVERSION	{ $$ = IP6HDR_VERSION; }
-			|	PRIORITY	{ $$ = IP6HDR_PRIORITY; }
+			|	DSCP		{ $$ = IP6HDR_DSCP; }
 			|	FLOWLABEL	{ $$ = IP6HDR_FLOWLABEL; }
 			|	LENGTH		{ $$ = IP6HDR_LENGTH; }
 			|	NEXTHDR		{ $$ = IP6HDR_NEXTHDR; }
