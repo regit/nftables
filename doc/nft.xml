@@ -1398,6 +1398,11 @@ filter output oif eth0
 								<entry>integer (6 bit)</entry>
 							</row>
 							<row>
+								<entry>ecn</entry>
+								<entry>Explicit Congestion Notification</entry>
+								<entry>integer (2 bit)</entry>
+							</row>
+							<row>
 								<entry>length</entry>
 								<entry>Total packet length</entry>
 								<entry>integer (16 bit)</entry>
@@ -1480,6 +1485,11 @@ filter output oif eth0
 								<entry>dscp</entry>
 								<entry>Differentiated Services Code Point</entry>
 								<entry>integer (6 bit)</entry>
+							</row>
+							<row>
+								<entry>ecn</entry>
+								<entry>Explicit Congestion Notification</entry>
+								<entry>integer (2 bit)</entry>
 							</row>
 							<row>
 								<entry>flowlabel</entry>

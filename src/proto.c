@@ -552,6 +552,27 @@ static const struct datatype dscp_type = {
 	.sym_tbl	= &dscp_type_tbl,
 };
 
+static const struct symbol_table ecn_type_tbl = {
+	.symbols	= {
+		SYMBOL("not-ect",	0x00),
+		SYMBOL("ect1",		0x01),
+		SYMBOL("ect0",		0x02),
+		SYMBOL("ce",		0x03),
+		SYMBOL_LIST_END
+	},
+};
+
+static const struct datatype ecn_type = {
+	.type		= TYPE_ECN,
+	.name		= "ecn",
+	.desc		= "Explicit Congestion Notification",
+	.byteorder	= BYTEORDER_BIG_ENDIAN,
+	.size		= 2,
+	.basetype	= &integer_type,
+	.basefmt	= "0x%.1Zx",
+	.sym_tbl	= &ecn_type_tbl,
+};
+
 #define IPHDR_FIELD(__name, __member) \
 	HDR_FIELD(__name, struct iphdr, __member)
 #define IPHDR_ADDR(__name, __member) \
@@ -577,6 +598,7 @@ const struct proto_desc proto_ip = {
 		[IPHDR_VERSION]		= HDR_BITFIELD("version", &integer_type, 0, 4),
 		[IPHDR_HDRLENGTH]	= HDR_BITFIELD("hdrlength", &integer_type, 4, 4),
 		[IPHDR_DSCP]            = HDR_BITFIELD("dscp", &dscp_type, 8, 6),
+		[IPHDR_ECN]		= HDR_BITFIELD("ecn", &ecn_type, 14, 2),
 		[IPHDR_LENGTH]		= IPHDR_FIELD("length",		tot_len),
 		[IPHDR_ID]		= IPHDR_FIELD("id",		id),
 		[IPHDR_FRAG_OFF]	= IPHDR_FIELD("frag-off",	frag_off),
@@ -588,8 +610,8 @@ const struct proto_desc proto_ip = {
 	},
 	.format		= {
 		.order	= {
-			IPHDR_SADDR, IPHDR_DADDR, IPHDR_DSCP, IPHDR_TTL,
-			IPHDR_ID, IPHDR_PROTOCOL, IPHDR_LENGTH,
+			IPHDR_SADDR, IPHDR_DADDR, IPHDR_DSCP, IPHDR_ECN,
+			IPHDR_TTL, IPHDR_ID, IPHDR_PROTOCOL, IPHDR_LENGTH,
 		},
 		.filter	= (1 << IPHDR_VERSION)  | (1 << IPHDR_HDRLENGTH) |
 			  (1 << IPHDR_FRAG_OFF),
@@ -683,6 +705,7 @@ const struct proto_desc proto_ip6 = {
 	.templates	= {
 		[IP6HDR_VERSION]	= HDR_BITFIELD("version", &integer_type, 0, 4),
 		[IP6HDR_DSCP]		= HDR_BITFIELD("dscp", &dscp_type, 4, 6),
+		[IP6HDR_ECN]		= HDR_BITFIELD("ecn", &ecn_type, 10, 2),
 		[IP6HDR_FLOWLABEL]	= HDR_BITFIELD("flowlabel", &integer_type, 12, 20),
 		[IP6HDR_LENGTH]		= IP6HDR_FIELD("length",	payload_len),
 		[IP6HDR_NEXTHDR]	= INET_PROTOCOL("nexthdr", struct ipv6hdr, nexthdr),
@@ -692,7 +715,7 @@ const struct proto_desc proto_ip6 = {
 	},
 	.format		= {
 		.order	= {
-			IP6HDR_SADDR, IP6HDR_DADDR, IP6HDR_DSCP,
+			IP6HDR_SADDR, IP6HDR_DADDR, IP6HDR_DSCP, IP6HDR_ECN,
 			IP6HDR_HOPLIMIT, IP6HDR_FLOWLABEL, IP6HDR_NEXTHDR,
 			IP6HDR_LENGTH,
 		},
@@ -923,4 +946,5 @@ static void __init proto_init(void)
 	datatype_register(&ethertype_type);
 	datatype_register(&icmp6_type_type);
 	datatype_register(&dscp_type);
+	datatype_register(&ecn_type);
 }

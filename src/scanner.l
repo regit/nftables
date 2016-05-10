@@ -363,6 +363,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "version"		{ return HDRVERSION; }
 "hdrlength"		{ return HDRLENGTH; }
 "dscp"			{ return DSCP; }
+"ecn"			{ return ECN; }
 "length"		{ return LENGTH; }
 "frag-off"		{ return FRAG_OFF; }
 "ttl"			{ return TTL; }

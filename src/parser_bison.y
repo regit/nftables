@@ -249,6 +249,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token HDRVERSION		"version"
 %token HDRLENGTH		"hdrlength"
 %token DSCP			"dscp"
+%token ECN			"ecn"
 %token LENGTH			"length"
 %token FRAG_OFF			"frag-off"
 %token TTL			"ttl"
@@ -1103,6 +1104,7 @@ type_identifier_list	:	type_identifier
 type_identifier		:	STRING	{ $$ = $1; }
 			|	MARK	{ $$ = xstrdup("mark"); }
 			|	DSCP	{ $$ = xstrdup("dscp"); }
+			|	ECN	{ $$ = xstrdup("ecn"); }
 			;
 
 hook_spec		:	TYPE		STRING		HOOK		STRING		dev_spec	PRIORITY	prio_spec
@@ -2187,6 +2189,12 @@ primary_rhs_expr	:	symbol_expr		{ $$ = $1; }
 						       current_scope(state),
 						       "dnat");
 			}
+			|	ECN
+			{
+				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
+						       current_scope(state),
+						       "ecn");
+			}
 			;
 
 relational_op		:	EQ		{ $$ = OP_EQ; }
@@ -2405,6 +2413,7 @@ ip_hdr_expr		:	IP	ip_hdr_field
 ip_hdr_field		:	HDRVERSION	{ $$ = IPHDR_VERSION; }
 			|	HDRLENGTH	{ $$ = IPHDR_HDRLENGTH; }
 			|	DSCP		{ $$ = IPHDR_DSCP; }
+			|	ECN		{ $$ = IPHDR_ECN; }
 			|	LENGTH		{ $$ = IPHDR_LENGTH; }
 			|	ID		{ $$ = IPHDR_ID; }
 			|	FRAG_OFF	{ $$ = IPHDR_FRAG_OFF; }
@@ -2438,6 +2447,7 @@ ip6_hdr_expr		:	IP6	ip6_hdr_field
 
 ip6_hdr_field		:	HDRVERSION	{ $$ = IP6HDR_VERSION; }
 			|	DSCP		{ $$ = IP6HDR_DSCP; }
+			|	ECN		{ $$ = IP6HDR_ECN; }
 			|	FLOWLABEL	{ $$ = IP6HDR_FLOWLABEL; }
 			|	LENGTH		{ $$ = IP6HDR_LENGTH; }
 			|	NEXTHDR		{ $$ = IP6HDR_NEXTHDR; }

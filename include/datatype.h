@@ -80,6 +80,7 @@ enum datatypes {
 	TYPE_ICMPX_CODE,
 	TYPE_DEVGROUP,
 	TYPE_DSCP,
+	TYPE_ECN,
 	__TYPE_MAX
 };
 #define TYPE_MAX		(__TYPE_MAX - 1)
