@@ -104,64 +104,6 @@ static void netlink_gen_concat(struct netlink_linearize_ctx *ctx,
 	}
 }
 
-static unsigned int payload_shift_calc(const struct expr *expr,
-				       unsigned int offset)
-{
-	unsigned int len;
-	int shift;
-
-	offset %= BITS_PER_BYTE;
-	len = round_up(expr->len, BITS_PER_BYTE);
-	shift = len - (offset + expr->len);
-	assert(shift >= 0);
-
-	return shift;
-}
-
-static void netlink_gen_mask(struct netlink_linearize_ctx *ctx,
-			     const struct expr *expr,
-			     unsigned int shift,
-			     enum nft_registers dreg)
-{
-	struct nft_data_linearize nld, zero = {};
-	unsigned int len, masklen;
-	struct nftnl_expr *nle;
-	mpz_t mask;
-
-	masklen = expr->len + shift;
-	assert(masklen <= NFT_REG_SIZE * BITS_PER_BYTE);
-	mpz_init2(mask, masklen);
-	mpz_bitmask(mask, expr->len);
-	mpz_lshift_ui(mask, shift);
-
-	nle = alloc_nft_expr("bitwise");
-
-	len = div_round_up(expr->len, BITS_PER_BYTE);
-
-	nftnl_expr_set_u32(nle, NFT_EXPR_BITWISE_SREG, dreg);
-	nftnl_expr_set_u32(nle, NFT_EXPR_BITWISE_DREG, dreg);
-	nftnl_expr_set_u32(nle, NFT_EXPR_BITWISE_LEN, len);
-
-	netlink_gen_raw_data(mask, expr->byteorder, len, &nld);
-	nftnl_expr_set(nle, NFT_EXPR_BITWISE_MASK, nld.value, nld.len);
-	nftnl_expr_set(nle, NFT_EXPR_BITWISE_XOR, &zero.value, nld.len);
-
-	mpz_clear(mask);
-	nftnl_rule_add_expr(ctx->nlr, nle);
-}
-
-static void netlink_gen_payload_mask(struct netlink_linearize_ctx *ctx,
-				     const struct expr *expr,
-				     enum nft_registers dreg)
-{
-	unsigned int shift, offset;
-
-	offset = expr->payload.offset % BITS_PER_BYTE;
-	shift = payload_shift_calc(expr, offset);
-	if (shift || offset)
-		netlink_gen_mask(ctx, expr, shift, dreg);
-}
-
 static void netlink_gen_payload(struct netlink_linearize_ctx *ctx,
 				const struct expr *expr,
 				enum nft_registers dreg)
@@ -178,20 +120,6 @@ static void netlink_gen_payload(struct netlink_linearize_ctx *ctx,
 			   div_round_up(expr->len, BITS_PER_BYTE));
 
 	nftnl_rule_add_expr(ctx->nlr, nle);
-
-	netlink_gen_payload_mask(ctx, expr, dreg);
-}
-
-static void netlink_gen_exthdr_mask(struct netlink_linearize_ctx *ctx,
-				    const struct expr *expr,
-				    enum nft_registers dreg)
-{
-	unsigned int shift, offset;
-
-	offset = expr->exthdr.tmpl->offset % BITS_PER_BYTE;
-	shift = payload_shift_calc(expr, offset);
-	if (shift || offset)
-		netlink_gen_mask(ctx, expr, shift, dreg);
 }
 
 static void netlink_gen_exthdr(struct netlink_linearize_ctx *ctx,
@@ -209,8 +137,6 @@ static void netlink_gen_exthdr(struct netlink_linearize_ctx *ctx,
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_EXTHDR_LEN,
 			   div_round_up(expr->len, BITS_PER_BYTE));
 	nftnl_rule_add_expr(ctx->nlr, nle);
-
-	netlink_gen_exthdr_mask(ctx, expr, dreg);
 }
 
 static void netlink_gen_meta(struct netlink_linearize_ctx *ctx,
@@ -319,28 +245,6 @@ static void netlink_gen_range(struct netlink_linearize_ctx *ctx,
 			      const struct expr *expr,
 			      enum nft_registers dreg);
 
-static void payload_shift_value(const struct expr *left, struct expr *right)
-{
-	unsigned int offset;
-
-	if (right->ops->type != EXPR_VALUE)
-		return;
-
-	switch (left->ops->type) {
-	case EXPR_PAYLOAD:
-		offset = left->payload.offset;
-		break;
-	case EXPR_EXTHDR:
-		offset = left->exthdr.tmpl->offset;
-		break;
-	default:
-		return;
-	}
-
-	mpz_lshift_ui(right->value,
-			payload_shift_calc(left, offset));
-}
-
 static struct expr *netlink_gen_prefix(struct netlink_linearize_ctx *ctx,
 				       const struct expr *expr,
 				       enum nft_registers sreg)
@@ -409,7 +313,6 @@ static void netlink_gen_cmp(struct netlink_linearize_ctx *ctx,
 	netlink_put_register(nle, NFTNL_EXPR_CMP_SREG, sreg);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_CMP_OP,
 			   netlink_gen_cmp_op(expr->op));
-	payload_shift_value(expr->left, right);
 	netlink_gen_data(right, &nld);
 	nftnl_expr_set(nle, NFTNL_EXPR_CMP_DATA, nld.value, len);
 	release_register(ctx, expr->left);
@@ -447,7 +350,6 @@ static void netlink_gen_range(struct netlink_linearize_ctx *ctx,
 		BUG("invalid range operation %u\n", expr->op);
 	}
 
-	payload_shift_value(expr->left, range->left);
 	netlink_gen_data(range->left, &nld);
 	nftnl_expr_set(nle, NFTNL_EXPR_CMP_DATA, nld.value, nld.len);
 	nftnl_rule_add_expr(ctx->nlr, nle);
@@ -468,7 +370,6 @@ static void netlink_gen_range(struct netlink_linearize_ctx *ctx,
 		BUG("invalid range operation %u\n", expr->op);
 	}
 
-	payload_shift_value(expr->left, range->right);
 	netlink_gen_data(range->right, &nld);
 	nftnl_expr_set(nle, NFTNL_EXPR_CMP_DATA, nld.value, nld.len);
 	nftnl_rule_add_expr(ctx->nlr, nle);
