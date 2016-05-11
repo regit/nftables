@@ -83,7 +83,7 @@ ip6 test-ip6 input
 # dccp type {request, response, data, ack, dataack, closereq, close, reset, sync, syncack}
 set%d test-ip6 3
 set%d test-ip6 0
-        element 00000000  : 0 [end]     element 00000001  : 0 [end]     element 00000002  : 0 [end]     element 00000003  : 0 [end]     element 00000004  : 0 [end]     element 00000005  : 0 [end]     element 00000006  : 0 [end]     element 00000007  : 0 [end]     element 00000008  : 0 [end]     element 00000009  : 0 [end]
+	element 00000000  : 0 [end]	element 00000002  : 0 [end]	element 00000004  : 0 [end]	element 00000006  : 0 [end]	element 00000008  : 0 [end]	element 0000000a  : 0 [end]	element 0000000c  : 0 [end]	element 0000000e  : 0 [end]	element 00000010  : 0 [end]	element 00000012  : 0 [end]
 ip6 test-ip6 input
   [ payload load 1b @ network header + 6 => reg 1 ]
   [ cmp eq reg 1 0x00000021 ]
