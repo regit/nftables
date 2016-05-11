@@ -74,8 +74,12 @@ do
 	kernel_cleanup
 
 	rc_spec=$(awk -F${RETURNCODE_SEPARATOR} '{print $NF}' <<< $testfile)
+
+	msg_info "[EXECUTING]	$testfile"
 	test_output=$(NFT=$NFT ${testfile} ${TESTS_OUTPUT} 2>&1)
 	rc_got=$?
+	echo -en "\033[1A\033[K" # clean the [EXECUTING] foobar line
+
 	if [ "$rc_got" == "$rc_spec" ] ; then
 		msg_info "[OK]		$testfile"
 		[ "$VERBOSE" == "y" ] && [ ! -z "$test_output" ] && echo "$test_output"
