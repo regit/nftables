@@ -93,7 +93,7 @@ ip6 test-ip6 output
 # frag frag-off { 33, 55, 67, 88}
 set%d test-ip6 3
 set%d test-ip6 0
-	element 00002100  : 0 [end]	element 00003700  : 0 [end]	element 00004300  : 0 [end]	element 00005800  : 0 [end]
+	element 00000801  : 0 [end]	element 0000b801  : 0 [end]	element 00001802  : 0 [end]	element 0000c002  : 0 [end]
 ip6 test-ip6 output
   [ exthdr load 2b @ 44 + 2 => reg 1 ]
   [ bitwise reg 1 = (reg=1 & 0x0000f8ff ) ^ 0x00000000 ]
@@ -102,7 +102,7 @@ ip6 test-ip6 output
 # frag frag-off { 33-55}
 set%d test-ip6 7
 set%d test-ip6 0
-	element 00000000  : 1 [end]	element 00002100  : 0 [end]	element 00003800  : 1 [end]
+	element 00000000  : 1 [end]	element 00000801  : 0 [end]	element 0000b901  : 1 [end]
 ip6 test-ip6 output 
   [ exthdr load 2b @ 44 + 2 => reg 1 ]
   [ bitwise reg 1 = (reg=1 & 0x0000f8ff ) ^ 0x00000000 ]
