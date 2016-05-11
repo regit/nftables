@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# test for a segfault if bad syntax was used in set declaration
+# and the set is referenced in the same batch
+
+tmpfile=$(mktemp)
+if [ ! -w $tmpfile ] ; then
+	echo "Failed to create tmp file" >&2
+	exit 0
+fi
+
+trap "rm -f $tmpfile" EXIT # cleanup if aborted
+
+echo "
+add table t
+add chain t c
+add set t s {type ipv4_addr\;}
+add rule t c ip saddr @s
+" > $tmpfile
+
+$NFT -f $tmpfile 2>/dev/null
