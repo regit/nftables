@@ -61,10 +61,15 @@ kernel_cleanup() {
 	nf_tables_ipv4 nf_tables_ipv6 nf_tables
 }
 
+find_tests() {
+	${FIND} ${TESTDIR} -executable -regex \
+		.*${RETURNCODE_SEPARATOR}[0-9]+ | sort
+}
+
 echo ""
 ok=0
 failed=0
-for testfile in $(${FIND} ${TESTDIR} -executable -regex .*${RETURNCODE_SEPARATOR}[0-9]+)
+for testfile in $(find_tests)
 do
 	kernel_cleanup
 
