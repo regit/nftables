@@ -52,7 +52,7 @@ struct location {
 			unsigned int		last_column;
 		};
 		struct {
-			void			*nle;
+			const void		*nle;
 		};
 	};
 };
