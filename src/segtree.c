@@ -571,8 +571,6 @@ static bool range_is_prefix(const mpz_t range)
 	return !mpz_cmp_ui(tmp, 0);
 }
 
-extern void interval_map_decompose(struct expr *set);
-
 static struct expr *expr_value(struct expr *expr)
 {
 	switch (expr->ops->type) {

@@ -1505,8 +1505,6 @@ static int list_setelem_cb(struct nftnl_set_elem *nlse, void *arg)
 	return netlink_delinearize_setelem(nlse, ctx->set);
 }
 
-extern void interval_map_decompose(struct expr *set);
-
 int netlink_get_setelems(struct netlink_ctx *ctx, const struct handle *h,
 			 const struct location *loc, struct set *set)
 {
