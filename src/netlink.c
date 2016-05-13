@@ -401,7 +401,7 @@ int netlink_replace_rule_batch(struct netlink_ctx *ctx, const struct handle *h,
 }
 
 int netlink_add_rule_list(struct netlink_ctx *ctx, const struct handle *h,
-			  struct list_head *rule_list)
+			  const struct list_head *rule_list)
 {
 	struct rule *rule;
 
@@ -429,7 +429,7 @@ int netlink_del_rule_batch(struct netlink_ctx *ctx, const struct handle *h,
 	return err;
 }
 
-void netlink_dump_rule(struct nftnl_rule *nlr)
+void netlink_dump_rule(const struct nftnl_rule *nlr)
 {
 #ifdef DEBUG
 	char buf[4096];
@@ -442,7 +442,7 @@ void netlink_dump_rule(struct nftnl_rule *nlr)
 #endif
 }
 
-void netlink_dump_expr(struct nftnl_expr *nle)
+void netlink_dump_expr(const struct nftnl_expr *nle)
 {
 #ifdef DEBUG
 	char buf[4096];
@@ -506,7 +506,7 @@ static int netlink_flush_rules(struct netlink_ctx *ctx, const struct handle *h,
 	return netlink_del_rule_batch(ctx, h, loc);
 }
 
-void netlink_dump_chain(struct nftnl_chain *nlc)
+void netlink_dump_chain(const struct nftnl_chain *nlc)
 {
 #ifdef DEBUG
 	char buf[4096];
@@ -694,7 +694,7 @@ int netlink_delete_chain(struct netlink_ctx *ctx, const struct handle *h,
 }
 
 static struct chain *netlink_delinearize_chain(struct netlink_ctx *ctx,
-					       struct nftnl_chain *nlc)
+					       const struct nftnl_chain *nlc)
 {
 	struct chain *chain;
 
@@ -920,7 +920,7 @@ int netlink_delete_table(struct netlink_ctx *ctx, const struct handle *h,
 		return netlink_del_table_compat(ctx, h, loc);
 }
 
-void netlink_dump_table(struct nftnl_table *nlt)
+void netlink_dump_table(const struct nftnl_table *nlt)
 {
 #ifdef DEBUG
 	char buf[4096];
@@ -934,7 +934,7 @@ void netlink_dump_table(struct nftnl_table *nlt)
 }
 
 static struct table *netlink_delinearize_table(struct netlink_ctx *ctx,
-					       struct nftnl_table *nlt)
+					       const struct nftnl_table *nlt)
 {
 	struct table *table;
 
@@ -1035,7 +1035,7 @@ static const struct datatype *dtype_map_from_kernel(enum nft_data_types type)
 	}
 }
 
-void netlink_dump_set(struct nftnl_set *nls)
+void netlink_dump_set(const struct nftnl_set *nls)
 {
 #ifdef DEBUG
 	char buf[4096];
@@ -1049,7 +1049,7 @@ void netlink_dump_set(struct nftnl_set *nls)
 }
 
 static struct set *netlink_delinearize_set(struct netlink_ctx *ctx,
-					   struct nftnl_set *nls)
+					   const struct nftnl_set *nls)
 {
 	struct set *set;
 	const struct datatype *keytype, *datatype;
@@ -1422,7 +1422,7 @@ static struct expr *netlink_parse_concat_elem(const struct datatype *dtype,
 }
 
 static int netlink_delinearize_setelem(struct nftnl_set_elem *nlse,
-				       struct set *set)
+				       const struct set *set)
 {
 	struct nft_data_delinearize nld;
 	struct expr *expr, *key, *data;

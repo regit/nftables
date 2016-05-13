@@ -91,7 +91,7 @@ extern int netlink_add_rule(struct netlink_ctx *ctx, const struct handle *h,
 extern int netlink_delete_rule(struct netlink_ctx *ctx, const struct handle *h,
 			       const struct location *loc);
 extern int netlink_add_rule_list(struct netlink_ctx *ctx, const struct handle *h,
-				 struct list_head *rule_list);
+				 const struct list_head *rule_list);
 extern int netlink_add_rule_batch(struct netlink_ctx *ctx,
 				  const struct handle *h,
 				  const struct rule *rule, uint32_t flags);
@@ -149,11 +149,11 @@ extern int netlink_delete_setelems(struct netlink_ctx *ctx, const struct handle 
 extern int netlink_get_setelems(struct netlink_ctx *ctx, const struct handle *h,
 				const struct location *loc, struct set *set);
 
-extern void netlink_dump_table(struct nftnl_table *nlt);
-extern void netlink_dump_chain(struct nftnl_chain *nlc);
-extern void netlink_dump_rule(struct nftnl_rule *nlr);
-extern void netlink_dump_expr(struct nftnl_expr *nle);
-extern void netlink_dump_set(struct nftnl_set *nls);
+extern void netlink_dump_table(const struct nftnl_table *nlt);
+extern void netlink_dump_chain(const struct nftnl_chain *nlc);
+extern void netlink_dump_rule(const struct nftnl_rule *nlr);
+extern void netlink_dump_expr(const struct nftnl_expr *nle);
+extern void netlink_dump_set(const struct nftnl_set *nls);
 
 extern int netlink_batch_send(struct list_head *err_list);
 
