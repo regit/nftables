@@ -20,9 +20,6 @@ frag reserved { 33, 55, 67, 88};ok
 frag reserved { 33-55};ok
 - frag reserved != { 33-55};ok
 
-# BUG: frag frag-off 22 and frag frag-off { 33-55}
-# This breaks table listing: "netlink: Error: Relational expression size mismatch"
-
 frag frag-off 22;ok
 frag frag-off != 233;ok
 frag frag-off 33-45;ok
@@ -32,25 +29,9 @@ frag frag-off { 33, 55, 67, 88};ok
 frag frag-off { 33-55};ok
 - frag frag-off != { 33-55};ok
 
-# BUG  frag reserved2 33 and frag reserved2 1
-# $ sudo nft add rule ip test input frag reserved2 33
-# <cmdline>:1:39-40: Error: Value 33 exceeds valid range 0-3
-# add rule ip test input frag reserved2 33
-#                                      ^^
-# sudo nft add rule ip test input frag reserved2 1
-# <cmdline>:1:1-39: Error: Could not process rule: Invalid argument
-# add rule ip test input frag reserved2 1
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-# BUG more-fragments 1 and frag more-fragments 4
+frag reserved2 1;ok
+frag more-fragments 0;ok
 frag more-fragments 1;ok
-# <cmdline>:1:1-44: Error: Could not process rule: Invalid argument
-# add rule ip test input frag more-fragments 1
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# $ sudo nft add rule ip test input frag more-fragments 4
-# <cmdline>:1:44-44: Error: Value 4 exceeds valid range 0-1
-# add rule ip test input frag more-fragments 4
-#                                           ^
 
 frag id 1;ok
 frag id 22;ok
