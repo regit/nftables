@@ -23,8 +23,8 @@ ip test-ip4 prerouting
   [ nat dnat ip addr_min reg 1 addr_max reg 0 ]
 
 # iifname "eth0" tcp dport {80, 90, 23} dnat 192.168.3.2
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00005000  : 0 [end]	element 00005a00  : 0 [end]	element 00001700  : 0 [end]
 ip test-ip4 prerouting
   [ meta load iifname => reg 1 ]
@@ -32,7 +32,7 @@ ip test-ip4 prerouting
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
   [ immediate reg 1 0x0203a8c0 ]
   [ nat dnat ip addr_min reg 1 addr_max reg 0 ]
 
@@ -49,21 +49,21 @@ ip test-ip4 prerouting
   [ nat dnat ip addr_min reg 1 addr_max reg 0 ]
 
 # dnat ct mark map { 0x00000014 : 1.2.3.4}
-map%d test-ip4 b
-map%d test-ip4 0
+__map%d test-ip4 b
+__map%d test-ip4 0
 	element 00000014  : 04030201 0 [end]
 ip test-ip4 prerouting
   [ ct load mark => reg 1 ]
-  [ lookup reg 1 set map%d dreg 1 ]
+  [ lookup reg 1 set __map%d dreg 1 ]
   [ nat dnat ip addr_min reg 1 addr_max reg 0 ]
 
 # dnat ct mark . ip daddr map { 0x00000014 . 1.1.1.1 : 1.2.3.4}
-map%d test-ip4 b
-map%d test-ip4 0
+__map%d test-ip4 b
+__map%d test-ip4 0
 	element 00000014 01010101  : 04030201 0 [end]
 ip test-ip4 output
   [ ct load mark => reg 1 ]
   [ payload load 4b @ network header + 16 => reg 9 ]
-  [ lookup reg 1 set map%d dreg 1 ]
+  [ lookup reg 1 set __map%d dreg 1 ]
   [ nat dnat ip addr_min reg 1 addr_max reg 0 ]
 

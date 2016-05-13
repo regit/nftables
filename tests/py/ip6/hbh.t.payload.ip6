@@ -21,28 +21,28 @@ ip6 test-ip6 filter-input
   [ cmp gt reg 1 0x0000002d ]
 
 # hbh hdrlength {33, 55, 67, 88}
-set%d test-ip6 3
-set%d test-ip6 0
+__set%d test-ip6 3
+__set%d test-ip6 0
 	element 00000021  : 0 [end]	element 00000037  : 0 [end]	element 00000043  : 0 [end]	element 00000058  : 0 [end]
 ip6 test-ip6 filter-input
   [ exthdr load 1b @ 0 + 1 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # hbh hdrlength { 33-55}
-set%d test-ip6 7
-set%d test-ip6 0
+__set%d test-ip6 7
+__set%d test-ip6 0
 	element 00000000  : 1 [end]	element 00000021  : 0 [end]	element 00000038  : 1 [end]
 ip6 test-ip6 filter-input
   [ exthdr load 1b @ 0 + 1 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # hbh nexthdr {esp, ah, comp, udp, udplite, tcp, dccp, sctp, icmpv6}
-set%d test-ip6 3
-set%d test-ip6 0
+__set%d test-ip6 3
+__set%d test-ip6 0
 	element 00000032  : 0 [end]	element 00000033  : 0 [end]	element 0000006c  : 0 [end]	element 00000011  : 0 [end]	element 00000088  : 0 [end]	element 00000006  : 0 [end]	element 00000021  : 0 [end]	element 00000084  : 0 [end]	element 0000003a  : 0 [end]
 ip6 test-ip6 filter-input
   [ exthdr load 1b @ 0 + 0 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # hbh nexthdr 22
 ip6 test-ip6 filter-input
@@ -67,20 +67,20 @@ ip6 test-ip6 filter-input
   [ cmp gt reg 1 0x0000002d ]
 
 # hbh nexthdr {33, 55, 67, 88}
-set%d test-ip6 3
-set%d test-ip6 0
+__set%d test-ip6 3
+__set%d test-ip6 0
 	element 00000021  : 0 [end]	element 00000037  : 0 [end]	element 00000043  : 0 [end]	element 00000058  : 0 [end]
 ip6 test-ip6 filter-input
   [ exthdr load 1b @ 0 + 0 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # hbh nexthdr { 33-55}
-set%d test-ip6 7
-set%d test-ip6 0
+__set%d test-ip6 7
+__set%d test-ip6 0
 	element 00000000  : 1 [end]	element 00000021  : 0 [end]	element 00000038  : 1 [end]
 ip6 test-ip6 filter-input
   [ exthdr load 1b @ 0 + 0 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # hbh nexthdr ip
 ip6 test-ip6 filter-input

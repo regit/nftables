@@ -9,12 +9,12 @@ ip6 test-ip6 input
   [ cmp neq reg 1 0x00000001 ]
 
 # rt nexthdr {udplite, ipcomp, udp, ah, sctp, esp, dccp, tcp, ipv6-icmp}
-set%d test-ip6 3
-set%d test-ip6 0
+__set%d test-ip6 3
+__set%d test-ip6 0
 	element 00000088  : 0 [end]	element 0000006c  : 0 [end]	element 00000011  : 0 [end]	element 00000033  : 0 [end]	element 00000084  : 0 [end]	element 00000032  : 0 [end]	element 00000021  : 0 [end]	element 00000006  : 0 [end]	element 0000003a  : 0 [end]
 ip6 test-ip6 input
   [ exthdr load 1b @ 43 + 0 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # rt nexthdr icmp
 ip6 test-ip6 input
@@ -49,20 +49,20 @@ ip6 test-ip6 input
   [ cmp gt reg 1 0x0000002d ]
 
 # rt nexthdr { 33, 55, 67, 88}
-set%d test-ip6 3
-set%d test-ip6 0
+__set%d test-ip6 3
+__set%d test-ip6 0
 	element 00000021  : 0 [end]	element 00000037  : 0 [end]	element 00000043  : 0 [end]	element 00000058  : 0 [end]
 ip6 test-ip6 input
   [ exthdr load 1b @ 43 + 0 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # rt nexthdr { 33-55}
-set%d test-ip6 7
-set%d test-ip6 0
+__set%d test-ip6 7
+__set%d test-ip6 0
 	element 00000000  : 1 [end]	element 00000021  : 0 [end]	element 00000038  : 1 [end]
 ip6 test-ip6 input
   [ exthdr load 1b @ 43 + 0 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # rt hdrlength 22
 ip6 test-ip6 input
@@ -87,20 +87,20 @@ ip6 test-ip6 input
   [ cmp gt reg 1 0x0000002d ]
 
 # rt hdrlength { 33, 55, 67, 88}
-set%d test-ip6 3
-set%d test-ip6 0
+__set%d test-ip6 3
+__set%d test-ip6 0
 	element 00000021  : 0 [end]	element 00000037  : 0 [end]	element 00000043  : 0 [end]	element 00000058  : 0 [end]
 ip6 test-ip6 input
   [ exthdr load 1b @ 43 + 1 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # rt hdrlength { 33-55}
-set%d test-ip6 7
-set%d test-ip6 0
+__set%d test-ip6 7
+__set%d test-ip6 0
 	element 00000000  : 1 [end]	element 00000021  : 0 [end]	element 00000038  : 1 [end]
 ip6 test-ip6 input
   [ exthdr load 1b @ 43 + 1 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # rt type 22
 ip6 test-ip6 input
@@ -125,20 +125,20 @@ ip6 test-ip6 input
   [ cmp gt reg 1 0x0000002d ]
 
 # rt type { 33, 55, 67, 88}
-set%d test-ip6 3
-set%d test-ip6 0
+__set%d test-ip6 3
+__set%d test-ip6 0
 	element 00000021  : 0 [end]	element 00000037  : 0 [end]	element 00000043  : 0 [end]	element 00000058  : 0 [end]
 ip6 test-ip6 input
   [ exthdr load 1b @ 43 + 2 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # rt type { 33-55}
-set%d test-ip6 7
-set%d test-ip6 0
+__set%d test-ip6 7
+__set%d test-ip6 0
 	element 00000000  : 1 [end]	element 00000021  : 0 [end]	element 00000038  : 1 [end]
 ip6 test-ip6 input
   [ exthdr load 1b @ 43 + 2 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # rt seg-left 22
 ip6 test-ip6 input
@@ -163,18 +163,18 @@ ip6 test-ip6 input
   [ cmp gt reg 1 0x0000002d ]
 
 # rt seg-left { 33, 55, 67, 88}
-set%d test-ip6 3
-set%d test-ip6 0
+__set%d test-ip6 3
+__set%d test-ip6 0
 	element 00000021  : 0 [end]	element 00000037  : 0 [end]	element 00000043  : 0 [end]	element 00000058  : 0 [end]
 ip6 test-ip6 input
   [ exthdr load 1b @ 43 + 3 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # rt seg-left { 33-55}
-set%d test-ip6 7
-set%d test-ip6 0
+__set%d test-ip6 7
+__set%d test-ip6 0
 	element 00000000  : 1 [end]	element 00000021  : 0 [end]	element 00000038  : 1 [end]
 ip6 test-ip6 input
   [ exthdr load 1b @ 43 + 3 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 

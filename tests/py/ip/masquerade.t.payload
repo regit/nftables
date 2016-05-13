@@ -87,14 +87,14 @@ ip test-ip4 postrouting
   [ masq flags 0x1c ]
 
 # tcp dport { 1,2,3,4,5,6,7,8,101,202,303,1001,2002,3003} masquerade
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000100  : 0 [end]	element 00000200  : 0 [end]	element 00000300  : 0 [end]	element 00000400  : 0 [end]	element 00000500  : 0 [end]	element 00000600  : 0 [end]	element 00000700  : 0 [end]	element 00000800  : 0 [end]	element 00006500  : 0 [end]	element 0000ca00  : 0 [end]	element 00002f01  : 0 [end]	element 0000e903  : 0 [end]	element 0000d207  : 0 [end]	element 0000bb0b  : 0 [end]
 ip test-ip4 postrouting
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
   [ masq ]
 
 # ip daddr 10.0.0.0-10.2.3.4 udp dport 53 counter packets 0 bytes 0 masquerade
@@ -110,8 +110,8 @@ ip test-ip4 postrouting
   [ masq ]
 
 # iifname eth0 ct state new,established tcp dport vmap {22 : drop, 222 : drop } masquerade
-map%d test-ip4 b
-map%d test-ip4 0
+__map%d test-ip4 b
+__map%d test-ip4 0
 	element 00001600  : 0 [end]	element 0000de00  : 0 [end]
 ip test-ip4 postrouting
   [ meta load iifname => reg 1 ]
@@ -122,7 +122,7 @@ ip test-ip4 postrouting
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
-  [ lookup reg 1 set map%d dreg 0 ]
+  [ lookup reg 1 set __map%d dreg 0 ]
   [ masq ]
 
 # ip protocol 6 masquerade to :1024

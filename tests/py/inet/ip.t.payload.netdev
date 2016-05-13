@@ -1,6 +1,6 @@
 # ip saddr . ip daddr . ether saddr { 1.1.1.1 . 2.2.2.2 . ca:fe:ca:fe:ca:fe }
-set%d test-netdev 3
-set%d test-netdev 0
+__set%d test-netdev 3
+__set%d test-netdev 0
 	element 01010101 02020202 fecafeca 0000feca  : 0 [end]
 netdev test-netdev ingress 
   [ meta load protocol => reg 1 ]
@@ -10,5 +10,5 @@ netdev test-netdev ingress
   [ payload load 4b @ network header + 12 => reg 1 ]
   [ payload load 4b @ network header + 16 => reg 9 ]
   [ payload load 6b @ link header + 6 => reg 10 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 

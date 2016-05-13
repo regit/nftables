@@ -28,47 +28,47 @@ ip test-ip4 input
   [ cmp gt reg 1 0x2d000000 ]
 
 # meta length { 33, 55, 67, 88}
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000021  : 0 [end]	element 00000037  : 0 [end]	element 00000043  : 0 [end]	element 00000058  : 0 [end]
 ip test-ip4 input
   [ meta load len => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta length { 33-55}
-set%d test-ip4 7
-set%d test-ip4 0
+__set%d test-ip4 7
+__set%d test-ip4 0
 	element 00000000  : 1 [end]	element 21000000  : 0 [end]	element 38000000  : 1 [end]
 ip test-ip4 input
   [ meta load len => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta length { 33-55, 67-88}
-set%d test-ip4 7
-set%d test-ip4 0
+__set%d test-ip4 7
+__set%d test-ip4 0
 	element 00000000  : 1 [end]	element 21000000  : 0 [end]	element 38000000  : 1 [end]	element 43000000  : 0 [end]	element 59000000  : 1 [end]
 ip test-ip4 input
   [ meta load len => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta length { 33-55, 55-88, 100-120}
-set%d test-ip4 7
-set%d test-ip4 0
+__set%d test-ip4 7
+__set%d test-ip4 0
 	element 00000000  : 1 [end]	element 21000000  : 0 [end]	element 59000000  : 1 [end]	element 64000000  : 0 [end]	element 79000000  : 1 [end]
 ip test-ip4 input
   [ meta load len => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta protocol { ip, arp, ip6, vlan }
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000008  : 0 [end]	element 00000608  : 0 [end]	element 0000dd86  : 0 [end]	element 00000081  : 0 [end]
 ip test-ip4 input
   [ meta load protocol => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta protocol ip
 ip test-ip4 input
@@ -91,12 +91,12 @@ ip test-ip4 input
   [ cmp eq reg 1 0x0000000a ]
 
 # meta nfproto {ipv4, ipv6}
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000002  : 0 [end]	element 0000000a  : 0 [end]
 ip test-ip4 input
   [ meta load nfproto => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta l4proto 22
 ip test-ip4 input
@@ -123,21 +123,21 @@ ip test-ip4 input
   [ cmp gt reg 1 0x0000002d ]
 
 # meta l4proto { 33, 55, 67, 88}
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000021  : 0 [end]	element 00000037  : 0 [end]	element 00000043  : 0 [end]	element 00000058  : 0 [end]
 ip test-ip4 input
   [ meta load l4proto => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta l4proto { 33-55}
-set%d test-ip4 7
-set%d test-ip4 0
+__set%d test-ip4 7
+__set%d test-ip4 0
 	element 00000000  : 1 [end]	element 00000021  : 0 [end]	element 00000038  : 1 [end]
 ip test-ip4 input
   [ meta load l4proto => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 2, 1) ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta mark 0x4
 ip test-ip4 input
@@ -228,12 +228,12 @@ ip test-ip4 input
   [ cmp neq reg 1 0x30687465 0x00000000 0x00000000 0x00000000 ]
 
 # meta iifname {"eth0", "lo"}
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 30687465 00000000 00000000 00000000  : 0 [end]	element 00006f6c 00000000 00000000 00000000  : 0 [end]
 ip test-ip4 input
   [ meta load iifname => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta iifname "eth*"
 ip test-ip4 input
@@ -246,12 +246,12 @@ ip test-ip4 input
   [ cmp eq reg 1 0x2a687465 0x00000000 0x00000000 0x00000000 ]
 
 # meta iiftype {ether, ppp, ipip, ipip6, loopback, sit, ipgre}
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000001  : 0 [end]	element 00000200  : 0 [end]	element 00000300  : 0 [end]	element 00000301  : 0 [end]	element 00000304  : 0 [end]	element 00000308  : 0 [end]	element 0000030a  : 0 [end]
 ip test-ip4 input
   [ meta load iiftype => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta iiftype != ether
 ip test-ip4 input
@@ -286,12 +286,12 @@ ip test-ip4 input
   [ immediate reg 0 accept ]
 
 # meta oif {eth0, lo} accept
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000002  : 0 [end]	element 00000001  : 0 [end]
 ip test-ip4 input
   [ meta load oif => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
 # meta oifname "eth0"
@@ -305,12 +305,12 @@ ip test-ip4 input
   [ cmp neq reg 1 0x30687465 0x00000000 0x00000000 0x00000000 ]
 
 # meta oifname { "eth0", "lo"}
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 30687465 00000000 00000000 00000000  : 0 [end]	element 00006f6c 00000000 00000000 00000000  : 0 [end]
 ip test-ip4 input
   [ meta load oifname => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta oifname "eth*"
 ip test-ip4 input
@@ -323,12 +323,12 @@ ip test-ip4 input
   [ cmp eq reg 1 0x2a687465 0x00000000 0x00000000 0x00000000 ]
 
 # meta oiftype {ether, ppp, ipip, ipip6, loopback, sit, ipgre}
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000001  : 0 [end]	element 00000200  : 0 [end]	element 00000300  : 0 [end]	element 00000301  : 0 [end]	element 00000304  : 0 [end]	element 00000308  : 0 [end]	element 0000030a  : 0 [end]
 ip test-ip4 input
   [ meta load oiftype => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta oiftype != ether
 ip test-ip4 input
@@ -341,12 +341,12 @@ ip test-ip4 input
   [ cmp eq reg 1 0x00000001 ]
 
 # meta skuid {bin, root, daemon} accept
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000001  : 0 [end]	element 00000000  : 0 [end]	element 00000002  : 0 [end]
 ip test-ip4 input
   [ meta load skuid => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
 # meta skuid root
@@ -396,22 +396,22 @@ ip test-ip4 input
   [ immediate reg 0 accept ]
 
 # meta skuid { 2001-2005} accept
-set%d test-ip4 7
-set%d test-ip4 0
+__set%d test-ip4 7
+__set%d test-ip4 0
 	element 00000000  : 1 [end]	element d1070000  : 0 [end]	element d6070000  : 1 [end]
 ip test-ip4 input
   [ meta load skuid => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
 # meta skgid {bin, root, daemon} accept
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000001  : 0 [end]	element 00000000  : 0 [end]	element 00000002  : 0 [end]
 ip test-ip4 input
   [ meta load skgid => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
 # meta skgid root
@@ -461,13 +461,13 @@ ip test-ip4 input
   [ immediate reg 0 accept ]
 
 # meta skgid { 2001-2005} accept
-set%d test-ip4 7
-set%d test-ip4 0
+__set%d test-ip4 7
+__set%d test-ip4 0
 	element 00000000  : 1 [end]	element d1070000  : 0 [end]	element d6070000  : 1 [end]
 ip test-ip4 input
   [ meta load skgid => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
 # meta mark set 0xffffffc8 xor 0x16
@@ -572,12 +572,12 @@ ip test-ip4 input
   [ cmp neq reg 1 0x00000002 ]
 
 # meta pkttype { broadcast, multicast} accept
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000001  : 0 [end]	element 00000002  : 0 [end]
 ip test-ip4 input
   [ meta load pkttype => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
 # meta cpu 1
@@ -605,21 +605,21 @@ ip test-ip4 input
   [ cmp gt reg 1 0x02000000 ]
 
 # meta cpu { 2,3}
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000002  : 0 [end]	element 00000003  : 0 [end]
 ip test-ip4 input
   [ meta load cpu => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta cpu { 2-3, 5-7}
-set%d test-ip4 7
-set%d test-ip4 0
+__set%d test-ip4 7
+__set%d test-ip4 0
 	element 00000000  : 1 [end]	element 02000000  : 0 [end]	element 04000000  : 1 [end]	element 05000000  : 0 [end]	element 08000000  : 1 [end]
 ip test-ip4 input
   [ meta load cpu => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta iifgroup 0
 ip test-ip4 input
@@ -642,29 +642,29 @@ ip test-ip4 input
   [ cmp neq reg 1 0x00000000 ]
 
 # meta iifgroup {default}
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000000  : 0 [end]
 ip test-ip4 input
   [ meta load iifgroup => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta iifgroup { 11,33}
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 0000000b  : 0 [end]	element 00000021  : 0 [end]
 ip test-ip4 input
   [ meta load iifgroup => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta iifgroup {11-33}
-set%d test-ip4 7
-set%d test-ip4 0
+__set%d test-ip4 7
+__set%d test-ip4 0
 	element 00000000  : 1 [end]	element 0b000000  : 0 [end]	element 22000000  : 1 [end]
 ip test-ip4 input
   [ meta load iifgroup => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta oifgroup 0
 ip test-ip4 input
@@ -687,29 +687,29 @@ ip test-ip4 input
   [ cmp neq reg 1 0x00000000 ]
 
 # meta oifgroup {default}
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000000  : 0 [end]
 ip test-ip4 input
   [ meta load oifgroup => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta oifgroup { 11,33}
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 0000000b  : 0 [end]	element 00000021  : 0 [end]
 ip test-ip4 input
   [ meta load oifgroup => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta oifgroup {11-33}
-set%d test-ip4 7
-set%d test-ip4 0
+__set%d test-ip4 7
+__set%d test-ip4 0
 	element 00000000  : 1 [end]	element 0b000000  : 0 [end]	element 22000000  : 1 [end]
 ip test-ip4 input
   [ meta load oifgroup => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta cgroup 1048577
 ip test-ip4 input
@@ -722,12 +722,12 @@ ip test-ip4 input
   [ cmp neq reg 1 0x00100001 ]
 
 # meta cgroup { 1048577, 1048578 }
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00100001  : 0 [end]	element 00100002  : 0 [end]
 ip test-ip4 input
   [ meta load cgroup => reg 1 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta cgroup 1048577-1048578
 ip test-ip4 input
@@ -744,40 +744,40 @@ ip test-ip4 input
   [ cmp gt reg 1 0x02001000 ]
 
 # meta cgroup {1048577-1048578}
-set%d test-ip4 7
-set%d test-ip4 0
+__set%d test-ip4 7
+__set%d test-ip4 0
 	element 00000000  : 1 [end]	element 01001000  : 0 [end]	element 03001000  : 1 [end]
 ip test-ip4 input
   [ meta load cgroup => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 
 # meta iif . meta oif { lo . eth0 }
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000001 00000002  : 0 [end]
 ip test-ip4 output
   [ meta load iif => reg 1 ]
   [ meta load oif => reg 9 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta iif . meta oif . meta mark { lo . eth0 . 0x0000000a }
-set%d test-ip4 3
-set%d test-ip4 0
+__set%d test-ip4 3
+__set%d test-ip4 0
 	element 00000001 00000002 0000000a  : 0 [end]
 ip test-ip4 output
   [ meta load iif => reg 1 ]
   [ meta load oif => reg 9 ]
   [ meta load mark => reg 10 ]
-  [ lookup reg 1 set set%d ]
+  [ lookup reg 1 set __set%d ]
 
 # meta iif . meta oif vmap { lo . eth0 : drop }
-map%d test-ip4 b
-map%d test-ip4 0
+__map%d test-ip4 b
+__map%d test-ip4 0
 	element 00000001 00000002  : 0 [end]
 ip test-ip4 output
   [ meta load iif => reg 1 ]
   [ meta load oif => reg 9 ]
-  [ lookup reg 1 set map%d dreg 0 ]
+  [ lookup reg 1 set __map%d dreg 0 ]
 
