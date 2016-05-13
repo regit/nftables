@@ -112,9 +112,11 @@ static void flow_stmt_print(const struct stmt *stmt)
 		expr_print(stmt->flow.set);
 		printf(" ");
 	}
+	printf("{ ");
 	expr_print(stmt->flow.key);
 	printf(" ");
 	stmt_print(stmt->flow.stmt);
+	printf("} ");
 }
 
 static void flow_stmt_destroy(struct stmt *stmt)

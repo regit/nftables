@@ -1765,17 +1765,17 @@ set_stmt_op		:	ADD	{ $$ = NFT_DYNSET_OP_ADD; }
 			|	UPDATE	{ $$ = NFT_DYNSET_OP_UPDATE; }
 			;
 
-flow_stmt		:	flow_stmt_alloc		flow_stmt_opts	flow_key_expr	stmt
+flow_stmt		:	flow_stmt_alloc		flow_stmt_opts	'{' flow_key_expr stmt '}'
 			{
-				$1->flow.key  = $3;
-				$1->flow.stmt = $4;
+				$1->flow.key  = $4;
+				$1->flow.stmt = $5;
 				$$->location  = @$;
 				$$ = $1;
 			}
-			|	flow_stmt_alloc		flow_key_expr	stmt
+			|	flow_stmt_alloc		'{' flow_key_expr stmt '}'
 			{
-				$1->flow.key  = $2;
-				$1->flow.stmt = $3;
+				$1->flow.key  = $3;
+				$1->flow.stmt = $4;
 				$$->location  = @$;
 				$$ = $1;
 			}
