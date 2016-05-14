@@ -533,7 +533,7 @@ static int resolve_protocol_conflict(struct eval_ctx *ctx,
 		list_add_tail(&nstmt->list, &ctx->stmt->list);
 	}
 
-	assert(base < PROTO_BASE_MAX);
+	assert(base <= PROTO_BASE_MAX);
 	/* This payload and the existing context don't match, conflict. */
 	if (ctx->pctx.protocol[base + 1].desc != NULL)
 		return 1;
