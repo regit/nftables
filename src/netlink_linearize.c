@@ -1127,8 +1127,6 @@ void netlink_linearize_rule(struct netlink_ctx *ctx, struct nftnl_rule *nlr,
 
 	if (rule->comment) {
 		struct nftnl_udata_buf *udata;
-		uint32_t udlen;
-		void *ud;
 
 		udata = nftnl_udata_buf_alloc(NFT_USERDATA_MAXLEN);
 		if (!udata)
@@ -1137,12 +1135,9 @@ void netlink_linearize_rule(struct netlink_ctx *ctx, struct nftnl_rule *nlr,
 		if (!nftnl_udata_put_strz(udata, UDATA_TYPE_COMMENT,
 					  rule->comment))
 			memory_allocation_error();
-
-		udlen = nftnl_udata_buf_len(udata);
-		ud = xmalloc(udlen);
-		memcpy(ud, nftnl_udata_buf_data(udata), udlen);
-
-		nftnl_rule_set_data(nlr, NFTNL_RULE_USERDATA, ud, udlen);
+		nftnl_rule_set_data(nlr, NFTNL_RULE_USERDATA,
+				    nftnl_udata_buf_data(udata),
+				    nftnl_udata_buf_len(udata));
 
 		nftnl_udata_buf_free(udata);
 	}
