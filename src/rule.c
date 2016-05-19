@@ -258,7 +258,13 @@ static void set_print_declaration(const struct set *set,
 	const char *type;
 	uint32_t flags;
 
-	type = set->flags & SET_F_MAP ? "map" : "set";
+	if (set->flags & SET_F_MAP)
+		type = "map";
+	else if (set->flags & SET_F_EVAL)
+		type = "flow table";
+	else
+		type = "set";
+
 	printf("%s%s", opts->tab, type);
 
 	if (opts->family != NULL)
@@ -1067,7 +1073,11 @@ static int do_list_sets(struct netlink_ctx *ctx, struct cmd *cmd)
 		       table->handle.table);
 
 		list_for_each_entry(set, &table->sets, list) {
-			if (set->flags & SET_F_ANONYMOUS)
+			if (cmd->obj == CMD_OBJ_SETS &&
+			    set->flags & SET_F_ANONYMOUS)
+				continue;
+			if (cmd->obj == CMD_OBJ_FLOWTABLES &&
+			    !(set->flags & SET_F_EVAL))
 				continue;
 			set_print_declaration(set, &opts);
 			printf("%s}%s", opts.tab, opts.nl);
@@ -1202,6 +1212,8 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 		return do_list_set(ctx, cmd, table);
 	case CMD_OBJ_RULESET:
 		return do_list_ruleset(ctx, cmd);
+	case CMD_OBJ_FLOWTABLES:
+		return do_list_sets(ctx, cmd);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}

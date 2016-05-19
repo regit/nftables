@@ -836,6 +836,10 @@ list_cmd		:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_RULESET, &$2, &@$, NULL);
 			}
+			|	FLOW TABLES	ruleset_spec
+			{
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_FLOWTABLES, &$3, &@$, NULL);
+			}
 			;
 
 flush_cmd		:	TABLE		table_spec

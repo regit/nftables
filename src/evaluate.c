@@ -2689,6 +2689,7 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_CHAINS:
 	case CMD_OBJ_SETS:
 	case CMD_OBJ_RULESET:
+	case CMD_OBJ_FLOWTABLES:
 		return 0;
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
