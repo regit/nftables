@@ -1214,6 +1214,8 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 		return do_list_ruleset(ctx, cmd);
 	case CMD_OBJ_FLOWTABLES:
 		return do_list_sets(ctx, cmd);
+	case CMD_OBJ_FLOWTABLE:
+		return do_list_set(ctx, cmd, table);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
