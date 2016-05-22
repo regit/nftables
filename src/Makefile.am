@@ -49,6 +49,7 @@ libnftables_la_SOURCES =	rule.c				\
 		erec.c				\
 		mnl.c				\
 		iface.c				\
+		libnftables.c			\
 		scanner.l			\
 		parser_bison.y
 
