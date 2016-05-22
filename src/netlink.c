@@ -50,7 +50,7 @@ const struct location netlink_location = {
 	.indesc	= &indesc_netlink,
 };
 
-static struct mnl_socket *nfsock_open(void)
+struct mnl_socket *netlink_nfsock_open(void)
 {
 	struct mnl_socket *s;
 
@@ -60,9 +60,9 @@ static struct mnl_socket *nfsock_open(void)
 	return s;
 }
 
-static void __init netlink_open_sock(void)
+static void netlink_open_sock(void)
 {
-	nf_sock = nfsock_open();
+	nf_sock = netlink_nfsock_open();
 	fcntl(mnl_socket_get_fd(nf_sock), F_SETFL, O_NONBLOCK);
 }
 
@@ -87,7 +87,7 @@ void netlink_genid_get(void)
 
 static void netlink_open_mon_sock(void)
 {
-	nf_mon_sock = nfsock_open();
+	nf_mon_sock = netlink_nfsock_open();
 }
 
 void __noreturn __netlink_abi_error(const char *file, int line,

@@ -203,4 +203,6 @@ struct netlink_mon_handler {
 extern int netlink_monitor(struct netlink_mon_handler *monhandler);
 bool netlink_batch_supported(void);
 
+struct mnl_socket *netlink_nfsock_open(void);
+
 #endif /* NFTABLES_NETLINK_H */

@@ -121,7 +121,7 @@ static void cli_complete(char *line)
 
 	parser_init(state, &msgs);
 	scanner_push_buffer(scanner, &indesc_cli, line);
-	nft_run(scanner, state, &msgs);
+	nft_run(NULL, scanner, state, &msgs);
 	erec_print_list(stdout, &msgs);
 	xfree(line);
 	cache_release();

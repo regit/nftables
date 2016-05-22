@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdarg.h>
 #include <utils.h>
+#include <nftables/nftables.h>
 
 enum numeric_level {
 	NUMERIC_NONE,
@@ -106,6 +107,6 @@ struct input_descriptor {
 
 struct parser_state;
 
-int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs);
+int nft_run(nft_context_t *ctx, void *scanner, struct parser_state *state, struct list_head *msgs);
 
 #endif /* NFTABLES_NFTABLES_H */

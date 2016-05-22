@@ -20,7 +20,14 @@ const char *include_paths[INCLUDE_PATHS_MAX] = { DEFAULT_INCLUDE_PATH };
 
 nft_context_t * nft_init()
 {
-	return NULL;
+	nft_context_t *ctx = NULL;
+	ctx = malloc(sizeof(*ctx));
+	if (ctx == NULL)
+		return NULL;
+	
+	ctx->nf_sock = netlink_nfsock_open();
+
+	return ctx;
 }
 
 static const struct input_descriptor indesc_cmdline = {
@@ -28,7 +35,8 @@ static const struct input_descriptor indesc_cmdline = {
 	.name	= "<cmdline>",
 };
 
-static int nft_netlink(struct parser_state *state, struct list_head *msgs)
+static int nft_netlink(nft_context_t *nft_ctx, struct parser_state *state,
+		       struct list_head *msgs)
 {
 	struct netlink_ctx ctx;
 	struct cmd *cmd;
@@ -57,7 +65,7 @@ static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 	if (!mnl_batch_ready())
 		goto out;
 
-	ret = netlink_batch_send(&err_list);
+	ret = mnl_batch_talk(nft_ctx->nf_sock, &err_list);
 
 	list_for_each_entry_safe(err, tmp, &err_list, head) {
 		list_for_each_entry(cmd, &state->cmds, list) {
@@ -80,17 +88,17 @@ out:
 	return ret;
 }
 
-int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs)
+int nft_run(nft_context_t *ctx, void *scanner, struct parser_state *state, struct list_head *msgs)
 {
 	struct cmd *cmd, *next;
 	int ret;
 
-	ret = nft_parse(scanner, state);
+	ret = nft_parse(ctx, scanner, state);
 	if (ret != 0 || state->nerrs > 0) {
 		ret = -1;
 		goto err1;
 	}
-	ret = nft_netlink(state, msgs);
+	ret = nft_netlink(ctx, state, msgs);
 err1:
 	list_for_each_entry_safe(cmd, next, &state->cmds, list) {
 		list_del(&cmd->list);
@@ -110,7 +118,7 @@ int nft_run_command(nft_context_t *ctx, const char * buf, size_t buflen)
 	scanner = scanner_init(&state);
 	scanner_push_buffer(scanner, &indesc_cmdline, buf);
 
-	if (nft_run(scanner, &state, &msgs) != 0)
+	if (nft_run(ctx, scanner, &state, &msgs) != 0)
 		rc = NFT_EXIT_FAILURE;
 
 	scanner_destroy(scanner);
