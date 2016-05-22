@@ -149,6 +149,7 @@ AC_CONFIG_FILES([					\
 		include/linux/netfilter_bridge/Makefile	\
 		include/linux/netfilter_ipv4/Makefile	\
 		include/linux/netfilter_ipv6/Makefile	\
+		include/nftables/Makefile		\
 		doc/Makefile				\
 		files/Makefile				\
 		files/nftables/Makefile			\
