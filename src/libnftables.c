@@ -38,6 +38,7 @@ static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 	bool batch_supported = netlink_batch_supported();
 	int ret = 0;
 
+	/* TODO switch to a thread safe version */
 	mnl_batch_init();
 
 	batch_seqnum = mnl_batch_begin();
