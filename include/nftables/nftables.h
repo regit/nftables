@@ -5,6 +5,7 @@
 
 typedef struct _nft_context {
 	struct mnl_socket *nf_sock;
+	struct netlink_ctx *nl_ctx;
 } nft_context_t;
 
 nft_context_t * nft_init(void);

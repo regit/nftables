@@ -93,7 +93,7 @@ int nft_run(nft_context_t *ctx, void *scanner, struct parser_state *state, struc
 	struct cmd *cmd, *next;
 	int ret;
 
-	ret = nft_parse(ctx, scanner, state);
+	ret = nft_parse(scanner, state);
 	if (ret != 0 || state->nerrs > 0) {
 		ret = -1;
 		goto err1;
