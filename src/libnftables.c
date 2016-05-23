@@ -114,7 +114,8 @@ int nft_run_command(nft_context_t *ctx, const char * buf, size_t buflen)
 	void *scanner;
 	LIST_HEAD(msgs);
 	int rc = NFT_EXIT_SUCCESS;
-	parser_init(&state, &msgs);
+
+	parser_init(&state, &msgs, ctx);
 	scanner = scanner_init(&state);
 	scanner_push_buffer(scanner, &indesc_cmdline, buf);
 

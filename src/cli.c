@@ -92,6 +92,7 @@ static void cli_complete(char *line)
 	const HIST_ENTRY *hist;
 	const char *c;
 	LIST_HEAD(msgs);
+	nft_context_t *nft_ctx;
 
 	if (line == NULL) {
 		printf("\n");
@@ -119,9 +120,11 @@ static void cli_complete(char *line)
 	if (hist == NULL || strcmp(hist->line, line))
 		add_history(line);
 
-	parser_init(state, &msgs);
+	/* FIXME: reuse the same ctx */
+	nft_ctx = nft_init();
+	parser_init(state, &msgs, nft_ctx);
 	scanner_push_buffer(scanner, &indesc_cli, line);
-	nft_run(NULL, scanner, state, &msgs);
+	nft_run(nft_ctx, scanner, state, &msgs);
 	erec_print_list(stdout, &msgs);
 	xfree(line);
 	cache_release();

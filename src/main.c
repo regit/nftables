@@ -267,7 +267,7 @@ int main(int argc, char * const *argv)
 			if (i + 1 < argc)
 				strcat(buf, " ");
 		}
-		parser_init(&state, &msgs);
+		parser_init(&state, &msgs, nft_ctx);
 		scanner = scanner_init(&state);
 		scanner_push_buffer(scanner, &indesc_cmdline, buf);
 	} else if (filename != NULL) {
@@ -276,7 +276,7 @@ int main(int argc, char * const *argv)
 		if (rc < 0)
 			return rc;
 
-		parser_init(&state, &msgs);
+		parser_init(&state, &msgs, nft_ctx);
 		scanner = scanner_init(&state);
 		if (scanner_read_file(scanner, filename, &internal_location) < 0)
 			goto out;
