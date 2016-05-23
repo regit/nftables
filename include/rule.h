@@ -423,7 +423,7 @@ struct netlink_ctx;
 extern int do_command(nft_context_t *nft_ctx, struct cmd *cmd);
 
 extern int cache_update(nft_context_t *ctx, enum cmd_ops cmd, struct list_head *msgs);
-extern void cache_release(void);
+extern void cache_release(nft_context_t *ctx);
 
 enum udata_type {
 	UDATA_TYPE_COMMENT,

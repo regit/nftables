@@ -6,7 +6,12 @@
 #include <iface.h>
 #include <netlink.h>
 #include <erec.h>
+#include <libmnl/libmnl.h>
 #include <mnl.h>
+
+#include <unistd.h>
+#include <fcntl.h>
+
 
 unsigned int max_errors = 10;
 unsigned int numeric_output;
@@ -24,8 +29,10 @@ nft_context_t * nft_init()
 	ctx = malloc(sizeof(*ctx));
 	if (ctx == NULL)
 		return NULL;
+	memset(ctx, 0, sizeof(*ctx));
 
 	ctx->nf_sock = netlink_nfsock_open();
+	fcntl(mnl_socket_get_fd(ctx->nf_sock), F_SETFL, O_NONBLOCK);
 
 	return ctx;
 }
@@ -124,7 +131,7 @@ int nft_run_command(nft_context_t *ctx, const char * buf, size_t buflen)
 
 	scanner_destroy(scanner);
 	erec_print_list(stderr, &msgs);
-	cache_release();
+	cache_release(ctx);
 	iface_cache_release();
 
 	return rc;

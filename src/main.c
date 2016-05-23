@@ -298,7 +298,7 @@ out:
 	scanner_destroy(scanner);
 	erec_print_list(stderr, &msgs);
 	xfree(buf);
-	cache_release();
+	cache_release(nft_ctx);
 	iface_cache_release();
 
 	return rc;

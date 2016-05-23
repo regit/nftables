@@ -2,10 +2,13 @@
 #define LIB_NFTABLES_H
 
 #include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 typedef struct _nft_context {
 	struct mnl_socket *nf_sock;
 	struct netlink_ctx *nl_ctx;
+	bool cache_initialized;
 } nft_context_t;
 
 nft_context_t * nft_init(void);

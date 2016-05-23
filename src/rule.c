@@ -50,6 +50,7 @@ void handle_merge(struct handle *dst, const struct handle *src)
 		dst->position = src->position;
 }
 
+/* FIXME should be in nft_context_t structure */
 static LIST_HEAD(table_list);
 
 static int cache_init_tables(nft_context_t *nft_ctx, struct handle *h)
@@ -138,13 +139,11 @@ static int cache_init(nft_context_t *nft_ctx, enum cmd_ops cmd, struct list_head
 	return 0;
 }
 
-static bool cache_initialized;
-
 int cache_update(nft_context_t *ctx, enum cmd_ops cmd, struct list_head *msgs)
 {
 	int ret;
 
-	if (cache_initialized)
+	if (ctx->cache_initialized)
 		return 0;
 replay:
 	netlink_genid_get(ctx);
@@ -154,14 +153,14 @@ replay:
 			netlink_restart(ctx);
 			goto replay;
 		}
-		cache_release();
+		cache_release(ctx);
 		return -1;
 	}
-	cache_initialized = true;
+	ctx->cache_initialized = true;
 	return 0;
 }
 
-void cache_release(void)
+void cache_release(nft_context_t *ctx)
 {
 	struct table *table, *next;
 
@@ -169,7 +168,7 @@ void cache_release(void)
 		list_del(&table->list);
 		table_free(table);
 	}
-	cache_initialized = false;
+	ctx->cache_initialized = false;
 }
 
 /* internal ID to uniquely identify a set in the batch */
