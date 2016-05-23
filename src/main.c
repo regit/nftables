@@ -183,6 +183,7 @@ int main(int argc, char * const *argv)
 	unsigned int len;
 	bool interactive = false;
 	int i, val, rc = NFT_EXIT_SUCCESS;
+	nft_context_t *nft_ctx;
 
 	while (1) {
 		val = getopt_long(argc, argv, OPTSTRING, options, NULL);
@@ -256,6 +257,7 @@ int main(int argc, char * const *argv)
 	}
 
 	if (optind != argc) {
+		nft_ctx = nft_init();
 		for (len = 0, i = optind; i < argc; i++)
 			len += strlen(argv[i]) + strlen(" ");
 
@@ -269,6 +271,7 @@ int main(int argc, char * const *argv)
 		scanner = scanner_init(&state);
 		scanner_push_buffer(scanner, &indesc_cmdline, buf);
 	} else if (filename != NULL) {
+		nft_ctx = nft_init();
 		rc = cache_update(nft_ctx, CMD_INVALID, &msgs);
 		if (rc < 0)
 			return rc;
@@ -289,7 +292,7 @@ int main(int argc, char * const *argv)
 		exit(NFT_EXIT_FAILURE);
 	}
 
-	if (nft_run(NULL, scanner, &state, &msgs) != 0)
+	if (nft_run(nft_ctx, scanner, &state, &msgs) != 0)
 		rc = NFT_EXIT_FAILURE;
 out:
 	scanner_destroy(scanner);
