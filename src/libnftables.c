@@ -24,7 +24,7 @@ nft_context_t * nft_init()
 	ctx = malloc(sizeof(*ctx));
 	if (ctx == NULL)
 		return NULL;
-	
+
 	ctx->nf_sock = netlink_nfsock_open();
 
 	return ctx;
