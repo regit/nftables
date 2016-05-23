@@ -43,7 +43,7 @@ static int nft_netlink(nft_context_t *nft_ctx, struct parser_state *state,
 	struct mnl_err *err, *tmp;
 	LIST_HEAD(err_list);
 	uint32_t batch_seqnum;
-	bool batch_supported = netlink_batch_supported();
+	bool batch_supported = netlink_batch_supported(nft_ctx);
 	int ret = 0;
 
 	/* TODO switch to a thread safe version */
@@ -56,7 +56,7 @@ static int nft_netlink(nft_context_t *nft_ctx, struct parser_state *state,
 		ctx.seqnum = cmd->seqnum = mnl_seqnum_alloc();
 		ctx.batch_supported = batch_supported;
 		init_list_head(&ctx.list);
-		ret = do_command(&ctx, cmd);
+		ret = do_command(nft_ctx, cmd);
 		if (ret < 0)
 			goto out;
 	}
@@ -71,7 +71,7 @@ static int nft_netlink(nft_context_t *nft_ctx, struct parser_state *state,
 		list_for_each_entry(cmd, &state->cmds, list) {
 			if (err->seqnum == cmd->seqnum ||
 			    err->seqnum == batch_seqnum) {
-				netlink_io_error(&ctx, &cmd->location,
+				netlink_io_error(nft_ctx, &cmd->location,
 						 "Could not process rule: %s",
 						 strerror(err->err));
 				ret = -1;

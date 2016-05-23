@@ -269,7 +269,7 @@ int main(int argc, char * const *argv)
 		scanner = scanner_init(&state);
 		scanner_push_buffer(scanner, &indesc_cmdline, buf);
 	} else if (filename != NULL) {
-		rc = cache_update(CMD_INVALID, &msgs);
+		rc = cache_update(nft_ctx, CMD_INVALID, &msgs);
 		if (rc < 0)
 			return rc;
 

@@ -1326,7 +1326,7 @@ static int do_command_monitor(nft_context_t *nft_ctx, struct cmd *cmd)
 
 	monhandler.monitor_flags = cmd->monitor->flags;
 	monhandler.format = cmd->monitor->format;
-	monhandler.ctx = nft_ctx->nl_ctx;
+	monhandler.nft_ctx = nft_ctx;
 	monhandler.loc = &cmd->location;
 
 	return netlink_monitor(&monhandler);

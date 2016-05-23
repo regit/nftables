@@ -94,10 +94,10 @@ extern struct expr *netlink_alloc_data(const struct location *loc,
 				       const struct nft_data_delinearize *nld,
 				       enum nft_registers dreg);
 
-extern void netlink_linearize_rule(nft_context_t *nft_ctx,
+extern void netlink_linearize_rule(struct netlink_ctx *ctx,
 				   struct nftnl_rule *nlr,
 				   const struct rule *rule);
-extern struct rule *netlink_delinearize_rule(nft_context_t *nft_ctx,
+extern struct rule *netlink_delinearize_rule(struct netlink_ctx *ctx,
 					     struct nftnl_rule *r);
 
 extern int netlink_add_rule(nft_context_t *nft_ctx, const struct handle *h,
@@ -174,7 +174,7 @@ extern void netlink_dump_rule(const struct nftnl_rule *nlr);
 extern void netlink_dump_expr(const struct nftnl_expr *nle);
 extern void netlink_dump_set(const struct nftnl_set *nls);
 
-extern int netlink_batch_send(struct list_head *err_list);
+extern int netlink_batch_send(nft_context_t *nft_ctx, struct list_head *err_list);
 
 extern void netlink_genid_get(nft_context_t *ctx);
 extern void netlink_restart(nft_context_t *ctx);
@@ -197,13 +197,13 @@ extern struct nftnl_ruleset *netlink_dump_ruleset(nft_context_t *nft_ctx,
 struct netlink_mon_handler {
 	uint32_t		monitor_flags;
 	uint32_t		format;
-	struct netlink_ctx	*ctx;
+	nft_context_t 		*nft_ctx;
 	const struct location	*loc;
 	bool			cache_needed;
 };
 
 extern int netlink_monitor(struct netlink_mon_handler *monhandler);
-bool netlink_batch_supported(void);
+bool netlink_batch_supported(nft_context_t *nft_ctx);
 
 struct mnl_socket *netlink_nfsock_open(void);
 
