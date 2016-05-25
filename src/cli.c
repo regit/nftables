@@ -121,7 +121,7 @@ static void cli_complete(char *line)
 		add_history(line);
 
 	/* FIXME: reuse the same ctx */
-	nft_ctx = nft_init();
+	nft_ctx = nft_open();
 	parser_init(state, &msgs, nft_ctx);
 	scanner_push_buffer(scanner, &indesc_cli, line);
 	nft_run(nft_ctx, scanner, state, &msgs);

@@ -582,7 +582,7 @@ struct stmt *meta_stmt_alloc(const struct location *loc, enum nft_meta_keys key,
 	return stmt;
 }
 
-static void __init meta_init(void)
+void meta_init(void)
 {
 	datatype_register(&ifindex_type);
 	datatype_register(&realm_type);

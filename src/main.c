@@ -256,8 +256,9 @@ int main(int argc, char * const *argv)
 		}
 	}
 
+	nft_global_init();
 	if (optind != argc) {
-		nft_ctx = nft_init();
+		nft_ctx = nft_open();
 		for (len = 0, i = optind; i < argc; i++)
 			len += strlen(argv[i]) + strlen(" ");
 
@@ -271,7 +272,7 @@ int main(int argc, char * const *argv)
 		scanner = scanner_init(&state);
 		scanner_push_buffer(scanner, &indesc_cmdline, buf);
 	} else if (filename != NULL) {
-		nft_ctx = nft_init();
+		nft_ctx = nft_open();
 		rc = cache_update(nft_ctx, CMD_INVALID, &msgs);
 		if (rc < 0)
 			return rc;

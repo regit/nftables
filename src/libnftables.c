@@ -23,13 +23,25 @@ unsigned int debug_level;
 
 const char *include_paths[INCLUDE_PATHS_MAX] = { DEFAULT_INCLUDE_PATH };
 
-nft_context_t * nft_init()
+
+void nft_global_init(void)
+{
+	meta_init();
+}
+
+nft_context_t * nft_open()
 {
 	nft_context_t *ctx = NULL;
 	ctx = malloc(sizeof(*ctx));
 	if (ctx == NULL)
 		return NULL;
 	memset(ctx, 0, sizeof(*ctx));
+
+	ctx->nl_ctx = malloc(sizeof(*ctx->nl_ctx));
+	if (ctx->nl_ctx == NULL) {
+		free(ctx);
+		return NULL;
+	}
 
 	ctx->nf_sock = netlink_nfsock_open();
 	fcntl(mnl_socket_get_fd(ctx->nf_sock), F_SETFL, O_NONBLOCK);
@@ -139,5 +151,12 @@ int nft_run_command(nft_context_t *ctx, const char * buf, size_t buflen)
 
 int nft_close(nft_context_t *ctx)
 {
+	if (!ctx)
+		return -1;
+
+	if (ctx->nl_ctx) {
+		free(ctx->nl_ctx);
+	}
+	mnl_socket_close(ctx->nf_sock);
 	return 0;
 }

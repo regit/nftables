@@ -65,7 +65,7 @@ static void netlink_open_sock(nft_context_t *ctx)
 	fcntl(mnl_socket_get_fd(ctx->nf_sock), F_SETFL, O_NONBLOCK);
 }
 
-static void __exit netlink_close_sock(nft_context_t *ctx)
+static void netlink_close_sock(nft_context_t *ctx)
 {
 	if (ctx->nf_sock)
 		mnl_socket_close(ctx->nf_sock);
