@@ -27,6 +27,24 @@ const char *include_paths[INCLUDE_PATHS_MAX] = { DEFAULT_INCLUDE_PATH };
 void nft_global_init(void)
 {
 	meta_init();
+	devgroup_table_init();
+	realm_table_init();
+	ct_init();
+	ct_label_table_init();
+	mark_table_init();
+	exthdr_init();
+	gmp_init();
+	proto_init();
+}
+
+void nft_global_deinit(void)
+{
+	meta_init();
+	ct_init();
+	ct_label_table_init();
+	mark_table_init();
+	exthdr_init();
+	gmp_init();
 }
 
 nft_context_t * nft_open()

@@ -26,6 +26,8 @@ extern void exthdr_init_raw(struct expr *expr, uint8_t type,
 extern bool exthdr_find_template(struct expr *expr, const struct expr *mask,
 				 unsigned int *shift);
 
+void exthdr_init(void);
+
 enum hbh_hdr_fields {
 	HBHHDR_INVALID,
 	HBHHDR_NEXTHDR,

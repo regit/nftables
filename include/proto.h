@@ -155,6 +155,8 @@ extern const struct proto_desc *proto_find_upper(const struct proto_desc *base,
 extern int proto_find_num(const struct proto_desc *base,
 			  const struct proto_desc *desc);
 
+extern void proto_init(void);
+
 enum eth_hdr_fields {
 	ETHHDR_INVALID,
 	ETHHDR_DADDR,

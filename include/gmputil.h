@@ -58,4 +58,6 @@ extern void mpz_import_data(mpz_t rop, const void *data,
 			    unsigned int len);
 extern void mpz_switch_byteorder(mpz_t rop, unsigned int len);
 
+void gmp_init(void);
+
 #endif /* NFTABLES_GMPUTIL_H */

@@ -11,7 +11,8 @@ typedef struct _nft_context {
 	bool cache_initialized;
 } nft_context_t;
 
-void nft_init(void);
+void nft_global_init(void);
+void nft_global_deinit(void);
 nft_context_t * nft_open(void);
 int nft_run_command(nft_context_t *ctx, const char * buf, size_t buflen);
 int nft_close(nft_context_t *ctx);

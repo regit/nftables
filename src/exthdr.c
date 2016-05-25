@@ -289,7 +289,7 @@ const struct exthdr_desc exthdr_mh = {
 	},
 };
 
-static void __init exthdr_init(void)
+void exthdr_init(void)
 {
 	datatype_register(&mh_type_type);
 }

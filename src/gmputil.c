@@ -207,7 +207,7 @@ static void *gmp_xrealloc(void *ptr, size_t old_size, size_t new_size)
 	return xrealloc(ptr, new_size);
 }
 
-static void __init gmp_init(void)
+void gmp_init(void)
 {
 	mp_set_memory_functions(xmalloc, gmp_xrealloc, NULL);
 }

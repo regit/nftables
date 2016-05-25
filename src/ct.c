@@ -156,7 +156,7 @@ static const struct datatype ct_label_type = {
 	.parse		= ct_label_type_parse,
 };
 
-static void __init ct_label_table_init(void)
+void ct_label_table_init(void)
 {
 	ct_label_tbl = rt_symbol_table_init("/etc/xtables/connlabel.conf");
 }
@@ -357,7 +357,7 @@ struct stmt *ct_stmt_alloc(const struct location *loc, enum nft_ct_keys key,
 	return stmt;
 }
 
-static void __init ct_init(void)
+void ct_init(void)
 {
 	datatype_register(&ct_state_type);
 	datatype_register(&ct_dir_type);
