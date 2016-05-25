@@ -164,7 +164,7 @@ static struct error_record *ifindex_type_parse(const struct expr *sym,
 	return NULL;
 }
 
-const struct datatype ifindex_type = {
+static const struct datatype ifindex_type = {
 	.type		= TYPE_IFINDEX,
 	.name		= "iface_index",
 	.desc		= "network interface index",
@@ -585,6 +585,7 @@ struct stmt *meta_stmt_alloc(const struct location *loc, enum nft_meta_keys key,
 void meta_init(void)
 {
 	datatype_register(&ifindex_type);
+	ifindex_type_p = &ifindex_type;
 	datatype_register(&realm_type);
 	datatype_register(&tchandle_type);
 	datatype_register(&uid_type);
