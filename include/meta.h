@@ -32,6 +32,8 @@ const struct datatype ifindex_type;
 
 extern void meta_init(void);
 extern void devgroup_table_init(void);
+extern void devgroup_table_exit(void);
 extern void realm_table_init(void);
+extern void realm_table_exit(void);
 
 #endif /* NFTABLES_META_H */

@@ -677,7 +677,7 @@ void mark_table_init(void)
 	mark_tbl = rt_symbol_table_init("/etc/iproute2/rt_marks");
 }
 
-static void __exit mark_table_exit(void)
+void mark_table_exit(void)
 {
 	rt_symbol_table_free(mark_tbl);
 }

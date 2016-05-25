@@ -39,12 +39,9 @@ void nft_global_init(void)
 
 void nft_global_deinit(void)
 {
-	meta_init();
-	ct_init();
-	ct_label_table_init();
-	mark_table_init();
-	exthdr_init();
-	gmp_init();
+	mark_table_exit();
+	realm_table_exit();
+	devgroup_table_exit();
 }
 
 nft_context_t * nft_open()

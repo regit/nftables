@@ -40,7 +40,7 @@ void realm_table_init(void)
 	realm_tbl = rt_symbol_table_init("/etc/iproute2/rt_realms");
 }
 
-static void __exit realm_table_exit(void)
+void realm_table_exit(void)
 {
 	rt_symbol_table_free(realm_tbl);
 }
@@ -334,7 +334,7 @@ void devgroup_table_init(void)
 	devgroup_tbl = rt_symbol_table_init("/etc/iproute2/group");
 }
 
-static void __exit devgroup_table_exit(void)
+void devgroup_table_exit(void)
 {
 	rt_symbol_table_free(devgroup_tbl);
 }
