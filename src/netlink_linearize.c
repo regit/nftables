@@ -932,7 +932,7 @@ static void netlink_gen_dup_stmt(struct netlink_linearize_ctx *ctx,
 	nle = alloc_nft_expr("dup");
 
 	if (stmt->dup.to != NULL) {
-		if (stmt->dup.to->dtype == ifindex_type_p) {
+		if (stmt->dup.to->dtype == get_datatype(TYPE_IFINDEX)) {
 			sreg1 = get_register(ctx, stmt->dup.to);
 			netlink_gen_expr(ctx, stmt->dup.to, sreg1);
 			netlink_put_register(nle, NFTNL_EXPR_DUP_SREG_DEV, sreg1);

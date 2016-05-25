@@ -2149,7 +2149,7 @@ static int stmt_evaluate_dup(struct eval_ctx *ctx, struct stmt *stmt)
 			return err;
 
 		if (stmt->dup.dev != NULL) {
-			err = stmt_evaluate_arg(ctx, stmt, ifindex_type_p,
+			err = stmt_evaluate_arg(ctx, stmt, get_datatype(TYPE_IFINDEX),
 						sizeof(uint32_t) * BITS_PER_BYTE,
 						&stmt->dup.dev);
 			if (err < 0)
@@ -2163,7 +2163,7 @@ static int stmt_evaluate_dup(struct eval_ctx *ctx, struct stmt *stmt)
 		if (stmt->dup.dev != NULL)
 			return stmt_error(ctx, stmt, "cannot specify device");
 
-		err = stmt_evaluate_arg(ctx, stmt, ifindex_type_p,
+		err = stmt_evaluate_arg(ctx, stmt, get_datatype(TYPE_IFINDEX),
 					sizeof(uint32_t) * BITS_PER_BYTE,
 					&stmt->dup.to);
 		if (err < 0)
@@ -2185,7 +2185,7 @@ static int stmt_evaluate_fwd(struct eval_ctx *ctx, struct stmt *stmt)
 			return stmt_error(ctx, stmt,
 					  "missing destination interface");
 
-		err = stmt_evaluate_arg(ctx, stmt, ifindex_type_p,
+		err = stmt_evaluate_arg(ctx, stmt, get_datatype(TYPE_IFINDEX),
 					sizeof(uint32_t) * BITS_PER_BYTE,
 					&stmt->fwd.to);
 		if (err < 0)

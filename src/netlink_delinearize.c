@@ -841,7 +841,7 @@ static void netlink_parse_dup(struct netlink_parse_ctx *ctx,
 			return netlink_error(ctx, loc,
 					     "DUP statement has no output expression");
 
-		expr_set_type(dev, ifindex_type_p, BYTEORDER_HOST_ENDIAN);
+		expr_set_type(dev, get_datatype(TYPE_IFINDEX), BYTEORDER_HOST_ENDIAN);
 		if (stmt->dup.to == NULL)
 			stmt->dup.to = dev;
 		else
@@ -868,7 +868,7 @@ static void netlink_parse_fwd(struct netlink_parse_ctx *ctx,
 			return netlink_error(ctx, loc,
 					     "fwd statement has no output expression");
 
-		expr_set_type(dev, ifindex_type_p, BYTEORDER_HOST_ENDIAN);
+		expr_set_type(dev, get_datatype(TYPE_IFINDEX), BYTEORDER_HOST_ENDIAN);
 		stmt->fwd.to = dev;
 	}
 

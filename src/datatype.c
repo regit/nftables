@@ -1034,3 +1034,10 @@ struct error_record *rate_parse(const struct location *loc, const char *str,
 
 	return NULL;
 }
+
+const struct datatype * get_datatype(uint8_t type)
+{
+	if (type >= TYPE_MAX)
+		return NULL;
+	return datatypes[type];
+}
