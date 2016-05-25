@@ -302,5 +302,6 @@ out:
 	cache_release(nft_ctx);
 	iface_cache_release();
 
+	nft_global_deinit();
 	return rc;
 }
