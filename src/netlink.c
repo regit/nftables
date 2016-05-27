@@ -22,6 +22,7 @@
 #include <libnftnl/chain.h>
 #include <libnftnl/expr.h>
 #include <libnftnl/set.h>
+#include <libnftnl/udata.h>
 #include <libnftnl/common.h>
 #include <linux/netfilter/nfnetlink.h>
 #include <linux/netfilter/nf_tables.h>
@@ -208,6 +209,7 @@ static struct nftnl_set_elem *alloc_nftnl_setelem(const struct expr *expr)
 	const struct expr *elem, *key, *data;
 	struct nftnl_set_elem *nlse;
 	struct nft_data_linearize nld;
+	struct nftnl_udata_buf *udbuf;
 
 	nlse = nftnl_set_elem_alloc();
 	if (nlse == NULL)
@@ -228,9 +230,18 @@ static struct nftnl_set_elem *alloc_nftnl_setelem(const struct expr *expr)
 	if (elem->timeout)
 		nftnl_set_elem_set_u64(nlse, NFTNL_SET_ELEM_TIMEOUT,
 				       elem->timeout);
-	if (elem->comment)
+	if (elem->comment) {
+		udbuf = nftnl_udata_buf_alloc(NFT_USERDATA_MAXLEN);
+		if (!udbuf)
+			memory_allocation_error();
+		if (!nftnl_udata_put_strz(udbuf, UDATA_TYPE_COMMENT,
+					  elem->comment))
+			memory_allocation_error();
 		nftnl_set_elem_set(nlse, NFTNL_SET_ELEM_USERDATA,
-				   elem->comment, strlen(elem->comment) + 1);
+				   nftnl_udata_buf_data(udbuf),
+				   nftnl_udata_buf_len(udbuf));
+		nftnl_udata_buf_free(udbuf);
+	}
 
 	if (data != NULL) {
 		netlink_gen_data(data, &nld);
@@ -1421,6 +1432,38 @@ static struct expr *netlink_parse_concat_elem(const struct datatype *dtype,
 	return concat;
 }
 
+static int parse_udata_cb(const struct nftnl_udata *attr, void *data)
+{
+	unsigned char *value = nftnl_udata_get(attr);
+	uint8_t type = nftnl_udata_type(attr);
+	uint8_t len = nftnl_udata_len(attr);
+	const struct nftnl_udata **tb = data;
+
+	switch (type) {
+	case UDATA_TYPE_COMMENT:
+		if (value[len - 1] != '\0')
+			return -1;
+		break;
+	default:
+		return 0;
+	}
+	tb[type] = attr;
+	return 0;
+}
+
+static char *udata_get_comment(const void *data, uint32_t data_len)
+{
+	const struct nftnl_udata *tb[UDATA_TYPE_MAX + 1] = {};
+
+	if (nftnl_udata_parse(data, data_len, parse_udata_cb, tb) < 0)
+		return NULL;
+
+	if (!tb[UDATA_TYPE_COMMENT])
+		return NULL;
+
+	return xstrdup(nftnl_udata_get(tb[UDATA_TYPE_COMMENT]));
+}
+
 static int netlink_delinearize_setelem(struct nftnl_set_elem *nlse,
 				       const struct set *set)
 {
@@ -1457,8 +1500,7 @@ static int netlink_delinearize_setelem(struct nftnl_set_elem *nlse,
 		uint32_t len;
 
 		data = nftnl_set_elem_get(nlse, NFTNL_SET_ELEM_USERDATA, &len);
-		expr->comment = xmalloc(len);
-		memcpy((char *)expr->comment, data, len);
+		expr->comment = udata_get_comment(data, len);
 	}
 	if (nftnl_set_elem_is_set(nlse, NFT_SET_ELEM_ATTR_EXPR)) {
 		const struct nftnl_expr *nle;
