@@ -74,9 +74,11 @@ static void tchandle_type_print(const struct expr *expr)
 
 	switch(handle) {
 	case TC_H_ROOT:
-		printf("root\n");
+		printf("root");
+		break;
 	case TC_H_UNSPEC:
-		printf("none\n");
+		printf("none");
+		break;
 	default:
 		if (TC_H_MAJ(handle) == 0)
 			printf(":%04x", TC_H_MIN(handle));
