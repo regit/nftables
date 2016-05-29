@@ -1124,12 +1124,14 @@ type_identifier		:	STRING	{ $$ = $1; }
 
 hook_spec		:	TYPE		STRING		HOOK		STRING		dev_spec	PRIORITY	prio_spec
 			{
-				$<chain>0->type		= xstrdup(chain_type_name_lookup($2));
-				if ($<chain>0->type == NULL) {
+				const char *chain_type = chain_type_name_lookup($2);
+
+				if (chain_type == NULL) {
 					erec_queue(error(&@2, "unknown chain type %s", $2),
 						   state->msgs);
 					YYERROR;
 				}
+				$<chain>0->type		= xstrdup(chain_type);
 				xfree($2);
 
 				$<chain>0->hookstr	= chain_hookname_lookup($4);
