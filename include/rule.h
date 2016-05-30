@@ -428,4 +428,6 @@ enum udata_type {
 };
 #define UDATA_TYPE_MAX (__UDATA_TYPE_MAX - 1)
 
+#define UDATA_COMMENT_MAXLEN 128
+
 #endif /* NFTABLES_RULE_H */

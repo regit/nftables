@@ -1275,6 +1275,11 @@ ruleid_spec		:	chain_spec	handle_spec	position_spec
 
 comment_spec		:	COMMENT		string
 			{
+				if (strlen($2) > UDATA_COMMENT_MAXLEN) {
+					erec_queue(error(&@2, "comment too long, %d characters maximum allowed", UDATA_COMMENT_MAXLEN),
+						   state->msgs);
+					YYERROR;
+				}
 				$$ = $2;
 			}
 			;
