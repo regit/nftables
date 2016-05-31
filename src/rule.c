@@ -1222,6 +1222,8 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 		return do_list_set(ctx, cmd, table);
 	case CMD_OBJ_MAPS:
 		return do_list_sets(ctx, cmd);
+	case CMD_OBJ_MAP:
+		return do_list_set(ctx, cmd, table);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}

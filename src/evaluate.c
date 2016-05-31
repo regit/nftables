@@ -2688,6 +2688,16 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 			return cmd_error(ctx, "Could not process rule: Flow table '%s' does not exist",
 					 cmd->handle.set);
 		return 0;
+	case CMD_OBJ_MAP:
+		table = table_lookup(&cmd->handle);
+		if (table == NULL)
+			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
+					 cmd->handle.table);
+		set = set_lookup(table, cmd->handle.set);
+		if (set == NULL || !(set->flags & SET_F_MAP))
+			return cmd_error(ctx, "Could not process rule: Map '%s' does not exist",
+					 cmd->handle.set);
+		return 0;
 	case CMD_OBJ_CHAIN:
 		table = table_lookup(&cmd->handle);
 		if (table == NULL)

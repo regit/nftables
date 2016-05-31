@@ -849,6 +849,10 @@ list_cmd		:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_MAPS, &$2, &@$, NULL);
 			}
+			|	MAP		set_spec
+			{
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_MAP, &$2, &@$, NULL);
+			}
 			;
 
 flush_cmd		:	TABLE		table_spec
