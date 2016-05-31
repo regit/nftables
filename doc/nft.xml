@@ -1920,7 +1920,7 @@ filter output oif eth0
 								<entry>FIXME</entry>
 							</row>
 							<row>
-								<entry>cfi</entry>
+								<entry>cpi</entry>
 								<entry>Compression Parameter Index</entry>
 								<entry>FIXME</entry>
 							</row>
