@@ -245,6 +245,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "set"			{ return SET; }
 "element"		{ return ELEMENT; }
 "map"			{ return MAP; }
+"maps"			{ return MAPS; }
 "handle"		{ return HANDLE; }
 "ruleset"		{ return RULESET; }
 

@@ -1074,10 +1074,14 @@ static int do_list_sets(struct netlink_ctx *ctx, struct cmd *cmd)
 
 		list_for_each_entry(set, &table->sets, list) {
 			if (cmd->obj == CMD_OBJ_SETS &&
-			    set->flags & SET_F_ANONYMOUS)
+			    (set->flags & SET_F_ANONYMOUS ||
+			    set->flags & SET_F_MAP))
 				continue;
 			if (cmd->obj == CMD_OBJ_FLOWTABLES &&
 			    !(set->flags & SET_F_EVAL))
+				continue;
+			if (cmd->obj == CMD_OBJ_MAPS &&
+			    !(set->flags & SET_F_MAP))
 				continue;
 			set_print_declaration(set, &opts);
 			printf("%s}%s", opts.tab, opts.nl);
@@ -1216,6 +1220,8 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 		return do_list_sets(ctx, cmd);
 	case CMD_OBJ_FLOWTABLE:
 		return do_list_set(ctx, cmd, table);
+	case CMD_OBJ_MAPS:
+		return do_list_sets(ctx, cmd);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}

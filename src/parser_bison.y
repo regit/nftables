@@ -178,6 +178,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token SET			"set"
 %token ELEMENT			"element"
 %token MAP			"map"
+%token MAPS			"maps"
 %token HANDLE			"handle"
 %token RULESET			"ruleset"
 
@@ -843,6 +844,10 @@ list_cmd		:	TABLE		table_spec
 			|	FLOW TABLE	set_spec
 			{
 				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_FLOWTABLE, &$3, &@$, NULL);
+			}
+			|	MAPS		ruleset_spec
+			{
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_MAPS, &$2, &@$, NULL);
 			}
 			;
 

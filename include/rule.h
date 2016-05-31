@@ -318,6 +318,7 @@ enum cmd_obj {
 	CMD_OBJ_EXPORT,
 	CMD_OBJ_FLOWTABLE,
 	CMD_OBJ_FLOWTABLES,
+	CMD_OBJ_MAPS,
 };
 
 struct export {
