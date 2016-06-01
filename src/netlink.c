@@ -1049,7 +1049,7 @@ static const struct datatype *dtype_map_from_kernel(enum nft_data_types type)
 	default:
 		if (type & ~TYPE_MASK)
 			return concat_type_alloc(type);
-		return datatype_lookup(type);
+		return datatype_lookup((enum datatypes)type);
 	}
 }
 
