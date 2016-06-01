@@ -240,7 +240,7 @@ static int expr_evaluate_string(struct eval_ctx *ctx, struct expr **exprp)
 		return 0;
 	}
 
-	if (datalen - 1 >= 0 &&
+	if (datalen >= 1 &&
 	    data[datalen - 1] == '\\') {
 		char unescaped_str[data_len];
 
