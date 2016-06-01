@@ -80,7 +80,6 @@ static int nft_netlink(nft_context_t *nft_ctx, struct parser_state *state,
 	bool batch_supported = netlink_batch_supported(nft_ctx);
 	int ret = 0;
 
-	/* TODO switch to a thread safe version */
 	mnl_batch_init(nft_ctx);
 
 	batch_seqnum = mnl_batch_begin(nft_ctx);
