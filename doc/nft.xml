@@ -1331,7 +1331,7 @@ filter output oif eth0
 							<row>
 								<entry>htype</entry>
 								<entry>ARP hardware type</entry>
-								<entry>FIXME</entry>
+								<entry>integer (16 bit)</entry>
 							</row>
 							<row>
 								<entry>ptype</entry>
@@ -1349,9 +1349,9 @@ filter output oif eth0
 								<entry>integer (8 bit)</entry>
 							</row>
 							<row>
-								<entry>op</entry>
+								<entry>operation</entry>
 								<entry>Operation</entry>
-								<entry>FIXME</entry>
+								<entry>arp_op</entry>
 							</row>
 						</tbody>
 					</tgroup>
@@ -1578,7 +1578,7 @@ filter output oif eth0
 							<row>
 								<entry>reserved</entry>
 								<entry>Reserved area</entry>
-								<entry>FIXME</entry>
+								<entry>integer (4 bit)</entry>
 							</row>
 							<row>
 								<entry>flags</entry>
@@ -1829,7 +1829,7 @@ filter output oif eth0
 							<row>
 								<entry>reserved</entry>
 								<entry>Reserved area</entry>
-								<entry>FIXME</entry>
+								<entry>integer (4 bit)</entry>
 							</row>
 							<row>
 								<entry>spi</entry>
@@ -1890,7 +1890,7 @@ filter output oif eth0
 			<title>IPcomp header expression</title>
 			<para>
 				<cmdsynopsis>
-					<command>ipcomp</command>
+					<command>comp</command>
 					<arg opt="req"><replaceable>IPComp header field</replaceable></arg>
 				</cmdsynopsis>
 			</para>
@@ -1917,12 +1917,12 @@ filter output oif eth0
 							<row>
 								<entry>flags</entry>
 								<entry>Flags</entry>
-								<entry>FIXME</entry>
+								<entry>bitmask</entry>
 							</row>
 							<row>
 								<entry>cpi</entry>
 								<entry>Compression Parameter Index</entry>
-								<entry>FIXME</entry>
+								<entry>integer (16 bit)</entry>
 							</row>
 						</tbody>
 					</tgroup>
