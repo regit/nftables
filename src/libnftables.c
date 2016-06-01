@@ -87,7 +87,7 @@ static int nft_netlink(nft_context_t *nft_ctx, struct parser_state *state,
 	list_for_each_entry(cmd, &state->cmds, list) {
 		memset(&ctx, 0, sizeof(ctx));
 		ctx.msgs = msgs;
-		ctx.seqnum = cmd->seqnum = mnl_seqnum_alloc();
+		ctx.seqnum = cmd->seqnum = mnl_seqnum_alloc(nft_ctx);
 		ctx.batch_supported = batch_supported;
 		init_list_head(&ctx.list);
 		ret = do_command(nft_ctx, cmd);
