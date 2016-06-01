@@ -8,6 +8,7 @@
 typedef struct _nft_context {
 	struct netlink_ctx *nl_ctx;
 	struct mnl_socket *nf_sock;
+	struct nftnl_batch *batch;
 	bool cache_initialized;
 } nft_context_t;
 

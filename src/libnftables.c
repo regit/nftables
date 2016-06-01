@@ -81,9 +81,9 @@ static int nft_netlink(nft_context_t *nft_ctx, struct parser_state *state,
 	int ret = 0;
 
 	/* TODO switch to a thread safe version */
-	mnl_batch_init();
+	mnl_batch_init(nft_ctx);
 
-	batch_seqnum = mnl_batch_begin();
+	batch_seqnum = mnl_batch_begin(nft_ctx);
 	list_for_each_entry(cmd, &state->cmds, list) {
 		memset(&ctx, 0, sizeof(ctx));
 		ctx.msgs = msgs;
@@ -94,12 +94,12 @@ static int nft_netlink(nft_context_t *nft_ctx, struct parser_state *state,
 		if (ret < 0)
 			goto out;
 	}
-	mnl_batch_end();
+	mnl_batch_end(nft_ctx);
 
-	if (!mnl_batch_ready())
+	if (!mnl_batch_ready(nft_ctx))
 		goto out;
 
-	ret = mnl_batch_talk(nft_ctx->nf_sock, &err_list);
+	ret = mnl_batch_talk(nft_ctx, &err_list);
 
 	list_for_each_entry_safe(err, tmp, &err_list, head) {
 		list_for_each_entry(cmd, &state->cmds, list) {
@@ -118,7 +118,7 @@ static int nft_netlink(nft_context_t *nft_ctx, struct parser_state *state,
 		}
 	}
 out:
-	mnl_batch_reset();
+	mnl_batch_reset(nft_ctx);
 	return ret;
 }
 

@@ -383,7 +383,7 @@ int netlink_add_rule_batch(nft_context_t *nft_ctx,
 
 	nlr = alloc_nftnl_rule(&rule->handle);
 	netlink_linearize_rule(nft_ctx->nl_ctx, nlr, rule);
-	err = mnl_nft_rule_batch_add(nlr, flags | NLM_F_EXCL,
+	err = mnl_nft_rule_batch_add(nft_ctx, nlr, flags | NLM_F_EXCL,
 				     nft_ctx->nl_ctx->seqnum);
 	nftnl_rule_free(nlr);
 	if (err < 0)
@@ -402,7 +402,8 @@ int netlink_replace_rule_batch(nft_context_t *nft_ctx, const struct handle *h,
 
 	nlr = alloc_nftnl_rule(&rule->handle);
 	netlink_linearize_rule(nft_ctx->nl_ctx, nlr, rule);
-	err = mnl_nft_rule_batch_replace(nlr, 0, nft_ctx->nl_ctx->seqnum);
+	err = mnl_nft_rule_batch_replace(nft_ctx, nlr, 0,
+					 nft_ctx->nl_ctx->seqnum);
 	nftnl_rule_free(nlr);
 
 	if (err < 0)
@@ -431,7 +432,7 @@ int netlink_del_rule_batch(nft_context_t *nft_ctx, const struct handle *h,
 	int err;
 
 	nlr = alloc_nftnl_rule(h);
-	err = mnl_nft_rule_batch_del(nlr, 0, nft_ctx->nl_ctx->seqnum);
+	err = mnl_nft_rule_batch_del(nft_ctx, nlr, 0, nft_ctx->nl_ctx->seqnum);
 	nftnl_rule_free(nlr);
 
 	if (err < 0)
@@ -591,7 +592,7 @@ static int netlink_add_chain_batch(nft_context_t *nft_ctx,
 	}
 
 	netlink_dump_chain(nlc);
-	err = mnl_nft_chain_batch_add(nlc, excl ? NLM_F_EXCL : 0,
+	err = mnl_nft_chain_batch_add(nft_ctx, nlc, excl ? NLM_F_EXCL : 0,
 				      nft_ctx->nl_ctx->seqnum);
 	nftnl_chain_free(nlc);
 
@@ -642,7 +643,7 @@ static int netlink_rename_chain_batch(nft_context_t *nft_ctx,
 	nlc = alloc_nftnl_chain(h);
 	nftnl_chain_set_str(nlc, NFTNL_CHAIN_NAME, name);
 	netlink_dump_chain(nlc);
-	err = mnl_nft_chain_batch_add(nlc, 0, nft_ctx->nl_ctx->seqnum);
+	err = mnl_nft_chain_batch_add(nft_ctx, nlc, 0, nft_ctx->nl_ctx->seqnum);
 	nftnl_chain_free(nlc);
 
 	if (err < 0)
@@ -687,7 +688,7 @@ static int netlink_del_chain_batch(nft_context_t *nft_ctx,
 
 	nlc = alloc_nftnl_chain(h);
 	netlink_dump_chain(nlc);
-	err = mnl_nft_chain_batch_del(nlc, 0, nft_ctx->nl_ctx->seqnum);
+	err = mnl_nft_chain_batch_del(nft_ctx, nlc, 0, nft_ctx->nl_ctx->seqnum);
 	nftnl_chain_free(nlc);
 
 	if (err < 0)
@@ -870,7 +871,7 @@ static int netlink_add_table_batch(nft_context_t *nft_ctx,
 	else
 		nftnl_table_set_u32(nlt, NFTNL_TABLE_FLAGS, 0);
 
-	err = mnl_nft_table_batch_add(nlt, excl ? NLM_F_EXCL : 0,
+	err = mnl_nft_table_batch_add(nft_ctx, nlt, excl ? NLM_F_EXCL : 0,
 				      nft_ctx->nl_ctx->seqnum);
 	nftnl_table_free(nlt);
 
@@ -915,7 +916,7 @@ static int netlink_del_table_batch(nft_context_t *nft_ctx,
 	int err;
 
 	nlt = alloc_nftnl_table(h);
-	err = mnl_nft_table_batch_del(nlt, 0, nft_ctx->nl_ctx->seqnum);
+	err = mnl_nft_table_batch_del(nft_ctx, nlt, 0, nft_ctx->nl_ctx->seqnum);
 	nftnl_table_free(nlt);
 
 	if (err < 0)
@@ -1189,7 +1190,7 @@ static int netlink_add_set_batch(nft_context_t *nft_ctx,
 
 	netlink_dump_set(nls);
 
-	err = mnl_nft_set_batch_add(nls, NLM_F_EXCL, nft_ctx->nl_ctx->seqnum);
+	err = mnl_nft_set_batch_add(nft_ctx, nls, NLM_F_EXCL, nft_ctx->nl_ctx->seqnum);
 	if (err < 0)
 		netlink_io_error(nft_ctx, &set->location, "Could not add set: %s",
 				 strerror(errno));
@@ -1232,7 +1233,7 @@ static int netlink_del_set_batch(nft_context_t *nft_ctx,
 	int err;
 
 	nls = alloc_nftnl_set(h);
-	err = mnl_nft_set_batch_del(nls, 0, nft_ctx->nl_ctx->seqnum);
+	err = mnl_nft_set_batch_del(nft_ctx, nls, 0, nft_ctx->nl_ctx->seqnum);
 	nftnl_set_free(nls);
 
 	if (err < 0)
@@ -1331,7 +1332,8 @@ static int netlink_add_setelems_batch(nft_context_t *nft_ctx,
 	alloc_setelem_cache(expr, nls);
 	netlink_dump_set(nls);
 
-	err = mnl_nft_setelem_batch_add(nls, 0, nft_ctx->nl_ctx->seqnum);
+	err = mnl_nft_setelem_batch_add(nft_ctx, nls, 0,
+					nft_ctx->nl_ctx->seqnum);
 	nftnl_set_free(nls);
 	if (err < 0)
 		netlink_io_error(nft_ctx, &expr->location,
@@ -1380,7 +1382,7 @@ static int netlink_del_setelems_batch(nft_context_t *nft_ctx,
 	alloc_setelem_cache(expr, nls);
 	netlink_dump_set(nls);
 
-	err = mnl_nft_setelem_batch_del(nls, 0, nft_ctx->nl_ctx->seqnum);
+	err = mnl_nft_setelem_batch_del(nft_ctx, nls, 0, nft_ctx->nl_ctx->seqnum);
 	nftnl_set_free(nls);
 	if (err < 0)
 		netlink_io_error(nft_ctx, &expr->location,
@@ -1595,7 +1597,7 @@ out:
 
 int netlink_batch_send(nft_context_t *nft_ctx, struct list_head *err_list)
 {
-	return mnl_batch_talk(nft_ctx->nf_sock, err_list);
+	return mnl_batch_talk(nft_ctx, err_list);
 }
 
 int netlink_flush_ruleset(nft_context_t *nft_ctx, const struct handle *h,
@@ -1608,7 +1610,7 @@ int netlink_flush_ruleset(nft_context_t *nft_ctx, const struct handle *h,
 		return netlink_io_error(nft_ctx, loc, "Operation not supported");
 
 	nlt = alloc_nftnl_table(h);
-	err = mnl_nft_table_batch_del(nlt, 0, nft_ctx->nl_ctx->seqnum);
+	err = mnl_nft_table_batch_del(nft_ctx, nlt, 0, nft_ctx->nl_ctx->seqnum);
 	nftnl_table_free(nlt);
 
 	if (err < 0)
