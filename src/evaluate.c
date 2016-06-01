@@ -2674,7 +2674,8 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 		if (table == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
-		if (set_lookup(table, cmd->handle.set) == NULL)
+		set = set_lookup(table, cmd->handle.set);
+		if (set == NULL || set->flags & (SET_F_MAP | SET_F_EVAL))
 			return cmd_error(ctx, "Could not process rule: Set '%s' does not exist",
 					 cmd->handle.set);
 		return 0;
