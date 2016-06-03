@@ -61,6 +61,10 @@ nft_context_t * nft_open()
 	ctx->nf_sock = netlink_nfsock_open();
 	fcntl(mnl_socket_get_fd(ctx->nf_sock), F_SETFL, O_NONBLOCK);
 
+	ctx->batch_supported = netlink_batch_supported(ctx);
+
+	init_list_head(&ctx->cmds);
+
 	return ctx;
 }
 
@@ -165,6 +169,95 @@ int nft_run_command(nft_context_t *ctx, const char * buf, size_t buflen)
 	return rc;
 }
 
+
+/** FIXME return -1 if a transaction is already started */
+int nft_transaction_start(nft_context_t *ctx)
+{
+	mnl_batch_init(ctx);
+	ctx->batch_seqnum = mnl_batch_begin(ctx);
+
+	return 0;
+}
+
+int nft_transaction_add(nft_context_t *ctx, const char * buf, size_t buflen)
+{
+	struct parser_state state;
+	void *scanner;
+	struct cmd *cmd;
+	LIST_HEAD(msgs);
+	int ret = NFT_EXIT_SUCCESS;
+	struct netlink_ctx cctx;
+
+	parser_init(&state, &msgs, ctx);
+	scanner = scanner_init(&state);
+	scanner_push_buffer(scanner, &indesc_cmdline, buf);
+
+	ret = nft_parse(scanner, &state);
+	if (ret != 0 || state.nerrs > 0) {
+		ret = NFT_EXIT_FAILURE;
+		goto out;
+	}
+
+	list_for_each_entry(cmd, &state.cmds, list) {
+		memset(&cctx, 0, sizeof(cctx));
+		cctx.msgs = &msgs;
+		cctx.seqnum = cmd->seqnum = mnl_seqnum_alloc(ctx);
+		cctx.batch_supported = ctx->batch_supported;
+		init_list_head(&cctx.list);
+		/* FIXME ? */
+		ctx->nl_ctx = &cctx;
+		ret = do_command(ctx, cmd);
+		if (ret < 0) {
+			ret = NFT_EXIT_FAILURE;
+			goto out;
+		}
+	}
+
+	/* add cmds to context for error handling */
+	list_splice_init(&state.cmds, &ctx->cmds);
+
+out:
+	ctx->nl_ctx = NULL;
+	scanner_destroy(scanner);
+	return ret;
+}
+
+int nft_transaction_commit(nft_context_t *ctx)
+{
+	int ret = 0;
+	struct mnl_err *err, *tmp;
+
+	mnl_batch_end(ctx);
+	LIST_HEAD(err_list);
+	struct cmd *cmd;
+
+	if (!mnl_batch_ready(ctx))
+		goto out;
+
+	ret = mnl_batch_talk(ctx, &err_list);
+
+	list_for_each_entry_safe(err, tmp, &err_list, head) {
+		list_for_each_entry(cmd, &ctx->cmds, list) {
+			if (err->seqnum == cmd->seqnum ||
+			    err->seqnum == ctx->batch_seqnum) {
+				netlink_io_error(ctx, &cmd->location,
+						 "Could not process rule: %s",
+						 strerror(err->err));
+				ret = -1;
+				errno = err->err;
+				if (err->seqnum == cmd->seqnum) {
+					mnl_err_list_free(err);
+					break;
+				}
+			}
+		}
+	}
+out:
+	mnl_batch_reset(ctx);
+	return ret;
+
+}
+
 int nft_close(nft_context_t *ctx)
 {
 	if (!ctx)
@@ -174,5 +267,7 @@ int nft_close(nft_context_t *ctx)
 		free(ctx->nl_ctx);
 	}
 	mnl_socket_close(ctx->nf_sock);
+	if (ctx->mon_sock)
+		mnl_socket_close(ctx->mon_sock);
 	return 0;
 }
