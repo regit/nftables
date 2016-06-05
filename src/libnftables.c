@@ -63,6 +63,8 @@ nft_context_t * nft_open()
 
 	ctx->batch_supported = netlink_batch_supported(ctx);
 
+	init_list_head(&ctx->cmds);
+
 	return ctx;
 }
 
@@ -209,6 +211,9 @@ int nft_transaction_add(nft_context_t *ctx, const char * buf, size_t buflen)
 		}
 	}
 
+	/* add cmds to context for error handling */
+	list_splice_init(&state.cmds, &ctx->cmds);
+
 out:
 	ctx->nl_ctx = NULL;
 	scanner_destroy(scanner);
@@ -228,12 +233,12 @@ int nft_transaction_commit(nft_context_t *ctx)
 		goto out;
 
 	ret = mnl_batch_talk(ctx, &err_list);
-#if 0
+
 	list_for_each_entry_safe(err, tmp, &err_list, head) {
-		list_for_each_entry(cmd, &state->cmds, list) {
+		list_for_each_entry(cmd, &ctx->cmds, list) {
 			if (err->seqnum == cmd->seqnum ||
-			    err->seqnum == batch_seqnum) {
-				netlink_io_error(nft_ctx, &cmd->location,
+			    err->seqnum == ctx->batch_seqnum) {
+				netlink_io_error(ctx, &cmd->location,
 						 "Could not process rule: %s",
 						 strerror(err->err));
 				ret = -1;
@@ -245,7 +250,6 @@ int nft_transaction_commit(nft_context_t *ctx)
 			}
 		}
 	}
-#endif
 out:
 	mnl_batch_reset(ctx);
 	return ret;

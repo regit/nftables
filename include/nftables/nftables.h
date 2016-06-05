@@ -5,13 +5,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <list.h>
+
 typedef struct _nft_context {
 	struct netlink_ctx *nl_ctx;
 	struct mnl_socket *nf_sock;
 	struct mnl_socket *mon_sock;
 	struct nftnl_batch *batch;
+	struct list_head cmds;
 	int seq;
-	int batch_seqnum;
+	unsigned int batch_seqnum;
 	bool cache_initialized;
 	bool batch_supported;
 } nft_context_t;
