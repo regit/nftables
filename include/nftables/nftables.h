@@ -5,18 +5,21 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <list.h>
+#include <nftables/list.h>
 
 typedef struct _nft_context {
 	struct netlink_ctx *nl_ctx;
 	struct mnl_socket *nf_sock;
 	struct mnl_socket *mon_sock;
 	struct nftnl_batch *batch;
+
 	struct list_head cmds;
+	struct list_head msgs;
 	int seq;
 	unsigned int batch_seqnum;
 	bool cache_initialized;
 	bool batch_supported;
+	const struct input_descriptor *indesc;
 } nft_context_t;
 
 void nft_global_init(void);
@@ -28,5 +31,6 @@ int nft_close(nft_context_t *ctx);
 int nft_transaction_start(nft_context_t *ctx);
 int nft_transaction_add(nft_context_t *ctx, const char * buf, size_t buflen);
 int nft_transaction_commit(nft_context_t *ctx);
+int nft_print_error(nft_context_t *ctx);
 
 #endif

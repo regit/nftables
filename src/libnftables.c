@@ -23,6 +23,10 @@ unsigned int debug_level;
 
 const char *include_paths[INCLUDE_PATHS_MAX] = { DEFAULT_INCLUDE_PATH };
 
+const struct input_descriptor indesc_cmdline = {
+	.type	= INDESC_BUFFER,
+	.name	= "<cmdline>",
+};
 
 void nft_global_init(void)
 {
@@ -64,14 +68,12 @@ nft_context_t * nft_open()
 	ctx->batch_supported = netlink_batch_supported(ctx);
 
 	init_list_head(&ctx->cmds);
+	init_list_head(&ctx->msgs);
+
+	ctx->indesc = &indesc_cmdline;
 
 	return ctx;
 }
-
-static const struct input_descriptor indesc_cmdline = {
-	.type	= INDESC_BUFFER,
-	.name	= "<cmdline>",
-};
 
 static int nft_netlink(nft_context_t *nft_ctx, struct parser_state *state,
 		       struct list_head *msgs)
@@ -156,7 +158,7 @@ int nft_run_command(nft_context_t *ctx, const char * buf, size_t buflen)
 
 	parser_init(&state, &msgs, ctx);
 	scanner = scanner_init(&state);
-	scanner_push_buffer(scanner, &indesc_cmdline, buf);
+	scanner_push_buffer(scanner, ctx->indesc, buf);
 
 	if (nft_run(ctx, scanner, &state, &msgs) != 0)
 		rc = NFT_EXIT_FAILURE;
@@ -190,7 +192,7 @@ int nft_transaction_add(nft_context_t *ctx, const char * buf, size_t buflen)
 
 	parser_init(&state, &msgs, ctx);
 	scanner = scanner_init(&state);
-	scanner_push_buffer(scanner, &indesc_cmdline, buf);
+	scanner_push_buffer(scanner, ctx->indesc, buf);
 
 	ret = nft_parse(scanner, &state);
 	if (ret != 0 || state.nerrs > 0) {
@@ -215,6 +217,7 @@ int nft_transaction_add(nft_context_t *ctx, const char * buf, size_t buflen)
 
 	/* add cmds to context for error handling */
 	list_splice_init(&state.cmds, &ctx->cmds);
+	list_splice_init(&msgs, &ctx->msgs);
 
 out:
 	ctx->nl_ctx = NULL;
@@ -226,13 +229,21 @@ int nft_transaction_commit(nft_context_t *ctx)
 {
 	int ret = 0;
 	struct mnl_err *err, *tmp;
+	LIST_HEAD(msgs);
 
 	mnl_batch_end(ctx);
 	LIST_HEAD(err_list);
 	struct cmd *cmd;
+	struct netlink_ctx nl_ctx;
 
 	if (!mnl_batch_ready(ctx))
 		goto out;
+
+	memset(&nl_ctx, 0, sizeof(nl_ctx));
+	init_list_head(&nl_ctx.list);
+	init_list_head(&msgs);
+	nl_ctx.msgs = &msgs;
+	ctx->nl_ctx = &nl_ctx;
 
 	ret = mnl_batch_talk(ctx, &err_list);
 
@@ -253,9 +264,18 @@ int nft_transaction_commit(nft_context_t *ctx)
 		}
 	}
 out:
+	list_splice_init(&msgs, &ctx->msgs);
+	ctx->nl_ctx = NULL;
 	mnl_batch_reset(ctx);
 	return ret;
 
+}
+
+
+int nft_print_error(nft_context_t *nft_ctx)
+{
+	erec_print_list(stderr, &nft_ctx->msgs);
+	return 0;
 }
 
 int nft_close(nft_context_t *ctx)
