@@ -75,6 +75,9 @@ ip protocol != tcp;ok;ip protocol != 6
 ip protocol { icmp, esp, ah, comp, udp, udplite, tcp, dccp, sctp} accept;ok;ip protocol { 33, 136, 17, 51, 50, 6, 132, 1, 108} accept
 - ip protocol != { icmp, esp, ah, comp, udp, udplite, tcp, dccp, sctp} accept;ok
 
+ip protocol 255;ok
+ip protocol 256;fail
+
 ip checksum 13172 drop;ok
 ip checksum 22;ok
 ip checksum != 233;ok

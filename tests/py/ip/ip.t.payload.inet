@@ -268,6 +268,13 @@ inet test-inet input
   [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
+# ip protocol 255
+ip test-ip4 input
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x00000002 ]
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x000000ff ]
+
 # ip checksum 13172 drop
 inet test-inet input
   [ meta load nfproto => reg 1 ]

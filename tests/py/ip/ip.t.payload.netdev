@@ -204,6 +204,13 @@ netdev test-netdev ingress
   [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
+# ip protocol 255
+ip test-ip4 input
+  [ meta load protocol => reg 1 ]
+  [ cmp eq reg 1 0x00000008 ]
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x000000ff ]
+
 # ip checksum 13172 drop
 netdev test-netdev ingress 
   [ meta load protocol => reg 1 ]

@@ -204,6 +204,11 @@ ip test-ip4 input
   [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
+# ip protocol 255
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x000000ff ]
+
 # ip checksum 13172 drop
 ip test-ip4 input
   [ payload load 2b @ network header + 10 => reg 1 ]

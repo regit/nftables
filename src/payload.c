@@ -85,6 +85,9 @@ static void payload_expr_pctx_update(struct proto_ctx *ctx,
 	base = ctx->protocol[left->payload.base].desc;
 	desc = proto_find_upper(base, proto);
 
+	if (!desc)
+		return;
+
 	assert(desc->base <= PROTO_BASE_MAX);
 	if (desc->base == base->base) {
 		assert(base->length > 0);
