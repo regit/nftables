@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <list.h>
+#include <nftables/list.h>
 
 typedef struct _nft_context {
 	struct netlink_ctx *nl_ctx;

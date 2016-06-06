@@ -224,13 +224,21 @@ int nft_transaction_commit(nft_context_t *ctx)
 {
 	int ret = 0;
 	struct mnl_err *err, *tmp;
+	LIST_HEAD(msgs);
 
 	mnl_batch_end(ctx);
 	LIST_HEAD(err_list);
 	struct cmd *cmd;
+	struct netlink_ctx nl_ctx;
 
 	if (!mnl_batch_ready(ctx))
 		goto out;
+
+	memset(&nl_ctx, 0, sizeof(nl_ctx));
+	init_list_head(&nl_ctx.list);
+	init_list_head(&msgs);
+	nl_ctx.msgs = &msgs;
+	ctx->nl_ctx = &nl_ctx;
 
 	ret = mnl_batch_talk(ctx, &err_list);
 
@@ -251,6 +259,7 @@ int nft_transaction_commit(nft_context_t *ctx)
 		}
 	}
 out:
+	ctx->nl_ctx = NULL;
 	mnl_batch_reset(ctx);
 	return ret;
 

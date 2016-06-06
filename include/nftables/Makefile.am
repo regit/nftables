@@ -1,2 +1,2 @@
-pkginclude_HEADERS =	nftables.h
+pkginclude_HEADERS =	nftables.h list.h
 
