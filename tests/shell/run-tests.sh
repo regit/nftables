@@ -76,7 +76,7 @@ do
 	rc_spec=$(awk -F${RETURNCODE_SEPARATOR} '{print $NF}' <<< $testfile)
 
 	msg_info "[EXECUTING]	$testfile"
-	test_output=$(NFT=$NFT ${testfile} ${TESTS_OUTPUT} 2>&1)
+	test_output=$(NFT=$NFT ${testfile} 2>&1)
 	rc_got=$?
 	echo -en "\033[1A\033[K" # clean the [EXECUTING] foobar line
 
