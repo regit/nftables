@@ -53,7 +53,7 @@ RULESET="table ip t {
 	}
 }"
 
-KERNEL_RULESET="$($IP netns exec $NETNS_NAME $NFT list ruleset)"
+KERNEL_RULESET="$($IP netns exec $NETNS_NAME $NFT list ruleset -nn)"
 $IP netns del $NETNS_NAME
 if [ "$RULESET" != "$KERNEL_RULESET" ] ; then
         DIFF="$(which diff)"

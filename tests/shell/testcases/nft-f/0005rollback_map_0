@@ -52,7 +52,7 @@ if [ $? -eq 0 ]	; then
 	exit 1
 fi
 
-KERNEL_RULESET="$($NFT list ruleset)"
+KERNEL_RULESET="$($NFT list ruleset -nn)"
 
 if [ "$GOOD_RULESET" != "$KERNEL_RULESET" ] ; then
         DIFF="$(which diff)"
