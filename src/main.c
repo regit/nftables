@@ -167,13 +167,6 @@ static const struct {
 };
 #endif
 
-static const struct input_descriptor indesc_cmdline = {
-	.type	= INDESC_BUFFER,
-	.name	= "<cmdline>",
-};
-
-
-
 int main(int argc, char * const *argv)
 {
 	struct parser_state state;
@@ -268,9 +261,7 @@ int main(int argc, char * const *argv)
 			if (i + 1 < argc)
 				strcat(buf, " ");
 		}
-		parser_init(&state, &msgs, nft_ctx);
-		scanner = scanner_init(&state);
-		scanner_push_buffer(scanner, &indesc_cmdline, buf);
+		return nft_run_command(nft_ctx, buf, strlen(buf));
 	} else if (filename != NULL) {
 		nft_ctx = nft_open();
 		rc = cache_update(nft_ctx, CMD_INVALID, &msgs);
