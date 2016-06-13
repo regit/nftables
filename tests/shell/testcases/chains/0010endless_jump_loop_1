@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -e
+
+$NFT add table t
+$NFT add chain t c
+# kernel should return ELOOP
+$NFT add rule t c tcp dport vmap {1 : jump c} 2>/dev/null
+echo "E: accepted endless jump loop in a vmap" >&2
