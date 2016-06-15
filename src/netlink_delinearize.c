@@ -433,7 +433,7 @@ static void netlink_parse_payload_stmt(struct netlink_parse_ctx *ctx,
 	expr = payload_expr_alloc(loc, NULL, 0);
 	payload_init_raw(expr, base, offset, len);
 
-	sreg = netlink_parse_register(nle, NFT_EXPR_PAYLOAD_SREG);
+	sreg = netlink_parse_register(nle, NFTNL_EXPR_PAYLOAD_SREG);
 	val  = netlink_get_register(ctx, loc, sreg);
 	stmt = payload_stmt_alloc(loc, expr, val);
 
@@ -444,7 +444,7 @@ static void netlink_parse_payload(struct netlink_parse_ctx *ctx,
 				  const struct location *loc,
 				  const struct nftnl_expr *nle)
 {
-	if (nftnl_expr_is_set(nle, NFT_EXPR_PAYLOAD_DREG))
+	if (nftnl_expr_is_set(nle, NFTNL_EXPR_PAYLOAD_DREG))
 		netlink_parse_payload_expr(ctx, loc, nle);
 	else
 		netlink_parse_payload_stmt(ctx, loc, nle);

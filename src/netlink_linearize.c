@@ -116,7 +116,7 @@ static void netlink_gen_payload(struct netlink_linearize_ctx *ctx,
 			   expr->payload.base - 1);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_PAYLOAD_OFFSET,
 			   expr->payload.offset / BITS_PER_BYTE);
-	nftnl_expr_set_u32(nle, NFT_EXPR_PAYLOAD_LEN,
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_PAYLOAD_LEN,
 			   div_round_up(expr->len, BITS_PER_BYTE));
 
 	nftnl_rule_add_expr(ctx->nlr, nle);
@@ -1054,14 +1054,14 @@ static void netlink_gen_flow_stmt(struct netlink_linearize_ctx *ctx,
 		op = NFT_DYNSET_OP_ADD;
 
 	nle = alloc_nft_expr("dynset");
-	netlink_put_register(nle, NFT_EXPR_DYNSET_SREG_KEY, sreg_key);
+	netlink_put_register(nle, NFTNL_EXPR_DYNSET_SREG_KEY, sreg_key);
 	if (stmt->flow.key->timeout)
-		nftnl_expr_set_u64(nle, NFT_EXPR_DYNSET_TIMEOUT,
+		nftnl_expr_set_u64(nle, NFTNL_EXPR_DYNSET_TIMEOUT,
 				   stmt->flow.key->timeout);
-	nftnl_expr_set_u32(nle, NFT_EXPR_DYNSET_OP, op);
-	nftnl_expr_set_str(nle, NFT_EXPR_DYNSET_SET_NAME, set->handle.set);
-	nftnl_expr_set_u32(nle, NFT_EXPR_DYNSET_SET_ID, set->handle.set_id);
-	nftnl_expr_set(nle, NFT_EXPR_DYNSET_EXPR,
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_DYNSET_OP, op);
+	nftnl_expr_set_str(nle, NFTNL_EXPR_DYNSET_SET_NAME, set->handle.set);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_DYNSET_SET_ID, set->handle.set_id);
+	nftnl_expr_set(nle, NFTNL_EXPR_DYNSET_EXPR,
 		       netlink_gen_stmt_stateful(ctx, stmt->flow.stmt), 0);
 	nftnl_rule_add_expr(ctx->nlr, nle);
 }

@@ -1502,10 +1502,10 @@ static int netlink_delinearize_setelem(struct nftnl_set_elem *nlse,
 		data = nftnl_set_elem_get(nlse, NFTNL_SET_ELEM_USERDATA, &len);
 		expr->comment = udata_get_comment(data, len);
 	}
-	if (nftnl_set_elem_is_set(nlse, NFT_SET_ELEM_ATTR_EXPR)) {
+	if (nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_EXPR)) {
 		const struct nftnl_expr *nle;
 
-		nle = nftnl_set_elem_get(nlse, NFT_SET_ELEM_ATTR_EXPR, NULL);
+		nle = nftnl_set_elem_get(nlse, NFTNL_SET_ELEM_EXPR, NULL);
 		expr->stmt = netlink_parse_set_expr(set, nle);
 	}
 
