@@ -377,7 +377,7 @@ static int set_to_segtree(struct list_head *msgs, struct set *set,
 	/* We are updating an existing set with new elements, check if the new
 	 * interval overlaps with any of the existing ones.
 	 */
-	if (add && set->init != init) {
+	if (add && set->init && set->init != init) {
 		err = set_overlap(msgs, set, init, tree->keylen);
 		if (err < 0)
 			return err;
