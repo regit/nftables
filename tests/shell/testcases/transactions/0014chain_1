@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e
+
+tmpfile=$(mktemp)
+if [ ! -w $tmpfile ] ; then
+        echo "Failed to create tmp file" >&2
+        exit 0
+fi
+
+trap "rm -rf $tmpfile" EXIT # cleanup if aborted
+
+RULESET="add table x
+add chain x y
+delete chain x y
+delete chain x y"
+
+echo "$RULESET" > $tmpfile
+$NFT -f $tmpfile
+echo "E: allowing double-removal of chain" >&2

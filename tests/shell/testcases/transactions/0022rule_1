@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+tmpfile=$(mktemp)
+if [ ! -w $tmpfile ] ; then
+        echo "Failed to create tmp file" >&2
+        exit 0
+fi
+
+trap "rm -rf $tmpfile" EXIT # cleanup if aborted
+
+RULESET="add table x
+add chain x y
+delete chain x y
+add rule x y jump y"
+
+echo "$RULESET" > $tmpfile
+# kernel must return ENOENT
+$NFT -f $tmpfile 2>/dev/null
+echo "E: allowing jump loop to unexisting chain"
