@@ -20,4 +20,6 @@ Also, test-files will receive the environment variable $NFT which contains the
 path to the nftables binary being tested.
 
 You can pass an arbitrary $NFT value as well:
- % NFT=../../src/nft ./run-tests.sh
+ % NFT=/usr/local/sbin/nft ./run-tests.sh
+
+By default the tests are run with the nft binary at '../../src/nft'

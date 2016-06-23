@@ -3,6 +3,7 @@
 # Configuration
 TESTDIR="./"
 RETURNCODE_SEPARATOR="_"
+SRC_NFT="../../src/nft"
 
 msg_error() {
 	echo "E: $1 ..." >&2
@@ -21,7 +22,7 @@ if [ "$(id -u)" != "0" ] ; then
 	msg_error "this requires root!"
 fi
 
-[ -z "$NFT" ] && NFT="$(which nft)"
+[ -z "$NFT" ] && NFT=$SRC_NFT
 if [ ! -x "$NFT" ] ; then
 	msg_error "no nft binary!"
 else
