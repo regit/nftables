@@ -28,7 +28,6 @@
 #include <iface.h>
 #include <cli.h>
 
-unsigned int max_errors = 10;
 unsigned int numeric_output;
 unsigned int ip2name_output;
 unsigned int handle_output;

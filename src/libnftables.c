@@ -21,7 +21,8 @@ unsigned int handle_output;
 unsigned int debug_level;
 #endif
 
-const char *include_paths[INCLUDE_PATHS_MAX] = { DEFAULT_INCLUDE_PATH };
+
+const char *include_paths[INCLUDE_PATHS_MAX];
 
 const struct input_descriptor indesc_cmdline = {
 	.type	= INDESC_BUFFER,
