@@ -14,9 +14,15 @@
 
 
 unsigned int max_errors = 10;
+unsigned int numeric_output;
+unsigned int ip2name_output;
+unsigned int handle_output;
 #ifdef DEBUG
 unsigned int debug_level;
 #endif
+
+
+const char *include_paths[INCLUDE_PATHS_MAX];
 
 const struct input_descriptor indesc_cmdline = {
 	.type	= INDESC_BUFFER,
