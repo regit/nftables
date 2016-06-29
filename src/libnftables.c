@@ -172,6 +172,8 @@ int nft_run_command(nft_context_t *ctx, const char * buf, size_t buflen)
 	return rc;
 }
 
+
+/** FIXME return -1 if a transaction is already started */
 int nft_transaction_start(nft_context_t *ctx)
 {
 	mnl_batch_init(ctx);
