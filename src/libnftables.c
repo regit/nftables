@@ -64,6 +64,10 @@ nft_context_t * nft_open()
 	}
 
 	ctx->nf_sock = netlink_nfsock_open();
+	if (ctx->nf_sock == NULL) {
+		free(ctx);
+		return NULL;
+	}
 	fcntl(mnl_socket_get_fd(ctx->nf_sock), F_SETFL, O_NONBLOCK);
 
 	ctx->batch_supported = netlink_batch_supported(ctx);
