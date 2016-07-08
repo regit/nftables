@@ -883,7 +883,7 @@ struct error_record *time_parse(const struct location *loc, const char *str,
 
 static void time_type_print(const struct expr *expr)
 {
-	time_print(mpz_get_uint64(expr->value));
+	time_print(mpz_get_uint64(expr->value) / MSEC_PER_SEC);
 }
 
 static struct error_record *time_type_parse(const struct expr *sym,
@@ -896,6 +896,7 @@ static struct error_record *time_type_parse(const struct expr *sym,
 	if (erec != NULL)
 		return erec;
 
+	s *= MSEC_PER_SEC;
 	if (s > UINT32_MAX)
 		return error(&sym->location, "value too large");
 

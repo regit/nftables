@@ -83,6 +83,7 @@
 	(void) (&_max1 == &_max2);		\
 	_max1 > _max2 ? _max1 : _max2; })
 
+#define MSEC_PER_SEC	1000L
 
 /**
  * fls - find last (most-significant) bit set

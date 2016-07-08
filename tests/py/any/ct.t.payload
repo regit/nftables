@@ -198,36 +198,36 @@ ip test-ip4 output
 # ct expiration 30
 ip test-ip4 output
   [ ct load expiration => reg 1 ]
-  [ cmp eq reg 1 0x0000001e ]
+  [ cmp eq reg 1 0x00007530 ]
 
 # ct expiration 22
 ip test-ip4 output
   [ ct load expiration => reg 1 ]
-  [ cmp eq reg 1 0x00000016 ]
+  [ cmp eq reg 1 0x000055f0 ]
 
 # ct expiration != 233
 ip test-ip4 output
   [ ct load expiration => reg 1 ]
-  [ cmp neq reg 1 0x000000e9 ]
+  [ cmp neq reg 1 0x00038e28 ]
 
 # ct expiration 33-45
 ip test-ip4 output
   [ ct load expiration => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ cmp gte reg 1 0x21000000 ]
-  [ cmp lte reg 1 0x2d000000 ]
+  [ cmp gte reg 1 0xe8800000 ]
+  [ cmp lte reg 1 0xc8af0000 ]
 
 # ct expiration != 33-45
 ip test-ip4 output
   [ ct load expiration => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ cmp lt reg 1 0x21000000 ]
-  [ cmp gt reg 1 0x2d000000 ]
+  [ cmp lt reg 1 0xe8800000 ]
+  [ cmp gt reg 1 0xc8af0000 ]
 
 # ct expiration {33, 55, 67, 88}
 __set%d test-ip4 3
 __set%d test-ip4 0
-	element 00000021  : 0 [end]	element 00000037  : 0 [end]	element 00000043  : 0 [end]	element 00000058  : 0 [end]
+	element 000080e8  : 0 [end]	element 0000d6d8  : 0 [end]	element 000105b8  : 0 [end]	element 000157c0  : 0 [end]
 ip test-ip4 output
   [ ct load expiration => reg 1 ]
   [ lookup reg 1 set __set%d ]
@@ -235,7 +235,7 @@ ip test-ip4 output
 # ct expiration {33-55}
 __set%d test-ip4 7
 __set%d test-ip4 0
-	element 00000000  : 1 [end]	element 21000000  : 0 [end]	element 38000000  : 1 [end]
+	element 00000000  : 1 [end]	element e8800000  : 0 [end]	element d9d60000  : 1 [end]
 ip test-ip4 output
   [ ct load expiration => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
