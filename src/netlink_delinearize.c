@@ -27,14 +27,6 @@
 #include <sys/socket.h>
 #include <libnftnl/udata.h>
 
-struct netlink_parse_ctx {
-	struct list_head	*msgs;
-	struct table		*table;
-	struct rule		*rule;
-	struct stmt		*stmt;
-	struct expr		*registers[1 + NFT_REG32_15 - NFT_REG32_00 + 1];
-};
-
 static int netlink_parse_expr(const struct nftnl_expr *nle,
 			      struct netlink_parse_ctx *ctx);
 
@@ -1046,12 +1038,6 @@ struct stmt *netlink_parse_set_expr(const struct set *set,
 		return NULL;
 	return pctx->stmt;
 }
-
-struct rule_pp_ctx {
-	struct proto_ctx	pctx;
-	struct payload_dep_ctx	pdctx;
-	struct stmt		*stmt;
-};
 
 static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp);
 

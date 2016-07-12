@@ -176,3 +176,20 @@ void erec_print_list(FILE *f, struct list_head *list)
 		erec_destroy(erec);
 	}
 }
+
+int __fmtstring(4, 5) __stmt_binary_error(struct eval_ctx *ctx,
+					  const struct location *l1,
+					  const struct location *l2,
+					  const char *fmt, ...)
+{
+	struct error_record *erec;
+	va_list ap;
+
+	va_start(ap, fmt);
+	erec = erec_vcreate(EREC_ERROR, l1, fmt, ap);
+	if (l2 != NULL)
+		erec_add_location(erec, l2);
+	va_end(ap);
+	erec_queue(erec, ctx->msgs);
+	return -1;
+}

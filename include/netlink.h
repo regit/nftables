@@ -12,6 +12,20 @@
 
 #include <rule.h>
 
+struct netlink_parse_ctx {
+	struct list_head	*msgs;
+	struct table		*table;
+	struct rule		*rule;
+	struct stmt		*stmt;
+	struct expr		*registers[1 + NFT_REG32_15 - NFT_REG32_00 + 1];
+};
+
+struct rule_pp_ctx {
+	struct proto_ctx	pctx;
+	struct payload_dep_ctx	pdctx;
+	struct stmt		*stmt;
+};
+
 extern const struct input_descriptor indesc_netlink;
 extern const struct location netlink_location;
 

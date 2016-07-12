@@ -61,4 +61,16 @@ static inline void erec_queue(struct error_record *erec,
 extern void erec_print(FILE *f, const struct error_record *erec);
 extern void erec_print_list(FILE *f, struct list_head *list);
 
+struct eval_ctx;
+
+extern int __fmtstring(4, 5) __stmt_binary_error(struct eval_ctx *ctx,
+						 const struct location *l1,
+						 const struct location *l2,
+						 const char *fmt, ...);
+
+#define stmt_error(ctx, s1, fmt, args...) \
+	__stmt_binary_error(ctx, &(s1)->location, NULL, fmt, ## args)
+#define stmt_binary_error(ctx, s1, s2, fmt, args...) \
+	__stmt_binary_error(ctx, &(s1)->location, &(s2)->location, fmt, ## args)
+
 #endif /* NFTABLES_EREC_H */
