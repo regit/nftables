@@ -23,6 +23,7 @@
 #include <statement.h>
 #include <utils.h>
 #include <list.h>
+#include <xt.h>
 
 #include <netinet/in.h>
 #include <linux/netfilter/nf_nat.h>
@@ -566,4 +567,28 @@ static const struct stmt_ops fwd_stmt_ops = {
 struct stmt *fwd_stmt_alloc(const struct location *loc)
 {
 	return stmt_alloc(loc, &fwd_stmt_ops);
+}
+
+static void xt_stmt_print(const struct stmt *stmt)
+{
+	xt_stmt_xlate(stmt);
+}
+
+static void xt_stmt_destroy(struct stmt *stmt)
+{
+	xfree(stmt->xt.name);
+	xfree(stmt->xt.opts);
+	xt_stmt_release(stmt);
+}
+
+static const struct stmt_ops xt_stmt_ops = {
+	.type		= STMT_XT,
+	.name		= "xt",
+	.print		= xt_stmt_print,
+	.destroy	= xt_stmt_destroy,
+};
+
+struct stmt *xt_stmt_alloc(const struct location *loc)
+{
+	return stmt_alloc(loc, &xt_stmt_ops);
 }

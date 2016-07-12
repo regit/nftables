@@ -148,6 +148,37 @@ struct flow_stmt {
 extern struct stmt *flow_stmt_alloc(const struct location *loc);
 
 /**
+ * enum nft_xt_type - xtables statement types
+ *
+ * @NFT_XT_MATCH:	match
+ * @NFT_XT_TARGET:	target
+ * @NFT_XT_WATCHER:	watcher (only for the bridge family)
+ */
+enum nft_xt_type {
+	NFT_XT_MATCH = 0,
+	NFT_XT_TARGET,
+	NFT_XT_WATCHER,
+	NFT_XT_MAX
+};
+
+struct xtables_match;
+struct xtables_target;
+
+struct xt_stmt {
+	const char			*name;
+	enum nft_xt_type		type;
+	uint32_t			proto;
+	union {
+		struct xtables_match	*match;
+		struct xtables_target	*target;
+	};
+	const char			*opts;
+	void				*entry;
+};
+
+extern struct stmt *xt_stmt_alloc(const struct location *loc);
+
+/**
  * enum stmt_types - statement types
  *
  * @STMT_INVALID:	uninitialised
@@ -168,6 +199,7 @@ extern struct stmt *flow_stmt_alloc(const struct location *loc);
  * @STMT_SET:		set statement
  * @STMT_DUP:		dup statement
  * @STMT_FWD:		forward statement
+ * @STMT_XT:		XT statement
  */
 enum stmt_types {
 	STMT_INVALID,
@@ -188,6 +220,7 @@ enum stmt_types {
 	STMT_SET,
 	STMT_DUP,
 	STMT_FWD,
+	STMT_XT,
 };
 
 /**
@@ -243,6 +276,7 @@ struct stmt {
 		struct set_stmt		set;
 		struct dup_stmt		dup;
 		struct fwd_stmt		fwd;
+		struct xt_stmt		xt;
 	};
 };
 

@@ -28,6 +28,7 @@
 #include <erec.h>
 #include <gmputil.h>
 #include <utils.h>
+#include <xt.h>
 
 static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr);
 

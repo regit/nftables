@@ -26,6 +26,7 @@
 #include <erec.h>
 #include <sys/socket.h>
 #include <libnftnl/udata.h>
+#include <xt.h>
 
 static int netlink_parse_expr(const struct nftnl_expr *nle,
 			      struct netlink_parse_ctx *ctx);
@@ -986,6 +987,8 @@ static const struct {
 	{ .name = "queue",	.parse = netlink_parse_queue },
 	{ .name = "dynset",	.parse = netlink_parse_dynset },
 	{ .name = "fwd",	.parse = netlink_parse_fwd },
+	{ .name = "target",	.parse = netlink_parse_target },
+	{ .name = "match",	.parse = netlink_parse_match },
 };
 
 static int netlink_parse_expr(const struct nftnl_expr *nle,
@@ -1797,6 +1800,9 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 		case STMT_FWD:
 			if (stmt->fwd.to != NULL)
 				expr_postprocess(&rctx, &stmt->fwd.to);
+			break;
+		case STMT_XT:
+			stmt_xt_postprocess(&rctx, stmt, rule);
 			break;
 		default:
 			break;

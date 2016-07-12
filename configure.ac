@@ -98,6 +98,16 @@ AC_DEFINE([HAVE_LIBREADLINE], [1], [])
 AC_SUBST(with_cli)
 AM_CONDITIONAL([BUILD_CLI], [test "x$with_cli" != xno])
 
+AC_ARG_WITH([xtables], [AS_HELP_STRING([--with-xtables],
+            [Use libxtables for iptables interaction)])],
+	    [with_libxtables=yes], [with_libxtables=no])
+AS_IF([test "x$with_libxtables" != xno], [
+PKG_CHECK_MODULES([XTABLES], [xtables >= 1.6.0])
+AC_DEFINE([HAVE_LIBXTABLES], [1], [0])
+])
+AC_SUBST(with_libxtables)
+AM_CONDITIONAL([BUILD_XTABLES], [test "x$with_libxtables" == xyes])
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_ASSERT
@@ -147,4 +157,5 @@ nft configuration:
   cli support:			${with_cli}
   enable debugging:		${with_debug}
   use mini-gmp:			${with_mini_gmp}
-  enable pdf documentation:	${enable_pdf_doc}"
+  enable pdf documentation:	${enable_pdf_doc}
+  libxtables support:		${with_libxtables}"
