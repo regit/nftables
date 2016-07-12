@@ -523,6 +523,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { expr_free($$); }	set_expr set_list_expr set_list_member_expr
 %type <expr>			set_elem_expr set_elem_expr_alloc set_lhs_expr set_rhs_expr
 %destructor { expr_free($$); }	set_elem_expr set_elem_expr_alloc set_lhs_expr set_rhs_expr
+%type <expr>			set_elem_expr_stmt set_elem_expr_stmt_alloc
+%destructor { expr_free($$); }	set_elem_expr_stmt set_elem_expr_stmt_alloc
 
 %type <expr>			flow_key_expr flow_key_expr_alloc
 %destructor { expr_free($$); }	flow_key_expr flow_key_expr_alloc
@@ -1781,7 +1783,17 @@ queue_stmt_flag		:	BYPASS	{ $$ = NFT_QUEUE_FLAG_BYPASS; }
 			|	FANOUT	{ $$ = NFT_QUEUE_FLAG_CPU_FANOUT; }
 			;
 
-set_stmt		:	SET	set_stmt_op	set_elem_expr	symbol_expr
+set_elem_expr_stmt	:	set_elem_expr_stmt_alloc
+			|	set_elem_expr_stmt_alloc	set_elem_options
+			;
+
+set_elem_expr_stmt_alloc:	concat_expr
+			{
+				$$ = set_elem_expr_alloc(&@1, $1);
+			}
+			;
+
+set_stmt		:	SET	set_stmt_op	set_elem_expr_stmt	symbol_expr
 			{
 				$$ = set_stmt_alloc(&@$);
 				$$->set.op  = $2;
