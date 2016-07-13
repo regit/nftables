@@ -635,7 +635,7 @@ common_block		:	INCLUDE		QUOTED_STRING	stmt_seperator
 				struct scope *scope = current_scope(state);
 
 				if (symbol_lookup(scope, $2) != NULL) {
-					erec_queue(error(&@2, "redfinition of symbol '%s'", $2),
+					erec_queue(error(&@2, "redefinition of symbol '%s'", $2),
 						   state->msgs);
 					YYERROR;
 				}
