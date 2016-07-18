@@ -200,3 +200,6 @@ meta cgroup {1048577-1048578};ok;cgroup { 1048577-1048578}
 meta iif . meta oif { lo . eth0 };ok
 meta iif . meta oif . meta mark { lo . eth0 . 0x0000000a };ok
 meta iif . meta oif vmap { lo . eth0 : drop };ok
+
+meta random eq 1;ok;meta random 1
+meta random gt 1000000;ok;meta random > 1000000

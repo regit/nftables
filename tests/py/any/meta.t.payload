@@ -781,3 +781,12 @@ ip test-ip4 output
   [ meta load oif => reg 9 ]
   [ lookup reg 1 set __map%d dreg 0 ]
 
+# meta random eq 1
+ip test-ip4 input
+  [ meta load prandom => reg 1 ]
+  [ cmp eq reg 1 0x01000000 ]
+
+# meta random gt 1000000
+ip test-ip4 input
+  [ meta load prandom => reg 1 ]
+  [ cmp gt reg 1 0x40420f00 ]
