@@ -2348,6 +2348,7 @@ meta_key_qualified	:	LENGTH		{ $$ = NFT_META_LEN; }
 			|	L4PROTO		{ $$ = NFT_META_L4PROTO; }
 			|	PROTOCOL	{ $$ = NFT_META_PROTOCOL; }
 			|	PRIORITY	{ $$ = NFT_META_PRIORITY; }
+			|	RANDOM		{ $$ = NFT_META_PRANDOM; }
 			;
 
 meta_key_unqualified	:	MARK		{ $$ = NFT_META_MARK; }

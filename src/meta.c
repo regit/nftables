@@ -418,6 +418,9 @@ static const struct meta_template meta_templates[] = {
 	[NFT_META_CGROUP]	= META_TEMPLATE("cgroup",    &integer_type,
 						4 * BITS_PER_BYTE,
 						BYTEORDER_HOST_ENDIAN),
+	[NFT_META_PRANDOM]	= META_TEMPLATE("random",    &integer_type,
+						4 * BITS_PER_BYTE,
+						BYTEORDER_BIG_ENDIAN), /* avoid conversion; doesn't have endianess */
 };
 
 static bool meta_key_is_qualified(enum nft_meta_keys key)
@@ -428,6 +431,7 @@ static bool meta_key_is_qualified(enum nft_meta_keys key)
 	case NFT_META_L4PROTO:
 	case NFT_META_PROTOCOL:
 	case NFT_META_PRIORITY:
+	case NFT_META_PRANDOM:
 		return true;
 	default:
 		return false;
