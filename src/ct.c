@@ -29,6 +29,8 @@
 #include <utils.h>
 #include <statement.h>
 
+#define CONNLABEL_CONF	DEFAULT_INCLUDE_PATH "connlabel.conf"
+
 static const struct symbol_table ct_state_tbl = {
 	.symbols	= {
 		SYMBOL("invalid",	NF_CT_STATE_INVALID_BIT),
@@ -128,7 +130,8 @@ static struct error_record *ct_label_type_parse(const struct expr *sym,
 
 	dtype = sym->dtype;
 	if (s->identifier == NULL)
-		return error(&sym->location, "Could not parse %s", dtype->desc);
+		return error(&sym->location, "%s: could not parse %s \"%s\"",
+			     CONNLABEL_CONF, dtype->desc, sym->identifier);
 
 	if (s->value >= CT_LABEL_BIT_SIZE)
 		return error(&sym->location, "%s: out of range (%u max)",
@@ -158,7 +161,7 @@ static const struct datatype ct_label_type = {
 
 static void __init ct_label_table_init(void)
 {
-	ct_label_tbl = rt_symbol_table_init("/etc/xtables/connlabel.conf");
+	ct_label_tbl = rt_symbol_table_init(CONNLABEL_CONF);
 }
 
 #ifndef NF_CT_HELPER_NAME_LEN
