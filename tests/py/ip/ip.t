@@ -121,3 +121,8 @@ ip version 4 ip hdrlength 5;ok
 ip hdrlength 0;ok
 ip hdrlength 15;ok
 ip hdrlength 16;fail
+
+# limit impact to lo
+iif lo ip daddr set 127.0.0.1;ok
+iif lo ip checksum set 0;ok
+iif lo ip id set 0;ok

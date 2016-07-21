@@ -648,3 +648,26 @@ netdev test-netdev ingress
   [ bitwise reg 1 = (reg=1 & 0x000000fc ) ^ 0x00000000 ]
   [ lookup reg 1 set __set%d ]
 
+# iif lo ip daddr set 127.0.0.1
+netdev test-netdev ingress
+  [ meta load iif => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ meta load protocol => reg 1 ]
+  [ cmp eq reg 1 0x00000008 ]
+  [ immediate reg 1 0x0100007f ]
+  [ payload write reg 1 => 4b @ network header + 16 csum_type 1 csum_off 10 ]
+
+# iif lo ip checksum set 0
+netdev test-netdev ingress
+  [ meta load iif => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ meta load protocol => reg 1 ]
+  [ cmp eq reg 1 0x00000008 ]
+  [ immediate reg 1 0x00000000 ]
+  [ payload write reg 1 => 2b @ network header + 10 csum_type 1 csum_off 10 ]
+
+# iif lo ip id set 0
+netdev test-netdev ingress
+  [ meta load iif => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ meta load protocol => reg 1 ]

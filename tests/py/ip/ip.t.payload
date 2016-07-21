@@ -416,3 +416,24 @@ ip test-ip4 input
   [ bitwise reg 1 = (reg=1 & 0x0000000f ) ^ 0x00000000 ]
   [ cmp eq reg 1 0x0000000f ]
 
+# iif lo ip daddr set 127.0.0.1
+ip test-ip4 input
+  [ meta load iif => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ immediate reg 1 0x0100007f ]
+  [ payload write reg 1 => 4b @ network header + 16 csum_type 1 csum_off 10 ]
+
+# iif lo ip checksum set 0
+ip test-ip4 input
+  [ meta load iif => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ immediate reg 1 0x00000000 ]
+  [ payload write reg 1 => 2b @ network header + 10 csum_type 1 csum_off 10 ]
+
+# iif lo ip id set 0
+ip test-ip4 input
+  [ meta load iif => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ immediate reg 1 0x00000000 ]
+  [ payload write reg 1 => 2b @ network header + 4 csum_type 1 csum_off 10 ]
+
