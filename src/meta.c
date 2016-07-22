@@ -80,14 +80,7 @@ static void tchandle_type_print(const struct expr *expr)
 		printf("none");
 		break;
 	default:
-		if (TC_H_MAJ(handle) == 0)
-			printf(":%04x", TC_H_MIN(handle));
-		else if (TC_H_MIN(handle) == 0)
-			printf("%04x:", TC_H_MAJ(handle) >> 16);
-		else {
-			printf("%04x:%04x",
-			       TC_H_MAJ(handle) >> 16, TC_H_MIN(handle));
-		}
+		printf("%0x:%0x", TC_H_MAJ(handle) >> 16, TC_H_MIN(handle));
 		break;
 	}
 }
