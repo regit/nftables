@@ -391,3 +391,4 @@ ip6 test-ip6 input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
   [ immediate reg 1 0x00000001 ]
+  [ payload write reg 1 => 1b @ network header + 7 csum_type 0 csum_off 0 ]

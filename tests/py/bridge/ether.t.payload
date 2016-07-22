@@ -42,3 +42,11 @@ bridge test-bridge input
   [ cmp eq reg 1 0x04030201 ]
   [ immediate reg 0 accept ]
 
+# ether daddr 00:01:02:03:04:05 ether saddr set ff:ff:ff:ff:ff:ff drop
+bridge test-bridge input
+  [ payload load 6b @ link header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x03020100 0x00000504 ]
+  [ immediate reg 1 0xffffffff 0x0000ffff ]
+  [ payload write reg 1 => 6b @ link header + 6 csum_type 0 csum_off 0 ]
+  [ immediate reg 0 drop ]
+
