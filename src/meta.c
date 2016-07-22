@@ -127,9 +127,9 @@ err:
 }
 
 static const struct datatype tchandle_type = {
-	.type		= TYPE_TC_HANDLE,
-	.name		= "tc_handle",
-	.desc		= "TC handle",
+	.type		= TYPE_CLASSID,
+	.name		= "classid",
+	.desc		= "TC classid",
 	.byteorder	= BYTEORDER_HOST_ENDIAN,
 	.size		= 4 * BITS_PER_BYTE,
 	.basetype	= &integer_type,

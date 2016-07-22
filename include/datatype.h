@@ -27,7 +27,7 @@
  * @TYPE_IFINDEX:	interface index (integer subtype)
  * @TYPE_ARPHRD:	interface type (integer subtype)
  * @TYPE_REALM:		routing realm (integer subtype)
- * @TYPE_TC_HANDLE:	TC handle (integer subtype)
+ * @TYPE_CLASSID:	TC classid (integer subtype)
  * @TYPE_UID:		user ID (integer subtype)
  * @TYPE_GID:		group ID (integer subtype)
  * @TYPE_CT_STATE:	conntrack state (bitmask subtype)
@@ -66,7 +66,7 @@ enum datatypes {
 	TYPE_IFINDEX,
 	TYPE_ARPHRD,
 	TYPE_REALM,
-	TYPE_TC_HANDLE,
+	TYPE_CLASSID,
 	TYPE_UID,
 	TYPE_GID,
 	TYPE_CT_STATE,
