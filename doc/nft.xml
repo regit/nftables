@@ -2037,7 +2037,7 @@ filter output oif eth0
 							</row>
 							<row>
 								<entry>label</entry>
-								<entry>Connection tracking label</entry>
+								<entry>Connection tracking label bit or symbolic name defined in connlabel.conf in the nftables include path</entry>
 								<entry>ct_label</entry>
 							</row>
 							<row>
@@ -2202,6 +2202,29 @@ filter output oif eth0
 
 filter input iif eth0 ip saddr 192.168.0.0/24 jump from_lan
 filter input iif eth0 drop
+					</programlisting>
+				</example>
+			</para>
+		</refsect2>
+		<refsect2>
+			<title>Payload statement</title>
+			<para>
+				The payload statement alters packet content.
+				It can be used for example to set ip DSCP (differv) header field or ipv6 flow labels.
+			</para>
+			<para>
+				<example>
+					<title>route some packets instead of bridging</title>
+					<programlisting>
+# redirect tcp:http from 192.160.0.0/16 to local machine for routing instead of bridging
+# assumes 00:11:22:33:44:55 is local MAC address.
+bridge input meta iif eth0 ip saddr 192.168.0.0/16 tcp dport 80 meta pkttype set unicast ether daddr set 00:11:22:33:44:55
+					</programlisting>
+				</example>
+				<example>
+					<title>Set IPv4 DSCP header field</title>
+					<programlisting>
+ip forward ip dscp set 42
 					</programlisting>
 				</example>
 			</para>
@@ -2388,6 +2411,63 @@ filter input iif eth0 drop
 				</cmdsynopsis>
 			</para>
 
+		</refsect2>
+		<refsect2>
+			<title>Conntrack statement</title>
+			<para>
+				The conntrack statement can be used to set the conntrack mark and conntrack labels.
+			</para>
+			<para>
+				<cmdsynopsis>
+					<command>ct</command>
+					<group choice="req">
+						<arg>mark</arg>
+						<arg>label</arg>
+					</group>
+					<arg choice="none">set</arg>
+					<replaceable>value</replaceable>
+				</cmdsynopsis>
+			</para>
+			<para>
+				The ct statement sets meta data associated with a connection.
+			</para>
+			<para>
+				<table frame="all">
+					<title>Meta statement types</title>
+					<tgroup cols='3' align='left' colsep='1' rowsep='1'>
+						<colspec colname='c1'/>
+						<colspec colname='c2'/>
+						<colspec colname='c3'/>
+						<thead>
+							<row>
+								<entry>Keyword</entry>
+								<entry>Description</entry>
+								<entry>Value</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry>mark</entry>
+								<entry>Connection tracking mark</entry>
+								<entry>mark</entry>
+							</row>
+							<row>
+								<entry>label</entry>
+								<entry>Connection tracking label</entry>
+								<entry>label</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</table>
+			</para>
+			<para>
+				<example>
+					<title>save packet nfmark in conntrack</title>
+					<programlisting>
+ct set mark meta mark
+					</programlisting>
+				</example>
+			</para>
 		</refsect2>
 		<refsect2>
 			<title>Meta statement</title>
