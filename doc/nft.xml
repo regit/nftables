@@ -1001,6 +1001,7 @@ filter output ip6 daddr ::1
 						<arg>iifgroup</arg>
 						<arg>oifgroup</arg>
 						<arg>cgroup</arg>
+						<arg>random</arg>
 					</group>
 				</cmdsynopsis>
 			</para>
@@ -1126,6 +1127,11 @@ filter output ip6 daddr ::1
 							<row>
 								<entry>cgroup</entry>
 								<entry>control group id</entry>
+								<entry>integer (32 bits)</entry>
+							</row>
+							<row>
+								<entry>random</entry>
+								<entry>pseudo-random number</entry>
 								<entry>integer (32 bits)</entry>
 							</row>
 						</tbody>
