@@ -449,15 +449,9 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "cgroup"		{ return CGROUP; }
 
 "ct"			{ return CT; }
-"direction"		{ return DIRECTION; }
-"state"			{ return STATE; }
-"status"		{ return STATUS; }
-"expiration"		{ return EXPIRATION; }
-"helper"		{ return HELPER; }
 "l3proto"		{ return L3PROTOCOL; }
 "proto-src"		{ return PROTO_SRC; }
 "proto-dst"		{ return PROTO_DST; }
-"label"			{ return LABEL; }
 
 "numgen"		{ return NUMGEN; }
 "inc"			{ return INC; }

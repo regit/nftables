@@ -29,4 +29,6 @@ extern void ct_expr_update_type(struct proto_ctx *ctx, struct expr *expr);
 
 extern struct error_record *ct_dir_parse(const struct location *loc,
 					 const char *str, int8_t *dir);
+extern struct error_record *ct_key_parse(const struct location *loc, const char *str,
+					 unsigned int *key);
 #endif /* NFTABLES_CT_H */

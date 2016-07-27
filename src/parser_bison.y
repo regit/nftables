@@ -2512,6 +2512,19 @@ ct_expr			: 	CT	ct_key
 			{
 				$$ = ct_expr_alloc(&@$, $2, -1);
 			}
+			| 	CT	STRING
+			{
+				struct error_record *erec;
+				unsigned int key;
+
+				erec = ct_key_parse(&@$, $2, &key);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+
+				$$ = ct_expr_alloc(&@$, key, -1);
+			}
 			|	CT	STRING	ct_key_dir
 			{
 				struct error_record *erec;
@@ -2527,15 +2540,7 @@ ct_expr			: 	CT	ct_key
 			}
 			;
 
-ct_key			:	STATE		{ $$ = NFT_CT_STATE; }
-			|	DIRECTION	{ $$ = NFT_CT_DIRECTION; }
-			|	STATUS		{ $$ = NFT_CT_STATUS; }
-			|	MARK		{ $$ = NFT_CT_MARK; }
-			|	EXPIRATION	{ $$ = NFT_CT_EXPIRATION; }
-			|	HELPER		{ $$ = NFT_CT_HELPER; }
-			|	LABEL		{ $$ = NFT_CT_LABELS; }
-			|	L3PROTOCOL	{ $$ = NFT_CT_L3PROTOCOL; }
-			|	PROTOCOL	{ $$ = NFT_CT_PROTOCOL; }
+ct_key			:	MARK		{ $$ = NFT_CT_MARK; }
 			|	ct_key_counters
 			;
 ct_key_dir		:	SADDR		{ $$ = NFT_CT_SRC; }
@@ -2554,6 +2559,19 @@ ct_key_counters		:	BYTES		{ $$ = NFT_CT_BYTES; }
 ct_stmt			:	CT	ct_key		SET	expr
 			{
 				$$ = ct_stmt_alloc(&@$, $2, $4);
+			}
+			|	CT	STRING		SET	expr
+			{
+				struct error_record *erec;
+				unsigned int key;
+
+				erec = ct_key_parse(&@$, $2, &key);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+
+				$$ = ct_stmt_alloc(&@$, key, $4);
 			}
 			;
 
