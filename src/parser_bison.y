@@ -1071,7 +1071,7 @@ map_block		:	/* empty */	{ $$ = $<set>-1; }
 			}
 			|	map_block	FLAGS		set_flag_list	stmt_seperator
 			{
-				$1->flags = $3;
+				$1->flags |= $3;
 				$$ = $1;
 			}
 			|	map_block	ELEMENTS	'='		set_expr
