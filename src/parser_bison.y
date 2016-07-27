@@ -97,6 +97,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 #define YYLLOC_DEFAULT(Current, Rhs, N)	location_update(&Current, Rhs, N)
 
+#define symbol_value(loc, str) \
+	symbol_expr_alloc(loc, SYMBOL_VALUE, current_scope(state), str)
 %}
 
 /* Declaration section */
@@ -573,8 +575,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			flow_key_expr flow_key_expr_alloc
 %destructor { expr_free($$); }	flow_key_expr flow_key_expr_alloc
 
-%type <expr>			expr initializer_expr
-%destructor { expr_free($$); }	expr initializer_expr
+%type <expr>			expr initializer_expr keyword_rhs_expr
+%destructor { expr_free($$); }	expr initializer_expr keyword_rhs_expr
 
 %type <expr>			rhs_expr concat_rhs_expr basic_rhs_expr
 %destructor { expr_free($$); }	rhs_expr concat_rhs_expr basic_rhs_expr
@@ -2836,39 +2838,21 @@ boolean_expr		:	boolean_keys
 			}
 			;
 
+keyword_rhs_expr	:	ETHER                   { $$ = symbol_value(&@$, "ether"); }
+			|	IP			{ $$ = symbol_value(&@$, "ip"); }
+			|	IP6			{ $$ = symbol_value(&@$, "ip6"); }
+			|	VLAN			{ $$ = symbol_value(&@$, "vlan"); }
+			|	ARP			{ $$ = symbol_value(&@$, "arp"); }
+			|	DNAT			{ $$ = symbol_value(&@$, "dnat"); }
+			|	SNAT			{ $$ = symbol_value(&@$, "snat"); }
+			|	ECN			{ $$ = symbol_value(&@$, "ecn"); }
+			|	RESET			{ $$ = symbol_value(&@$, "reset"); }
+			;
+
 primary_rhs_expr	:	symbol_expr		{ $$ = $1; }
 			|	integer_expr		{ $$ = $1; }
 			|	boolean_expr		{ $$ = $1; }
-			|	ETHER
-			{
-				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
-						       current_scope(state),
-						       "ether");
-			}
-			|	IP
-			{
-				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
-						       current_scope(state),
-						       "ip");
-			}
-			|	IP6
-			{
-				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
-						       current_scope(state),
-						       "ip6");
-			}
-			|	VLAN
-			{
-				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
-						       current_scope(state),
-						       "vlan");
-			}
-			|	ARP
-			{
-				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
-						       current_scope(state),
-						       "arp");
-			}
+			|	keyword_rhs_expr	{ $$ = $1; }
 			|	TCP
 			{
 				uint8_t data = IPPROTO_TCP;
@@ -2945,30 +2929,6 @@ primary_rhs_expr	:	symbol_expr		{ $$ = $1; }
 				$$ = constant_expr_alloc(&@$, &icmp_type_type,
 							 BYTEORDER_HOST_ENDIAN,
 							 sizeof(data) * BITS_PER_BYTE, &data);
-			}
-			|	SNAT
-			{
-				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
-						       current_scope(state),
-						       "snat");
-			}
-			|	DNAT
-			{
-				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
-						       current_scope(state),
-						       "dnat");
-			}
-			|	ECN
-			{
-				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
-						       current_scope(state),
-						       "ecn");
-			}
-			|	RESET
-			{
-				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
-						       current_scope(state),
-						       "reset");
 			}
 			;
 
