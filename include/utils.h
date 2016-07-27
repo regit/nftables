@@ -83,6 +83,16 @@
 	(void) (&_max1 == &_max2);		\
 	_max1 > _max2 ? _max1 : _max2; })
 
+#define SNPRINTF_BUFFER_SIZE(ret, size, len, offset)	\
+	if (ret < 0)					\
+		abort();				\
+	offset += ret;					\
+	assert(ret < len);				\
+	if (ret > len)					\
+		ret = len;				\
+	size += ret;					\
+	len -= ret;
+
 #define MSEC_PER_SEC	1000L
 
 /**
