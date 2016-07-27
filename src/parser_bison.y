@@ -879,7 +879,13 @@ rename_cmd		:	CHAIN		chain_spec	identifier
 			}
 			;
 
-export_cmd		:	export_format
+export_cmd		:	RULESET		export_format
+			{
+				struct handle h = { .family = NFPROTO_UNSPEC };
+				struct export *export = export_alloc($2);
+				$$ = cmd_alloc(CMD_EXPORT, CMD_OBJ_EXPORT, &h, &@$, export);
+			}
+			|	export_format
 			{
 				struct handle h = { .family = NFPROTO_UNSPEC };
 				struct export *export = export_alloc($1);
