@@ -319,8 +319,6 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token MH			"mh"
 
 %token META			"meta"
-%token NFPROTO			"nfproto"
-%token L4PROTO			"l4proto"
 %token MARK			"mark"
 %token IIF			"iif"
 %token IIFNAME			"iifname"
@@ -2443,15 +2441,25 @@ meta_expr		:	META	meta_key
 			{
 				$$ = meta_expr_alloc(&@$, $1);
 			}
-			;
+			|	META	STRING
+			{
+				struct error_record *erec;
+				unsigned int key;
+
+				erec = meta_key_parse(&@$, $2, &key);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+
+				$$ = meta_expr_alloc(&@$, key);
+			}
 
 meta_key		:	meta_key_qualified
 			|	meta_key_unqualified
 			;
 
 meta_key_qualified	:	LENGTH		{ $$ = NFT_META_LEN; }
-			|	NFPROTO		{ $$ = NFT_META_NFPROTO; }
-			|	L4PROTO		{ $$ = NFT_META_L4PROTO; }
 			|	PROTOCOL	{ $$ = NFT_META_PROTOCOL; }
 			|	PRIORITY	{ $$ = NFT_META_PRIORITY; }
 			|	RANDOM		{ $$ = NFT_META_PRANDOM; }
@@ -2484,6 +2492,19 @@ meta_stmt		:	META	meta_key	SET	expr
 			|	meta_key_unqualified	SET	expr
 			{
 				$$ = meta_stmt_alloc(&@$, $1, $3);
+			}
+			|	META	STRING	SET	expr
+			{
+				struct error_record *erec;
+				unsigned int key;
+
+				erec = meta_key_parse(&@$, $2, &key);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+
+				$$ = meta_stmt_alloc(&@$, key, $4);
 			}
 			;
 

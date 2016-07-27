@@ -427,8 +427,6 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "mh"			{ return MH; }
 
 "meta"			{ return META; }
-"nfproto"		{ return NFPROTO; }
-"l4proto"		{ return L4PROTO; }
 "mark"			{ return MARK; }
 "iif"			{ return IIF; }
 "iifname"		{ return IIFNAME; }

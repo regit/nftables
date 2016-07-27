@@ -640,3 +640,39 @@ struct stmt *meta_stmt_meta_iiftype(const struct location *loc, uint16_t type)
 	dep = relational_expr_alloc(loc, OP_EQ, left, right);
 	return expr_stmt_alloc(&dep->location, dep);
 }
+
+struct error_record *meta_key_parse(const struct location *loc,
+                                    const char *str,
+                                    unsigned int *value)
+{
+	int ret, len, offset = 0;
+	const char *sep = "";
+	unsigned int i;
+	char buf[1024];
+	size_t size;
+
+	for (i = 0; i < array_size(meta_templates); i++) {
+		if (!meta_templates[i].token || strcmp(meta_templates[i].token, str))
+			continue;
+
+		*value = i;
+		return NULL;
+	}
+
+	len = (int)sizeof(buf);
+	size = sizeof(buf);
+
+	for (i = 0; i < array_size(meta_templates); i++) {
+		if (!meta_templates[i].token)
+			continue;
+
+		if (offset)
+			sep = ", ";
+
+		ret = snprintf(buf+offset, len, "%s%s", sep, meta_templates[i].token);
+		SNPRINTF_BUFFER_SIZE(ret, size, len, offset);
+		assert(offset < (int)sizeof(buf));
+	}
+
+	return error(loc, "syntax error, unexpected %s, known keys are %s", str, buf);
+}
