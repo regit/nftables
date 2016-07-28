@@ -1,4 +1,4 @@
-# iifname "eth0" tcp dport 80-90 snat 192.168.3.2
+# iifname "eth0" tcp dport 80-90 snat to 192.168.3.2
 ip test-ip4 postrouting
   [ meta load iifname => reg 1 ]
   [ cmp eq reg 1 0x30687465 0x00000000 0x00000000 0x00000000 ]
@@ -10,7 +10,7 @@ ip test-ip4 postrouting
   [ immediate reg 1 0x0203a8c0 ]
   [ nat snat ip addr_min reg 1 addr_max reg 0 ]
 
-# iifname "eth0" tcp dport != 80-90 snat 192.168.3.2
+# iifname "eth0" tcp dport != 80-90 snat to 192.168.3.2
 ip test-ip4 postrouting
   [ meta load iifname => reg 1 ]
   [ cmp eq reg 1 0x30687465 0x00000000 0x00000000 0x00000000 ]
@@ -22,7 +22,7 @@ ip test-ip4 postrouting
   [ immediate reg 1 0x0203a8c0 ]
   [ nat snat ip addr_min reg 1 addr_max reg 0 ]
 
-# iifname "eth0" tcp dport {80, 90, 23} snat 192.168.3.2
+# iifname "eth0" tcp dport {80, 90, 23} snat to 192.168.3.2
 __set%d test-ip4 3
 __set%d test-ip4 0
 	element 00005000  : 0 [end]	element 00005a00  : 0 [end]	element 00001700  : 0 [end]
@@ -36,7 +36,7 @@ ip test-ip4 postrouting
   [ immediate reg 1 0x0203a8c0 ]
   [ nat snat ip addr_min reg 1 addr_max reg 0 ]
 
-# iifname "eth0" tcp dport != 23-34 snat 192.168.3.2
+# iifname "eth0" tcp dport != 23-34 snat to 192.168.3.2
 ip test-ip4 postrouting
   [ meta load iifname => reg 1 ]
   [ cmp eq reg 1 0x30687465 0x00000000 0x00000000 0x00000000 ]
