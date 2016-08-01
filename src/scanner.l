@@ -611,6 +611,13 @@ err:
 	return -1;
 }
 
+static bool search_in_include_path(const char *filename)
+{
+	return (strncmp(filename, "./", strlen("./") != 0) &&
+		strncmp(filename, "../", strlen("../") != 0) &&
+		filename[0] != '/');
+}
+
 int scanner_include_file(void *scanner, const char *filename,
 			 const struct location *loc)
 {
@@ -622,13 +629,16 @@ int scanner_include_file(void *scanner, const char *filename,
 	FILE *f;
 
 	f = NULL;
-	for (i = 0; i < INCLUDE_PATHS_MAX; i++) {
-		if (include_paths[i] == NULL)
-			break;
-		snprintf(buf, sizeof(buf), "%s/%s", include_paths[i], filename);
-		f = fopen(buf, "r");
-		if (f != NULL)
-			break;
+	if (search_in_include_path(filename)) {
+		for (i = 0; i < INCLUDE_PATHS_MAX; i++) {
+			if (include_paths[i] == NULL)
+				break;
+			snprintf(buf, sizeof(buf), "%s/%s",
+				 include_paths[i], filename);
+			f = fopen(buf, "r");
+			if (f != NULL)
+				break;
+		}
 	}
 	if (f == NULL) {
 		f = fopen(filename, "r");
