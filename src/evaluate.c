@@ -1613,13 +1613,85 @@ static int stmt_evaluate_verdict(struct eval_ctx *ctx, struct stmt *stmt)
 
 static int stmt_evaluate_payload(struct eval_ctx *ctx, struct stmt *stmt)
 {
+	struct expr *binop, *mask, *and, *payload_bytes;
+	unsigned int masklen, extra_len = 0;
+	unsigned int payload_byte_size;
+	uint8_t shift_imm, data[NFT_REG_SIZE];
+	struct expr *payload;
+	mpz_t bitmask, ff;
+
 	if (__expr_evaluate_payload(ctx, stmt->payload.expr) < 0)
 		return -1;
 
-	return stmt_evaluate_arg(ctx, stmt,
-				 stmt->payload.expr->dtype,
-				 stmt->payload.expr->len,
-				 &stmt->payload.val);
+	payload = stmt->payload.expr;
+	if (stmt_evaluate_arg(ctx, stmt, payload->dtype, payload->len,
+			      &stmt->payload.val) < 0)
+		return -1;
+
+	if (!payload_needs_adjustment(payload))
+		return 0;
+
+	shift_imm = expr_offset_shift(payload, payload->payload.offset,
+				      &extra_len);
+	if (shift_imm) {
+		struct expr *off;
+
+		off = constant_expr_alloc(&payload->location,
+					  expr_basetype(payload),
+					  BYTEORDER_HOST_ENDIAN,
+					  sizeof(shift_imm), &shift_imm);
+
+		binop = binop_expr_alloc(&payload->location, OP_LSHIFT,
+					 stmt->payload.val, off);
+		binop->dtype		= payload->dtype;
+		binop->byteorder	= payload->byteorder;
+
+		stmt->payload.val = binop;
+	}
+
+	payload_byte_size = round_up(payload->len, BITS_PER_BYTE) / BITS_PER_BYTE;
+	payload_byte_size += (extra_len / BITS_PER_BYTE);
+	masklen = payload_byte_size * BITS_PER_BYTE;
+	mpz_init_bitmask(ff, masklen);
+
+	mpz_init2(bitmask, masklen);
+	mpz_bitmask(bitmask, payload->len);
+	mpz_lshift_ui(bitmask, shift_imm);
+
+	mpz_xor(bitmask, ff, bitmask);
+	mpz_clear(ff);
+
+	assert(sizeof(data) * BITS_PER_BYTE >= masklen);
+	mpz_export_data(data, bitmask, BYTEORDER_HOST_ENDIAN, masklen);
+	mask = constant_expr_alloc(&payload->location, expr_basetype(payload),
+				   BYTEORDER_HOST_ENDIAN, masklen, data);
+
+	payload_bytes = payload_expr_alloc(&payload->location, NULL, 0);
+	payload_init_raw(payload_bytes, payload->payload.base,
+			 (payload->payload.offset / BITS_PER_BYTE) * BITS_PER_BYTE,
+			 payload_byte_size * BITS_PER_BYTE);
+
+	payload_bytes->payload.desc	 = payload->payload.desc;
+	payload_bytes->dtype		 = &integer_type;
+	payload_bytes->byteorder	 = payload->byteorder;
+
+	payload->len = payload_bytes->len;
+	payload->payload.offset = payload_bytes->payload.offset;
+
+	and = binop_expr_alloc(&payload->location, OP_AND, payload_bytes, mask);
+
+	and->dtype		 = payload_bytes->dtype;
+	and->byteorder		 = payload_bytes->byteorder;
+	and->len		 = payload_bytes->len;
+
+	binop = binop_expr_alloc(&payload->location, OP_XOR, and,
+				 stmt->payload.val);
+	binop->dtype		= payload->dtype;
+	binop->byteorder	= payload->byteorder;
+	binop->len		= mask->len;
+	stmt->payload.val = binop;
+
+	return expr_evaluate(ctx, &stmt->payload.val);
 }
 
 static int stmt_evaluate_flow(struct eval_ctx *ctx, struct stmt *stmt)
