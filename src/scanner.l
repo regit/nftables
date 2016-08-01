@@ -644,7 +644,7 @@ int scanner_include_file(void *scanner, const char *filename,
 		name = filename;
 	}
 	if (f == NULL) {
-		erec = error(loc, "Could not open file \"%s\": %s\n",
+		erec = error(loc, "Could not open file \"%s\": %s",
 			     filename, strerror(errno));
 		goto err;
 	}
