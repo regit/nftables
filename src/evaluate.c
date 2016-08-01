@@ -1611,14 +1611,24 @@ static int stmt_evaluate_verdict(struct eval_ctx *ctx, struct stmt *stmt)
 	return 0;
 }
 
+static bool stmt_evaluate_payload_need_csum(const struct expr *payload)
+{
+	const struct proto_desc *desc;
+
+	desc = payload->payload.desc;
+
+	return desc && desc->checksum_key;
+}
+
 static int stmt_evaluate_payload(struct eval_ctx *ctx, struct stmt *stmt)
 {
 	struct expr *binop, *mask, *and, *payload_bytes;
 	unsigned int masklen, extra_len = 0;
-	unsigned int payload_byte_size;
+	unsigned int payload_byte_size, payload_byte_offset;
 	uint8_t shift_imm, data[NFT_REG_SIZE];
 	struct expr *payload;
 	mpz_t bitmask, ff;
+	bool need_csum;
 
 	if (__expr_evaluate_payload(ctx, stmt->payload.expr) < 0)
 		return -1;
@@ -1628,8 +1638,19 @@ static int stmt_evaluate_payload(struct eval_ctx *ctx, struct stmt *stmt)
 			      &stmt->payload.val) < 0)
 		return -1;
 
-	if (!payload_needs_adjustment(payload))
-		return 0;
+	need_csum = stmt_evaluate_payload_need_csum(payload);
+
+	if (!payload_needs_adjustment(payload)) {
+
+		/* We still need to munge the payload in case we have to
+		 * update checksum and the length is not even because
+		 * kernel checksum functions cannot deal with odd lengths.
+		 */
+		if (!need_csum || ((payload->len / BITS_PER_BYTE) & 1) == 0)
+			return 0;
+	}
+
+	payload_byte_offset = payload->payload.offset / BITS_PER_BYTE;
 
 	shift_imm = expr_offset_shift(payload, payload->payload.offset,
 				      &extra_len);
@@ -1651,6 +1672,16 @@ static int stmt_evaluate_payload(struct eval_ctx *ctx, struct stmt *stmt)
 
 	payload_byte_size = round_up(payload->len, BITS_PER_BYTE) / BITS_PER_BYTE;
 	payload_byte_size += (extra_len / BITS_PER_BYTE);
+
+	if (need_csum && payload_byte_size & 1) {
+		payload_byte_size++;
+
+		if (payload_byte_offset & 1) { /* prefer 16bit aligned fetch */
+			payload_byte_offset--;
+			assert(payload->payload.offset >= BITS_PER_BYTE);
+		}
+	}
+
 	masklen = payload_byte_size * BITS_PER_BYTE;
 	mpz_init_bitmask(ff, masklen);
 
@@ -1668,7 +1699,7 @@ static int stmt_evaluate_payload(struct eval_ctx *ctx, struct stmt *stmt)
 
 	payload_bytes = payload_expr_alloc(&payload->location, NULL, 0);
 	payload_init_raw(payload_bytes, payload->payload.base,
-			 (payload->payload.offset / BITS_PER_BYTE) * BITS_PER_BYTE,
+			 payload_byte_offset * BITS_PER_BYTE,
 			 payload_byte_size * BITS_PER_BYTE);
 
 	payload_bytes->payload.desc	 = payload->payload.desc;
