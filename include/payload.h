@@ -31,6 +31,7 @@ struct payload_dep_ctx {
 	struct stmt		*prev;
 };
 
+extern bool payload_is_known(const struct expr *expr);
 extern bool payload_is_stacked(const struct proto_desc *desc,
 			       const struct expr *expr);
 extern void payload_dependency_store(struct payload_dep_ctx *ctx,
