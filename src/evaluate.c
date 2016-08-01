@@ -575,6 +575,12 @@ static int __expr_evaluate_payload(struct eval_ctx *ctx, struct expr *expr)
 	return 0;
 }
 
+static bool payload_needs_adjustment(const struct expr *expr)
+{
+	return expr->payload.offset % BITS_PER_BYTE != 0 ||
+	       expr->len % BITS_PER_BYTE != 0;
+}
+
 static int expr_evaluate_payload(struct eval_ctx *ctx, struct expr **exprp)
 {
 	struct expr *expr = *exprp;
@@ -585,8 +591,7 @@ static int expr_evaluate_payload(struct eval_ctx *ctx, struct expr **exprp)
 	if (expr_evaluate_primary(ctx, exprp) < 0)
 		return -1;
 
-	if (expr->payload.offset % BITS_PER_BYTE != 0 ||
-	    expr->len % BITS_PER_BYTE != 0)
+	if (payload_needs_adjustment(expr))
 		expr_evaluate_bits(ctx, exprp);
 
 	return 0;
