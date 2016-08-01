@@ -1265,10 +1265,10 @@ static void binop_adjust_one(const struct expr *binop, struct expr *value,
 	}
 }
 
-static void binop_adjust(struct expr *expr, unsigned int shift)
+static void __binop_adjust(const struct expr *binop, struct expr *right,
+			   unsigned int shift)
 {
-	const struct expr *binop = expr->left;
-	struct expr *right = expr->right, *i;
+	struct expr *i;
 
 	switch (right->ops->type) {
 	case EXPR_VALUE:
@@ -1293,9 +1293,14 @@ static void binop_adjust(struct expr *expr, unsigned int shift)
 		}
 		break;
 	default:
-		BUG("unknown expression type %s\n", expr->ops->name);
+		BUG("unknown expression type %s\n", right->ops->name);
 		break;
 	}
+}
+
+static void binop_adjust(struct expr *expr, unsigned int shift)
+{
+	__binop_adjust(expr->left, expr->right, shift);
 }
 
 static void binop_postprocess(struct rule_pp_ctx *ctx, struct expr *expr)
