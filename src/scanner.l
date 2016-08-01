@@ -639,15 +639,14 @@ int scanner_include_file(void *scanner, const char *filename,
 			if (f != NULL)
 				break;
 		}
+	} else {
+		f = fopen(filename, "r");
+		name = filename;
 	}
 	if (f == NULL) {
-		f = fopen(filename, "r");
-		if (f == NULL) {
-			erec = error(loc, "Could not open file \"%s\": %s\n",
-				     filename, strerror(errno));
-			goto err;
-		}
-		name = filename;
+		erec = error(loc, "Could not open file \"%s\": %s\n",
+			     filename, strerror(errno));
+		goto err;
 	}
 
 	erec = scanner_push_file(scanner, name, f, loc);
