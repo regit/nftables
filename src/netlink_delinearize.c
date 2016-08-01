@@ -1747,6 +1747,183 @@ static void stmt_expr_postprocess(struct rule_pp_ctx *ctx)
 		expr_postprocess_range(ctx, op);
 }
 
+static void stmt_payload_binop_pp(struct rule_pp_ctx *ctx, struct expr *binop)
+{
+	struct expr *payload = binop->left;
+	struct expr *mask = binop->right;
+	unsigned int shift;
+
+	assert(payload->ops->type == EXPR_PAYLOAD);
+	if (payload_expr_trim(payload, mask, &ctx->pctx, &shift)) {
+		__binop_adjust(binop, mask, shift);
+		payload_expr_complete(payload, &ctx->pctx);
+		expr_set_type(mask, payload->dtype,
+			      payload->byteorder);
+	}
+}
+
+/**
+ * stmt_payload_binop_postprocess - decode payload set binop
+ *
+ * @ctx:	rule postprocessing context
+ *
+ * This helper has to be called if expr_postprocess() failed to
+ * decode the payload operation.
+ *
+ * Usually a failure to decode means that userspace had to munge
+ * the original payload expression because it has an odd size or
+ * a non-byte divisible offset/length.
+ *
+ * Of that was the case, the 'value' expression is not a value but
+ * a binop expression with a munged payload expression on the left
+ * and a mask to clear the real payload offset/length.
+ *
+ * So chech if we have one of the following binops:
+ * I)
+ *           binop (|)
+ *       binop(&)   value/set
+ * payload   value(mask)
+ *
+ * This is the normal case, the | RHS is the value the user wants
+ * to set, the & RHS is the mask value that discards bits we need
+ * to clear but retains everything unrelated to the set operation.
+ *
+ * IIa)
+ *     binop (&)
+ * payload   mask
+ *
+ * User specified a zero set value -- netlink bitwise decoding
+ * discarded the redundant "| 0" part.  This is identical to I),
+ * we can just set value to 0 after we inferred the real payload size.
+ *
+ * IIb)
+ *     binop (|)
+ * payload     value/set
+ *
+ * This happens when user wants to set all bits, netlink bitwise
+ * decoding changed '(payload & mask) ^ bits_to_set' into
+ * 'payload | bits_to_set', discarding the redundant "& 0xfff...".
+ */
+static void stmt_payload_binop_postprocess(struct rule_pp_ctx *ctx)
+{
+	struct expr *expr, *binop, *payload, *value, *mask;
+	struct stmt *stmt = ctx->stmt;
+	mpz_t bitmask;
+
+	expr = stmt->payload.val;
+
+	if (expr->ops->type != EXPR_BINOP)
+		return;
+
+	switch (expr->left->ops->type) {
+	case EXPR_BINOP: {/* I? */
+		mpz_t tmp;
+
+		if (expr->op != OP_OR)
+			return;
+
+		value = expr->right;
+		if (value->ops->type != EXPR_VALUE)
+			return;
+
+		binop = expr->left;
+		if (binop->op != OP_AND)
+			return;
+
+		payload = binop->left;
+		if (payload->ops->type != EXPR_PAYLOAD)
+			return;
+
+		if (!payload->ops->cmp(stmt->payload.expr, payload))
+			return;
+
+		mask = binop->right;
+		if (mask->ops->type != EXPR_VALUE)
+			return;
+
+		mpz_init(tmp);
+		mpz_set(tmp, mask->value);
+
+		mpz_init_bitmask(bitmask, payload->len);
+		mpz_xor(bitmask, bitmask, mask->value);
+		mpz_xor(bitmask, bitmask, value->value);
+		mpz_set(mask->value, bitmask);
+		mpz_clear(bitmask);
+
+		binop_postprocess(ctx, expr);
+		if (!payload_is_known(payload)) {
+			mpz_set(mask->value, tmp);
+			mpz_clear(tmp);
+			return;
+		}
+
+		mpz_clear(tmp);
+		expr_free(stmt->payload.expr);
+		stmt->payload.expr = expr_get(payload);
+		stmt->payload.val = expr_get(expr->right);
+		expr_free(expr);
+		break;
+	}
+	case EXPR_PAYLOAD: /* II? */
+		value = expr->right;
+		if (value->ops->type != EXPR_VALUE)
+			return;
+
+		switch (expr->op) {
+		case OP_AND: /* IIa */
+			payload = expr->left;
+			mpz_init_bitmask(bitmask, payload->len);
+			mpz_xor(bitmask, bitmask, value->value);
+			mpz_set(value->value, bitmask);
+			break;
+		case OP_OR: /* IIb */
+			break;
+		default: /* No idea */
+			return;
+		}
+
+		stmt_payload_binop_pp(ctx, expr);
+		if (!payload_is_known(expr->left))
+			return;
+
+		expr_free(stmt->payload.expr);
+
+		switch (expr->op) {
+		case OP_AND:
+			/* Mask was used to match payload, i.e.
+			 * user asked to set zero value.
+			 */
+			mpz_set_ui(value->value, 0);
+			break;
+		default:
+			break;
+		}
+
+		stmt->payload.expr = expr_get(expr->left);
+		stmt->payload.val = expr_get(expr->right);
+		expr_free(expr);
+		break;
+	default: /* No idea */
+		break;
+	}
+}
+
+static void stmt_payload_postprocess(struct rule_pp_ctx *ctx)
+{
+	struct stmt *stmt = ctx->stmt;
+
+	expr_postprocess(ctx, &stmt->payload.expr);
+
+	expr_set_type(stmt->payload.val,
+		      stmt->payload.expr->dtype,
+		      stmt->payload.expr->byteorder);
+
+	if (!payload_is_known(stmt->payload.expr))
+		stmt_payload_binop_postprocess(ctx);
+
+	expr_postprocess(ctx, &stmt->payload.val);
+}
+
 static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *rule)
 {
 	struct rule_pp_ctx rctx;
@@ -1763,11 +1940,7 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 			stmt_expr_postprocess(&rctx);
 			break;
 		case STMT_PAYLOAD:
-			expr_postprocess(&rctx, &stmt->payload.expr);
-			expr_set_type(stmt->payload.val,
-				      stmt->payload.expr->dtype,
-				      stmt->payload.expr->byteorder);
-			expr_postprocess(&rctx, &stmt->payload.val);
+			stmt_payload_postprocess(&rctx);
 			break;
 		case STMT_FLOW:
 			expr_postprocess(&rctx, &stmt->flow.key);
