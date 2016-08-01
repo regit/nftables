@@ -530,3 +530,74 @@ inet test-inet input
   [ cmp eq reg 1 0x0000000a ]
   [ immediate reg 1 0x00000001 ]
   [ payload write reg 1 => 1b @ network header + 7 csum_type 0 csum_off 0 ]
+
+# iif lo ip6 dscp set af42
+inet test-inet input
+  [ meta load iif => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x00003ff0 ) ^ 0x00000009 ]
+  [ payload write reg 1 => 2b @ network header + 0 csum_type 0 csum_off 0 ]
+
+# iif lo ip6 dscp set 63
+inet test-inet input
+  [ meta load iif => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x00003ff0 ) ^ 0x0000c00f ]
+  [ payload write reg 1 => 2b @ network header + 0 csum_type 0 csum_off 0 ]
+
+# iif lo ip6 ecn set ect0
+inet test-inet input
+  [ meta load iif => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ payload load 1b @ network header + 1 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x000000cf ) ^ 0x00000020 ]
+  [ payload write reg 1 => 1b @ network header + 1 csum_type 0 csum_off 0 ]
+
+# iif lo ip6 ecn set ce
+inet test-inet input
+  [ meta load iif => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ payload load 1b @ network header + 1 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x000000cf ) ^ 0x00000030 ]
+  [ payload write reg 1 => 1b @ network header + 1 csum_type 0 csum_off 0 ]
+
+# iif lo ip6 flowlabel set 0
+inet test-inet input
+  [ meta load iif => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ payload load 3b @ network header + 1 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x000000f0 ) ^ 0x00000000 ]
+  [ payload write reg 1 => 3b @ network header + 1 csum_type 0 csum_off 0 ]
+
+# iif lo ip6 flowlabel set 12345
+inet test-inet input
+  [ meta load iif => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ payload load 3b @ network header + 1 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x000000f0 ) ^ 0x00393000 ]
+  [ payload write reg 1 => 3b @ network header + 1 csum_type 0 csum_off 0 ]
+
+# iif lo ip6 flowlabel set 0xfffff
+inet test-inet input
+  [ meta load iif => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ payload load 3b @ network header + 1 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x000000f0 ) ^ 0x00ffff0f ]
+  [ payload write reg 1 => 3b @ network header + 1 csum_type 0 csum_off 0 ]
+

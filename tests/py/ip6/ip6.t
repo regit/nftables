@@ -145,3 +145,15 @@ ip6 daddr != ::1234:1234:1234:1234:1234:1234:1234-1234:1234::1234:1234:1234:1234
 # limit impact to lo
 iif lo ip6 daddr set ::1;ok
 iif lo ip6 hoplimit set 1;ok
+iif lo ip6 dscp set af42;ok
+iif lo ip6 dscp set 63;ok;iif lo ip6 dscp set 0x3f
+iif lo ip6 ecn set ect0;ok
+iif lo ip6 ecn set ce;ok
+
+iif lo ip6 flowlabel set 0;ok
+iif lo ip6 flowlabel set 12345;ok
+iif lo ip6 flowlabel set 0xfffff;ok;iif lo ip6 flowlabel set 1048575
+
+iif lo ip6 ecn set 4;fail
+iif lo ip6 dscp set 64;fail
+iif lo ip6 flowlabel set 1048576;fail
