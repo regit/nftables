@@ -221,8 +221,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %token <val> NUM		"number"
 %token <string> STRING		"string"
-%token <string> QUOTED_STRING
-%token <string> ASTERISK_STRING
+%token <string> QUOTED_STRING	"quoted string"
+%token <string> ASTERISK_STRING	"string with a trailing asterisk"
 %destructor { xfree($$); }	STRING QUOTED_STRING ASTERISK_STRING
 
 %token LL_HDR			"ll"
