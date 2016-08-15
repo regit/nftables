@@ -52,5 +52,5 @@ udp checksum { 33-55};ok
 - udp checksum != { 33-55};ok
 
 # limit impact to lo
-iif lo udp checksum set 0;ok
-iif lo udp dport set 65535;ok
+iif "lo" udp checksum set 0;ok
+iif "lo" udp dport set 65535;ok

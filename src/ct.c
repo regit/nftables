@@ -108,7 +108,7 @@ static void ct_label_type_print(const struct expr *expr)
 	for (s = ct_label_tbl->symbols; s->identifier != NULL; s++) {
 		if (bit != s->value)
 			continue;
-		printf("%s", s->identifier);
+		printf("\"%s\"", s->identifier);
 		return;
 	}
 	/* can happen when connlabel.conf is altered after rules were added */

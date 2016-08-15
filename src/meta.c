@@ -47,7 +47,7 @@ static void __exit realm_table_exit(void)
 
 static void realm_type_print(const struct expr *expr)
 {
-	return symbolic_constant_print(realm_tbl, expr);
+	return symbolic_constant_print(realm_tbl, expr, true);
 }
 
 static struct error_record *realm_type_parse(const struct expr *sym,
@@ -144,7 +144,7 @@ static void ifindex_type_print(const struct expr *expr)
 
 	ifindex = mpz_get_uint32(expr->value);
 	if (nft_if_indextoname(ifindex, name))
-		printf("%s", name);
+		printf("\"%s\"", name);
 	else
 		printf("%d", ifindex);
 }
@@ -208,7 +208,7 @@ static void uid_type_print(const struct expr *expr)
 
 		pw = getpwuid(uid);
 		if (pw != NULL)
-			printf("%s", pw->pw_name);
+			printf("\"%s\"", pw->pw_name);
 		else
 			printf("%d", uid);
 		return;
@@ -260,7 +260,7 @@ static void gid_type_print(const struct expr *expr)
 
 		gr = getgrgid(gid);
 		if (gr != NULL)
-			printf("%s", gr->gr_name);
+			printf("\"%s\"", gr->gr_name);
 		else
 			printf("%u", gid);
 		return;
@@ -314,7 +314,7 @@ static const struct symbol_table pkttype_type_tbl = {
 
 static void pkttype_type_print(const struct expr *expr)
 {
-	return symbolic_constant_print(&pkttype_type_tbl, expr);
+	return symbolic_constant_print(&pkttype_type_tbl, expr, false);
 }
 
 static const struct datatype pkttype_type = {
@@ -341,7 +341,7 @@ static void __exit devgroup_table_exit(void)
 
 static void devgroup_type_print(const struct expr *expr)
 {
-	return symbolic_constant_print(devgroup_tbl, expr);
+	return symbolic_constant_print(devgroup_tbl, expr, true);
 }
 
 static struct error_record *devgroup_type_parse(const struct expr *sym,

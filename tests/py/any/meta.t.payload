@@ -193,25 +193,25 @@ ip test-ip4 input
   [ meta load mark => reg 1 ]
   [ cmp neq reg 1 0x00000002 ]
 
-# meta iif eth0 accept
+# meta iif "eth0" accept
 ip test-ip4 input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000002 ]
   [ immediate reg 0 accept ]
 
-# meta iif eth0 accept
+# meta iif "eth0" accept
 ip test-ip4 input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000002 ]
   [ immediate reg 0 accept ]
 
-# meta iif != eth0 accept
+# meta iif != "eth0" accept
 ip test-ip4 input
   [ meta load iif => reg 1 ]
   [ cmp neq reg 1 0x00000002 ]
   [ immediate reg 0 accept ]
 
-# meta iif != eth0 accept
+# meta iif != "eth0" accept
 ip test-ip4 input
   [ meta load iif => reg 1 ]
   [ cmp neq reg 1 0x00000002 ]
@@ -273,19 +273,19 @@ ip test-ip4 input
   [ meta load iiftype => reg 1 ]
   [ cmp eq reg 1 0x00000200 ]
 
-# meta oif lo accept
+# meta oif "lo" accept
 ip test-ip4 input
   [ meta load oif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
   [ immediate reg 0 accept ]
 
-# meta oif != lo accept
+# meta oif != "lo" accept
 ip test-ip4 input
   [ meta load oif => reg 1 ]
   [ cmp neq reg 1 0x00000001 ]
   [ immediate reg 0 accept ]
 
-# meta oif {eth0, lo} accept
+# meta oif {"eth0", "lo"} accept
 __set%d test-ip4 3
 __set%d test-ip4 0
 	element 00000002  : 0 [end]	element 00000001  : 0 [end]
@@ -340,7 +340,7 @@ ip test-ip4 input
   [ meta load oiftype => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
 
-# meta skuid {bin, root, daemon} accept
+# meta skuid {"bin", "root", "daemon"} accept
 __set%d test-ip4 3
 __set%d test-ip4 0
 	element 00000001  : 0 [end]	element 00000000  : 0 [end]	element 00000002  : 0 [end]
@@ -349,12 +349,12 @@ ip test-ip4 input
   [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
-# meta skuid root
+# meta skuid "root"
 ip test-ip4 input
   [ meta load skuid => reg 1 ]
   [ cmp eq reg 1 0x00000000 ]
 
-# meta skuid != root
+# meta skuid != "root"
 ip test-ip4 input
   [ meta load skuid => reg 1 ]
   [ cmp neq reg 1 0x00000000 ]
@@ -405,7 +405,7 @@ ip test-ip4 input
   [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
-# meta skgid {bin, root, daemon} accept
+# meta skgid {"bin", "root", "daemon"} accept
 __set%d test-ip4 3
 __set%d test-ip4 0
 	element 00000001  : 0 [end]	element 00000000  : 0 [end]	element 00000002  : 0 [end]
@@ -414,12 +414,12 @@ ip test-ip4 input
   [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
-# meta skgid root
+# meta skgid "root"
 ip test-ip4 input
   [ meta load skgid => reg 1 ]
   [ cmp eq reg 1 0x00000000 ]
 
-# meta skgid != root
+# meta skgid != "root"
 ip test-ip4 input
   [ meta load skgid => reg 1 ]
   [ cmp neq reg 1 0x00000000 ]
@@ -510,12 +510,12 @@ ip test-ip4 input
   [ immediate reg 1 0x0000ffe8 ]
   [ meta set mark with reg 1 ]
 
-# meta iif lo
+# meta iif "lo"
 ip test-ip4 input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
 
-# meta oif lo
+# meta oif "lo"
 ip test-ip4 input
   [ meta load oif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -536,7 +536,7 @@ ip test-ip4 input
   [ meta load skgid => reg 1 ]
   [ cmp eq reg 1 0x00000bb8 ]
 
-# meta rtclassid cosmos
+# meta rtclassid "cosmos"
 ip test-ip4 input
   [ meta load rtclassid => reg 1 ]
   [ cmp eq reg 1 0x00000000 ]
@@ -631,17 +631,17 @@ ip test-ip4 input
   [ meta load iifgroup => reg 1 ]
   [ cmp neq reg 1 0x00000000 ]
 
-# meta iifgroup default
+# meta iifgroup "default"
 ip test-ip4 input
   [ meta load iifgroup => reg 1 ]
   [ cmp eq reg 1 0x00000000 ]
 
-# meta iifgroup != default
+# meta iifgroup != "default"
 ip test-ip4 input
   [ meta load iifgroup => reg 1 ]
   [ cmp neq reg 1 0x00000000 ]
 
-# meta iifgroup {default}
+# meta iifgroup {"default"}
 __set%d test-ip4 3
 __set%d test-ip4 0
 	element 00000000  : 0 [end]
@@ -676,17 +676,17 @@ ip test-ip4 input
   [ meta load oifgroup => reg 1 ]
   [ cmp neq reg 1 0x00000000 ]
 
-# meta oifgroup default
+# meta oifgroup "default"
 ip test-ip4 input
   [ meta load oifgroup => reg 1 ]
   [ cmp eq reg 1 0x00000000 ]
 
-# meta oifgroup != default
+# meta oifgroup != "default"
 ip test-ip4 input
   [ meta load oifgroup => reg 1 ]
   [ cmp neq reg 1 0x00000000 ]
 
-# meta oifgroup {default}
+# meta oifgroup {"default"}
 __set%d test-ip4 3
 __set%d test-ip4 0
 	element 00000000  : 0 [end]
@@ -753,7 +753,7 @@ ip test-ip4 input
   [ lookup reg 1 set __set%d ]
 
 
-# meta iif . meta oif { lo . eth0 }
+# meta iif . meta oif { "lo" . "eth0" }
 __set%d test-ip4 3
 __set%d test-ip4 0
 	element 00000001 00000002  : 0 [end]
@@ -762,7 +762,7 @@ ip test-ip4 output
   [ meta load oif => reg 9 ]
   [ lookup reg 1 set __set%d ]
 
-# meta iif . meta oif . meta mark { lo . eth0 . 0x0000000a }
+# meta iif . meta oif . meta mark { "lo" . "eth0" . 0x0000000a }
 __set%d test-ip4 3
 __set%d test-ip4 0
 	element 00000001 00000002 0000000a  : 0 [end]
@@ -772,7 +772,7 @@ ip test-ip4 output
   [ meta load mark => reg 10 ]
   [ lookup reg 1 set __set%d ]
 
-# meta iif . meta oif vmap { lo . eth0 : drop }
+# meta iif . meta oif vmap { "lo" . "eth0" : drop }
 __map%d test-ip4 b
 __map%d test-ip4 0
 	element 00000001 00000002  : 0 [end]

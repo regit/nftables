@@ -548,7 +548,7 @@ inet test-inet input
   [ bitwise reg 1 = (reg=1 & 0x0000000f ) ^ 0x00000000 ]
   [ cmp eq reg 1 0x0000000f ]
 
-# iif lo ip daddr set 127.0.0.1
+# iif "lo" ip daddr set 127.0.0.1
 inet test-inet input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -557,7 +557,7 @@ inet test-inet input
   [ immediate reg 1 0x0100007f ]
   [ payload write reg 1 => 4b @ network header + 16 csum_type 1 csum_off 10 ]
 
-# iif lo ip checksum set 0
+# iif "lo" ip checksum set 0
 inet test-inet input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -566,7 +566,7 @@ inet test-inet input
   [ immediate reg 1 0x00000000 ]
   [ payload write reg 1 => 2b @ network header + 10 csum_type 1 csum_off 10 ]
 
-# iif lo ip id set 0
+# iif "lo" ip id set 0
 inet test-inet input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -575,7 +575,7 @@ inet test-inet input
   [ immediate reg 1 0x00000000 ]
   [ payload write reg 1 => 2b @ network header + 4 csum_type 1 csum_off 10 ]
 
-# iif lo ip ecn set 1
+# iif "lo" ip ecn set 1
 inet test-inet input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -585,7 +585,7 @@ inet test-inet input
   [ bitwise reg 1 = (reg=1 & 0x0000fcff ) ^ 0x00000100 ]
   [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 ]
 
-# iif lo ip ecn set ce
+# iif "lo" ip ecn set ce
 inet test-netdev ingress
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -595,7 +595,7 @@ inet test-netdev ingress
   [ bitwise reg 1 = (reg=1 & 0x0000fcff ) ^ 0x00000300 ]
   [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 ]
 
-# iif lo ip dscp set af23
+# iif "lo" ip dscp set af23
 inet test-inet input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -605,7 +605,7 @@ inet test-inet input
   [ bitwise reg 1 = (reg=1 & 0x000003ff ) ^ 0x00005800 ]
   [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 ]
 
-# iif lo ip dscp set cs0
+# iif "lo" ip dscp set cs0
 inet test-inet input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]

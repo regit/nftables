@@ -513,7 +513,7 @@ inet test-inet input
   [ cmp lt reg 1 0x34120000 0x34123412 0x34123412 0x34123412 ]
   [ cmp gt reg 1 0x34123412 0x34120000 0x34123412 0x34123412 ]
 
-# iif lo ip6 daddr set ::1
+# iif "lo" ip6 daddr set ::1
 inet test-inet input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -522,7 +522,7 @@ inet test-inet input
   [ immediate reg 1 0x00000000 0x00000000 0x00000000 0x01000000 ]
   [ payload write reg 1 => 16b @ network header + 24 csum_type 0 csum_off 0 ]
 
-# iif lo ip6 hoplimit set 1
+# iif "lo" ip6 hoplimit set 1
 inet test-inet input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -531,7 +531,7 @@ inet test-inet input
   [ immediate reg 1 0x00000001 ]
   [ payload write reg 1 => 1b @ network header + 7 csum_type 0 csum_off 0 ]
 
-# iif lo ip6 dscp set af42
+# iif "lo" ip6 dscp set af42
 inet test-inet input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -541,7 +541,7 @@ inet test-inet input
   [ bitwise reg 1 = (reg=1 & 0x00003ff0 ) ^ 0x00000009 ]
   [ payload write reg 1 => 2b @ network header + 0 csum_type 0 csum_off 0 ]
 
-# iif lo ip6 dscp set 63
+# iif "lo" ip6 dscp set 63
 inet test-inet input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -551,7 +551,7 @@ inet test-inet input
   [ bitwise reg 1 = (reg=1 & 0x00003ff0 ) ^ 0x0000c00f ]
   [ payload write reg 1 => 2b @ network header + 0 csum_type 0 csum_off 0 ]
 
-# iif lo ip6 ecn set ect0
+# iif "lo" ip6 ecn set ect0
 inet test-inet input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -561,7 +561,7 @@ inet test-inet input
   [ bitwise reg 1 = (reg=1 & 0x000000cf ) ^ 0x00000020 ]
   [ payload write reg 1 => 1b @ network header + 1 csum_type 0 csum_off 0 ]
 
-# iif lo ip6 ecn set ce
+# iif "lo" ip6 ecn set ce
 inet test-inet input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -571,7 +571,7 @@ inet test-inet input
   [ bitwise reg 1 = (reg=1 & 0x000000cf ) ^ 0x00000030 ]
   [ payload write reg 1 => 1b @ network header + 1 csum_type 0 csum_off 0 ]
 
-# iif lo ip6 flowlabel set 0
+# iif "lo" ip6 flowlabel set 0
 inet test-inet input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -581,7 +581,7 @@ inet test-inet input
   [ bitwise reg 1 = (reg=1 & 0x000000f0 ) ^ 0x00000000 ]
   [ payload write reg 1 => 3b @ network header + 1 csum_type 0 csum_off 0 ]
 
-# iif lo ip6 flowlabel set 12345
+# iif "lo" ip6 flowlabel set 12345
 inet test-inet input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -591,7 +591,7 @@ inet test-inet input
   [ bitwise reg 1 = (reg=1 & 0x000000f0 ) ^ 0x00393000 ]
   [ payload write reg 1 => 3b @ network header + 1 csum_type 0 csum_off 0 ]
 
-# iif lo ip6 flowlabel set 0xfffff
+# iif "lo" ip6 flowlabel set 0xfffff
 inet test-inet input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]

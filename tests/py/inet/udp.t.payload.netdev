@@ -220,7 +220,7 @@ inet test-inet input
   [ payload load 2b @ transport header + 6 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
-# iif lo udp checksum set 0
+# iif "lo" udp checksum set 0
 netdev test-netdev ingress
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -229,7 +229,7 @@ netdev test-netdev ingress
   [ immediate reg 1 0x00000000 ]
   [ payload write reg 1 => 2b @ transport header + 6 csum_type 1 csum_off 6 ]
 
-# iif lo udp dport set 65535
+# iif "lo" udp dport set 65535
 netdev test-netdev ingress
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]

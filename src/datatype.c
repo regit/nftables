@@ -86,7 +86,8 @@ void datatype_print(const struct expr *expr)
 		if (dtype->print != NULL)
 			return dtype->print(expr);
 		if (dtype->sym_tbl != NULL)
-			return symbolic_constant_print(dtype->sym_tbl, expr);
+			return symbolic_constant_print(dtype->sym_tbl, expr,
+						       false);
 	} while ((dtype = dtype->basetype));
 
 	BUG("datatype %s has no print method or symbol table\n",
@@ -154,7 +155,7 @@ out:
 }
 
 void symbolic_constant_print(const struct symbol_table *tbl,
-			     const struct expr *expr)
+			     const struct expr *expr, bool quotes)
 {
 	unsigned int len = div_round_up(expr->len, BITS_PER_BYTE);
 	const struct symbolic_constant *s;
@@ -173,7 +174,10 @@ void symbolic_constant_print(const struct symbol_table *tbl,
 	if (s->identifier == NULL)
 		return expr_basetype(expr)->print(expr);
 
-	printf("%s", s->identifier);
+	if (quotes)
+		printf("\"%s\"", s->identifier);
+	else
+		printf("%s", s->identifier);
 }
 
 void symbol_table_print(const struct symbol_table *tbl,
@@ -684,7 +688,7 @@ static void __exit mark_table_exit(void)
 
 static void mark_type_print(const struct expr *expr)
 {
-	return symbolic_constant_print(mark_tbl, expr);
+	return symbolic_constant_print(mark_tbl, expr, true);
 }
 
 static struct error_record *mark_type_parse(const struct expr *sym,

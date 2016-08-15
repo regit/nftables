@@ -188,7 +188,7 @@ extern struct error_record *symbolic_constant_parse(const struct expr *sym,
 						    const struct symbol_table *tbl,
 						    struct expr **res);
 extern void symbolic_constant_print(const struct symbol_table *tbl,
-				    const struct expr *expr);
+				    const struct expr *expr, bool quotes);
 extern void symbol_table_print(const struct symbol_table *tbl,
 			       const struct datatype *dtype);
 

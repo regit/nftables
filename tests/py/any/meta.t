@@ -61,10 +61,10 @@ meta mark or 0x03 != 0x01;ok;mark | 0x00000003 != 0x00000001
 meta mark xor 0x03 == 0x01;ok;mark 0x00000002
 meta mark xor 0x03 != 0x01;ok;mark != 0x00000002
 
-meta iif eth0 accept;ok;iif eth0 accept
-meta iif eth0 accept;ok;iif eth0 accept
-meta iif != eth0 accept;ok;iif != eth0 accept
-meta iif != eth0 accept;ok;iif != eth0 accept
+meta iif "eth0" accept;ok;iif "eth0" accept
+meta iif "eth0" accept;ok;iif "eth0" accept
+meta iif != "eth0" accept;ok;iif != "eth0" accept
+meta iif != "eth0" accept;ok;iif != "eth0" accept
 
 meta iifname "eth0";ok;iifname "eth0"
 meta iifname != "eth0";ok;iifname != "eth0"
@@ -80,10 +80,10 @@ meta iiftype ether;ok;iiftype ether
 meta iiftype != ppp;ok;iiftype != ppp
 meta iiftype ppp;ok;iiftype ppp
 
-meta oif lo accept;ok;oif lo accept
-meta oif != lo accept;ok;oif != lo accept
-meta oif {eth0, lo} accept;ok
-- meta oif != {eth0, lo} accept;ok
+meta oif "lo" accept;ok;oif "lo" accept
+meta oif != "lo" accept;ok;oif != "lo" accept
+meta oif {"eth0", "lo"} accept;ok
+- meta oif != {"eth0", "lo"} accept;ok
 
 meta oifname "eth0";ok;oifname "eth0"
 meta oifname != "eth0";ok;oifname != "eth0"
@@ -97,10 +97,10 @@ meta oiftype {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
 meta oiftype != ether;ok;oiftype != ether
 meta oiftype ether;ok;oiftype ether
 
-meta skuid {bin, root, daemon} accept;ok;skuid { 0, 1, 2} accept
-- meta skuid != {bin, root, daemon} accept;ok
-meta skuid root;ok;skuid 0
-meta skuid != root;ok;skuid != 0
+meta skuid {"bin", "root", "daemon"} accept;ok;skuid { 0, 1, 2} accept
+- meta skuid != {"bin", "root", "daemon"} accept;ok
+meta skuid "root";ok;skuid 0
+meta skuid != "root";ok;skuid != 0
 meta skuid lt 3000 accept;ok;skuid < 3000 accept
 meta skuid gt 3000 accept;ok;skuid > 3000 accept
 meta skuid eq 3000 accept;ok;skuid 3000 accept
@@ -109,10 +109,10 @@ meta skuid != 2001-2005 accept;ok;skuid != 2001-2005 accept
 meta skuid { 2001-2005} accept;ok;skuid { 2001-2005} accept
 - meta skuid != { 2001-2005} accept;ok
 
-meta skgid {bin, root, daemon} accept;ok;skgid { 0, 1, 2} accept
-- meta skgid != {bin, root, daemon} accept;ok
-meta skgid root;ok;skgid 0
-meta skgid != root;ok;skgid != 0
+meta skgid {"bin", "root", "daemon"} accept;ok;skgid { 0, 1, 2} accept
+- meta skgid != {"bin", "root", "daemon"} accept;ok
+meta skgid "root";ok;skgid 0
+meta skgid != "root";ok;skgid != 0
 meta skgid lt 3000 accept;ok;skgid < 3000 accept
 meta skgid gt 3000 accept;ok;skgid > 3000 accept
 meta skgid eq 3000 accept;ok;skgid 3000 accept
@@ -140,15 +140,15 @@ meta mark set 0xffffffde or 0x16;ok;mark set 0xffffffde
 meta mark set 0x32 or 0xfffff;ok;mark set 0x000fffff
 meta mark set 0xfffe xor 0x16;ok;mark set 0x0000ffe8
 
-meta iif lo;ok;iif lo
-meta oif lo;ok;oif lo
+meta iif "lo";ok;iif "lo"
+meta oif "lo";ok;oif "lo"
 meta oifname "eth2" accept;ok;oifname "eth2" accept
 meta skuid 3000;ok;skuid 3000
 meta skgid 3000;ok;skgid 3000
 # BUG:  meta nftrace 1;ok
 # <cmdline>:1:1-37: Error: Could not process rule: Operation not supported
 - meta nftrace 1;ok
-meta rtclassid cosmos;ok;rtclassid cosmos
+meta rtclassid "cosmos";ok;rtclassid "cosmos"
 
 meta pkttype broadcast;ok;pkttype broadcast
 meta pkttype unicast;ok;pkttype unicast
@@ -167,22 +167,22 @@ meta cpu { 2,3};ok;cpu { 2,3}
 meta cpu { 2-3, 5-7};ok
 -meta cpu != { 2,3};ok; cpu != { 2,3}
 
-meta iifgroup 0;ok;iifgroup default
-meta iifgroup != 0;ok;iifgroup != default
-meta iifgroup default;ok;iifgroup default
-meta iifgroup != default;ok;iifgroup != default
-meta iifgroup {default};ok;iifgroup {default}
-- meta iifgroup != {default};ok
+meta iifgroup 0;ok;iifgroup "default"
+meta iifgroup != 0;ok;iifgroup != "default"
+meta iifgroup "default";ok;iifgroup "default"
+meta iifgroup != "default";ok;iifgroup != "default"
+meta iifgroup {"default"};ok;iifgroup {"default"}
+- meta iifgroup != {"default"};ok
 meta iifgroup { 11,33};ok
 meta iifgroup {11-33};ok
 - meta iifgroup != {11,33};ok
 - meta iifgroup != {11-33};ok
-meta oifgroup 0;ok;oifgroup default
-meta oifgroup != 0;ok;oifgroup != default
-meta oifgroup default;ok;oifgroup default
-meta oifgroup != default;ok;oifgroup != default
-meta oifgroup {default};ok;oifgroup {default}
-- meta oifgroup != {default};ok
+meta oifgroup 0;ok;oifgroup "default"
+meta oifgroup != 0;ok;oifgroup != "default"
+meta oifgroup "default";ok;oifgroup "default"
+meta oifgroup != "default";ok;oifgroup != "default"
+meta oifgroup {"default"};ok;oifgroup {"default"}
+- meta oifgroup != {"default"};ok
 meta oifgroup { 11,33};ok
 meta oifgroup {11-33};ok
 - meta oifgroup != {11,33};ok
@@ -197,9 +197,9 @@ meta cgroup != 1048577-1048578;ok;cgroup != 1048577-1048578
 meta cgroup {1048577-1048578};ok;cgroup { 1048577-1048578}
 # meta cgroup != { 1048577-1048578};ok;cgroup != { 1048577-1048578}
 
-meta iif . meta oif { lo . eth0 };ok
-meta iif . meta oif . meta mark { lo . eth0 . 0x0000000a };ok
-meta iif . meta oif vmap { lo . eth0 : drop };ok
+meta iif . meta oif { "lo" . "eth0" };ok
+meta iif . meta oif . meta mark { "lo" . "eth0" . 0x0000000a };ok
+meta iif . meta oif vmap { "lo" . "eth0" : drop };ok
 
 meta random eq 1;ok;meta random 1
 meta random gt 1000000;ok;meta random > 1000000

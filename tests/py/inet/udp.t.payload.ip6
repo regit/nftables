@@ -220,7 +220,7 @@ ip6 test-ip6 input
   [ payload load 2b @ transport header + 6 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
-# iif lo udp checksum set 0
+# iif "lo" udp checksum set 0
 ip6 test-ip6 input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
@@ -229,7 +229,7 @@ ip6 test-ip6 input
   [ immediate reg 1 0x00000000 ]
   [ payload write reg 1 => 2b @ transport header + 6 csum_type 1 csum_off 6 ]
 
-# iif lo udp dport set 65535
+# iif "lo" udp dport set 65535
 ip test-ip4 input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
