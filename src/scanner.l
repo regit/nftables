@@ -112,7 +112,7 @@ decstring	{digit}+
 hexstring	0[xX]{hexdigit}+
 range		({decstring}?:{decstring}?)
 letter		[a-zA-Z]
-string		({letter})({letter}|{digit}|[/\-_\.])*
+string		({letter}|[_.])({letter}|{digit}|[/\-_\.])*
 quotedstring	\"[^"]*\"
 asteriskstring	({string}\*|{string}\\\*)
 comment		#.*$
