@@ -97,7 +97,7 @@ ip6 test-ip6 output
   [ cmp eq reg 1 0x00003500 ]
   [ redir flags 0x1c ]
 
-# udp dport 1234 redirect to 1234
+# udp dport 1234 redirect to :1234
 ip6 test-ip6 output
   [ payload load 1b @ network header + 6 => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
@@ -106,7 +106,7 @@ ip6 test-ip6 output
   [ immediate reg 1 0x0000d204 ]
   [ redir proto_min reg 1 ]
 
-# ip6 daddr fe00::cafe udp dport 9998 redirect to 6515
+# ip6 daddr fe00::cafe udp dport 9998 redirect to :6515
 ip6 test-ip6 output
   [ payload load 16b @ network header + 24 => reg 1 ]
   [ cmp eq reg 1 0x000000fe 0x00000000 0x00000000 0xfeca0000 ]
@@ -117,7 +117,7 @@ ip6 test-ip6 output
   [ immediate reg 1 0x00007319 ]
   [ redir proto_min reg 1 ]
 
-# ip6 nexthdr tcp redirect to 100-200
+# ip6 nexthdr tcp redirect to :100-200
 ip6 test-ip6 output
   [ payload load 1b @ network header + 6 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
@@ -125,7 +125,7 @@ ip6 test-ip6 output
   [ immediate reg 2 0x0000c800 ]
   [ redir proto_min reg 1 proto_max reg 2 ]
 
-# tcp dport 39128 redirect to 993
+# tcp dport 39128 redirect to :993
 ip6 test-ip6 output
   [ payload load 1b @ network header + 6 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
@@ -134,7 +134,7 @@ ip6 test-ip6 output
   [ immediate reg 1 0x0000e103 ]
   [ redir proto_min reg 1 ]
 
-# tcp dport 9128 redirect to 993 random
+# tcp dport 9128 redirect to :993 random
 ip6 test-ip6 output
   [ payload load 1b @ network header + 6 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
@@ -143,7 +143,7 @@ ip6 test-ip6 output
   [ immediate reg 1 0x0000e103 ]
   [ redir proto_min reg 1 flags 0x4 ]
 
-# tcp dport 9128 redirect to 993 fully-random,persistent
+# tcp dport 9128 redirect to :993 fully-random,persistent
 ip6 test-ip6 output
   [ payload load 1b @ network header + 6 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
@@ -191,7 +191,7 @@ ip6 test-ip6 output
   [ lookup reg 1 set __map%d dreg 0 ]
   [ redir ]
 
-# ip6 nexthdr 6 redirect to tcp dport map { 22 : 8000, 80 : 8080}
+# ip6 nexthdr 6 redirect to : tcp dport map { 22 : 8000, 80 : 8080}
 __map%d test-ip6 b
 __map%d test-ip6 0
 	element 00001600  : 0000401f 0 [end]	element 00005000  : 0000901f 0 [end]

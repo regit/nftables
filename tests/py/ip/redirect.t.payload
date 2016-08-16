@@ -86,7 +86,7 @@ ip test-ip4 output
   [ cmp eq reg 1 0x00003500 ]
   [ redir flags 0x1c ]
 
-# tcp dport 22 redirect to 22
+# tcp dport 22 redirect to :22
 ip test-ip4 output
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
@@ -95,7 +95,7 @@ ip test-ip4 output
   [ immediate reg 1 0x00001600 ]
   [ redir proto_min reg 1 ]
 
-# udp dport 1234 redirect to 4321
+# udp dport 1234 redirect to :4321
 ip test-ip4 output
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
@@ -104,7 +104,7 @@ ip test-ip4 output
   [ immediate reg 1 0x0000e110 ]
   [ redir proto_min reg 1 ]
 
-# ip daddr 172.16.0.1 udp dport 9998 redirect to 6515
+# ip daddr 172.16.0.1 udp dport 9998 redirect to :6515
 ip test-ip4 output
   [ payload load 4b @ network header + 16 => reg 1 ]
   [ cmp eq reg 1 0x010010ac ]
@@ -115,7 +115,7 @@ ip test-ip4 output
   [ immediate reg 1 0x00007319 ]
   [ redir proto_min reg 1 ]
 
-# tcp dport 39128 redirect to 993
+# tcp dport 39128 redirect to :993
 ip test-ip4 output
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
@@ -124,7 +124,7 @@ ip test-ip4 output
   [ immediate reg 1 0x0000e103 ]
   [ redir proto_min reg 1 ]
 
-# ip protocol tcp redirect to 100-200
+# ip protocol tcp redirect to :100-200
 ip test-ip4 output
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
@@ -132,7 +132,7 @@ ip test-ip4 output
   [ immediate reg 2 0x0000c800 ]
   [ redir proto_min reg 1 proto_max reg 2 ]
 
-# tcp dport 9128 redirect to 993 random
+# tcp dport 9128 redirect to :993 random
 ip test-ip4 output
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
@@ -141,7 +141,7 @@ ip test-ip4 output
   [ immediate reg 1 0x0000e103 ]
   [ redir proto_min reg 1 flags 0x4 ]
 
-# tcp dport 9128 redirect to 993 fully-random
+# tcp dport 9128 redirect to :993 fully-random
 ip test-ip4 output
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
@@ -150,7 +150,7 @@ ip test-ip4 output
   [ immediate reg 1 0x0000e103 ]
   [ redir proto_min reg 1 flags 0x10 ]
 
-# tcp dport 9128 redirect to 123 persistent
+# tcp dport 9128 redirect to :123 persistent
 ip test-ip4 output
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
@@ -159,7 +159,7 @@ ip test-ip4 output
   [ immediate reg 1 0x00007b00 ]
   [ redir proto_min reg 1 flags 0x8 ]
 
-# tcp dport 9128 redirect to 123 random,persistent
+# tcp dport 9128 redirect to :123 random,persistent
 ip test-ip4 output
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
@@ -207,7 +207,7 @@ ip test-ip4 output
   [ lookup reg 1 set __map%d dreg 0 ]
   [ redir ]
 
-# ip protocol 6 redirect to tcp dport map { 22 : 8000, 80 : 8080}
+# ip protocol 6 redirect to : tcp dport map { 22 : 8000, 80 : 8080}
 __map%d test-ip4 b
 __map%d test-ip4 0
         element 00001600  : 0000401f 0 [end]    element 00005000  : 0000901f 0 [end]

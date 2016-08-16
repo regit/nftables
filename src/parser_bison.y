@@ -1701,6 +1701,10 @@ redir_stmt_arg		:	TO	stmt_expr
 			{
 				$<stmt>0->redir.proto = $2;
 			}
+			|	TO	COLON	stmt_expr
+			{
+				$<stmt>0->redir.proto = $3;
+			}
 			|	nf_nat_flags
 			{
 				$<stmt>0->redir.flags = $1;
@@ -1709,6 +1713,11 @@ redir_stmt_arg		:	TO	stmt_expr
 			{
 				$<stmt>0->redir.proto = $2;
 				$<stmt>0->redir.flags = $3;
+			}
+			|	TO	COLON	stmt_expr	nf_nat_flags
+			{
+				$<stmt>0->redir.proto = $3;
+				$<stmt>0->redir.flags = $4;
 			}
 			;
 
