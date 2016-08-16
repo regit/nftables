@@ -1,4 +1,4 @@
-# tcp dport 80-90 snat to 2001:838:35f:1::-2001:838:35f:2:: :80-100
+# tcp dport 80-90 snat to [2001:838:35f:1::]-[2001:838:35f:2::]:80-100
 ip6 test-ip6 postrouting
   [ payload load 1b @ network header + 6 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
@@ -11,7 +11,7 @@ ip6 test-ip6 postrouting
   [ immediate reg 4 0x00006400 ]
   [ nat snat ip6 addr_min reg 1 addr_max reg 2 proto_min reg 3 proto_max reg 4 ]
 
-# tcp dport 80-90 snat to 2001:838:35f:1::-2001:838:35f:2:::100
+# tcp dport 80-90 snat to [2001:838:35f:1::]-[2001:838:35f:2::]:100
 ip6 test-ip6 postrouting
   [ payload load 1b @ network header + 6 => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]

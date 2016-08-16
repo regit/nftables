@@ -397,8 +397,26 @@ static void nat_stmt_print(const struct stmt *stmt)
 	};
 
 	printf("%s to ", nat_types[stmt->nat.type]);
-	if (stmt->nat.addr)
-		expr_print(stmt->nat.addr);
+	if (stmt->nat.addr) {
+		if (stmt->nat.proto) {
+			if (stmt->nat.addr->ops->type == EXPR_VALUE &&
+			    stmt->nat.addr->dtype->type == TYPE_IP6ADDR) {
+				printf("[");
+				expr_print(stmt->nat.addr);
+				printf("]");
+			} else if (stmt->nat.addr->ops->type == EXPR_RANGE &&
+				   stmt->nat.addr->left->dtype->type == TYPE_IP6ADDR) {
+				printf("[");
+				expr_print(stmt->nat.addr->left);
+				printf("]-[");
+				expr_print(stmt->nat.addr->right);
+				printf("]");
+			}
+		} else {
+			expr_print(stmt->nat.addr);
+		}
+	}
+
 	if (stmt->nat.proto) {
 		printf(":");
 		expr_print(stmt->nat.proto);

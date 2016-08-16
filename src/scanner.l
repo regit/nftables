@@ -169,6 +169,7 @@ v60		(::)
 macaddr		(([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2})
 ip4addr		(([[:digit:]]{1,3}"."){3}([[:digit:]]{1,3}))
 ip6addr		({v680}|{v67}|{v66}|{v65}|{v64}|{v63}|{v62}|{v61}|{v60})
+ip6addr_rfc2732	(\[{ip6addr}\])
 
 addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
@@ -472,6 +473,12 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 {addrstring}		{
 				yylval->string = xstrdup(yytext);
+				return STRING;
+			}
+
+{ip6addr_rfc2732}	{
+				yytext[yyleng - 1] = '\0';
+				yylval->string = xstrdup(yytext + 1);
 				return STRING;
 			}
 
