@@ -92,6 +92,7 @@ void erec_print(FILE *f, const struct error_record *erec)
 	case INDESC_BUFFER:
 	case INDESC_CLI:
 		line = indesc->data;
+		*strchrnul(line, '\n') = '\0';
 		break;
 	case INDESC_FILE:
 		memset(buf, 0, sizeof(buf));

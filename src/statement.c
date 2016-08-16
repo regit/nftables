@@ -477,7 +477,7 @@ static void redir_stmt_print(const struct stmt *stmt)
 	printf("redirect");
 
 	if (stmt->redir.proto) {
-		printf(" to ");
+		printf(" to :");
 		expr_print(stmt->redir.proto);
 	}
 

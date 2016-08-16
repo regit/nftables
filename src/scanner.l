@@ -170,6 +170,7 @@ ip4addr		(([[:digit:]]{1,3}"."){3}([[:digit:]]{1,3}))
 ip6addr		({v680}|{v67}|{v66}|{v65}|{v64}|{v63}|{v62}|{v61}|{v60})
 ip6addr_rfc2732	(\[{ip6addr}\])
 
+classid		({hexdigit}{1,4}:{hexdigit}{1,4})
 addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 %option prefix="nft_"
@@ -504,6 +505,11 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 					return STRING;
 				}
 				return NUM;
+			}
+
+{classid}/[ \t\n:\-},]	{
+				yylval->string = xstrdup(yytext);
+				return STRING;
 			}
 
 {quotedstring}		{

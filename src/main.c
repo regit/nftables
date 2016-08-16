@@ -328,12 +328,13 @@ int main(int argc, char * const *argv)
 		for (len = 0, i = optind; i < argc; i++)
 			len += strlen(argv[i]) + strlen(" ");
 
-		buf = xzalloc(len + 1);
+		buf = xzalloc(len + 2);
 		for (i = optind; i < argc; i++) {
 			strcat(buf, argv[i]);
 			if (i + 1 < argc)
 				strcat(buf, " ");
 		}
+		strcat(buf, "\n");
 		parser_init(&state, &msgs);
 		scanner = scanner_init(&state);
 		scanner_push_buffer(scanner, &indesc_cmdline, buf);

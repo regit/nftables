@@ -38,15 +38,19 @@ meta l4proto { 33, 55, 67, 88};ok;meta l4proto { 33, 55, 67, 88}
 meta l4proto { 33-55};ok
 - meta l4proto != { 33-55};ok
 
-- meta priority :aabb;ok
-- meta priority bcad:dadc;ok
-- meta priority aabb:;ok
-- meta priority != :aabb;ok
-- meta priority != bcad:dadc;ok
-- meta priority != aabb:;ok
-- meta priority bcad:dada-bcad:dadc;ok
-- meta priority != bcad:dada-bcad:dadc;ok
-- meta priority {bcad:dada, bcad:dadc, aaaa:bbbb};ok
+meta priority root;ok
+meta priority none;ok
+meta priority 0x87654321;ok;meta priority 8765:4321
+meta priority 2271560481;ok;meta priority 8765:4321
+meta priority 1:1234;ok
+meta priority bcad:dadc;ok
+meta priority aabb:0;ok
+meta priority != bcad:dadc;ok
+meta priority != aabb:0;ok
+meta priority bcad:dada-bcad:dadc;ok
+meta priority != bcad:dada-bcad:dadc;ok
+meta priority {bcad:dada, bcad:dadc, aaaa:bbbb};ok
+meta priority set cafe:beef;ok
 - meta priority != {bcad:dada, bcad:dadc, aaaa:bbbb};ok
 
 meta mark 0x4;ok;mark 0x00000004

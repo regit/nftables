@@ -10,6 +10,7 @@
  * Development of this code funded by Astaro AG (http://www.astaro.com/)
  */
 
+#include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -89,34 +90,50 @@ static struct error_record *tchandle_type_parse(const struct expr *sym,
 						struct expr **res)
 {
 	uint32_t handle;
+	char *str;
 
 	if (strcmp(sym->identifier, "root") == 0)
 		handle = TC_H_ROOT;
 	else if (strcmp(sym->identifier, "none") == 0)
 		handle = TC_H_UNSPEC;
-	else if (sym->identifier[0] == ':') {
-		if (sscanf(sym->identifier, ":%04x", &handle) != 1)
-			goto err;
-	} else if (sym->identifier[strlen(sym->identifier)-1] == ':') {
-		if (sscanf(sym->identifier, "%04x:", &handle) != 1)
+	else if (strchr(sym->identifier, ':')) {
+		uint16_t tmp;
+		char *colon;
+
+		str = xstrdup(sym->identifier);
+
+		colon = strchr(str, ':');
+		if (!colon)
 			goto err;
 
-		handle <<= 16;
+		*colon = '\0';
+
+		errno = 0;
+		tmp = strtoull(str, NULL, 16);
+		if (errno != 0)
+			goto err;
+
+		handle = (tmp << 16);
+		if (str[strlen(str) - 1] == ':')
+			goto out;
+
+		errno = 0;
+		tmp = strtoull(colon + 1, NULL, 16);
+		if (errno != 0)
+			goto err;
+
+		handle |= tmp;
 	} else {
-		uint32_t min, max;
-
-		if (sscanf(sym->identifier, "%04x:%04x", &max, &min) != 2)
-			goto err;
-
-		handle = max << 16 | min;
+		handle = strtoull(sym->identifier, NULL, 0);
 	}
+out:
 	*res = constant_expr_alloc(&sym->location, sym->dtype,
 				   BYTEORDER_HOST_ENDIAN,
 				   sizeof(handle) * BITS_PER_BYTE, &handle);
 	return NULL;
 err:
-	return error(&sym->location, "Could not parse %s",
-		     sym->dtype->desc);
+	xfree(str);
+	return error(&sym->location, "Could not parse %s", sym->dtype->desc);
 }
 
 static const struct datatype tchandle_type = {

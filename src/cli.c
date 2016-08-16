@@ -92,6 +92,8 @@ static void cli_complete(char *line)
 	const HIST_ENTRY *hist;
 	const char *c;
 	LIST_HEAD(msgs);
+	int len;
+	char *s;
 
 	if (line == NULL) {
 		printf("\n");
@@ -118,6 +120,12 @@ static void cli_complete(char *line)
 	hist = history_get(history_length);
 	if (hist == NULL || strcmp(hist->line, line))
 		add_history(line);
+
+	len = strlen(line);
+	s = xmalloc(len + 2);
+	snprintf(s, len + 2, "%s\n", line);
+	xfree(line);
+	line = s;
 
 	parser_init(state, &msgs);
 	scanner_push_buffer(scanner, &indesc_cli, line);

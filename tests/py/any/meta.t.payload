@@ -790,3 +790,76 @@ ip test-ip4 input
 ip test-ip4 input
   [ meta load prandom => reg 1 ]
   [ cmp gt reg 1 0x40420f00 ]
+
+# meta priority root
+ip test-ip4 input 
+  [ meta load priority => reg 1 ]
+  [ cmp eq reg 1 0xffffffff ]
+
+# meta priority none
+netdev test-netdev ingress 
+  [ meta load priority => reg 1 ]
+  [ cmp eq reg 1 0x00000000 ]
+
+# meta priority 1:1234
+ip test-ip4 input
+  [ meta load priority => reg 1 ]
+  [ cmp eq reg 1 0x00011234 ]
+
+# meta priority bcad:dadc
+ip test-ip4 input 
+  [ meta load priority => reg 1 ]
+  [ cmp eq reg 1 0xbcaddadc ]
+
+# meta priority aabb:0
+ip test-ip4 input 
+  [ meta load priority => reg 1 ]
+  [ cmp eq reg 1 0xaabb0000 ]
+
+# meta priority != bcad:dadc
+ip test-ip4 input 
+  [ meta load priority => reg 1 ]
+  [ cmp neq reg 1 0xbcaddadc ]
+
+# meta priority != aabb:0
+ip test-ip4 input 
+  [ meta load priority => reg 1 ]
+  [ cmp neq reg 1 0xaabb0000 ]
+
+# meta priority bcad:dada-bcad:dadc
+ip test-ip4 input 
+  [ meta load priority => reg 1 ]
+  [ byteorder reg 1 = hton(reg 1, 4, 4) ]
+  [ cmp gte reg 1 0xdadaadbc ]
+  [ cmp lte reg 1 0xdcdaadbc ]
+
+# meta priority != bcad:dada-bcad:dadc
+ip test-ip4 input 
+  [ meta load priority => reg 1 ]
+  [ byteorder reg 1 = hton(reg 1, 4, 4) ]
+  [ cmp lt reg 1 0xdadaadbc ]
+  [ cmp gt reg 1 0xdcdaadbc ]
+
+# meta priority {bcad:dada, bcad:dadc, aaaa:bbbb}
+__set%d test-ip4 3
+__set%d test-ip4 0
+	element bcaddada  : 0 [end]	element bcaddadc  : 0 [end]	element aaaabbbb  : 0 [end]
+ip test-ip4 input 
+  [ meta load priority => reg 1 ]
+  [ lookup reg 1 set __set%d ]
+
+# meta priority set cafe:beef
+ip test-ip4 input 
+  [ immediate reg 1 0xcafebeef ]
+  [ meta set priority with reg 1 ]
+
+# meta priority 0x87654321
+ip test-ip4 input
+  [ meta load priority => reg 1 ]
+  [ cmp eq reg 1 0x87654321 ]
+
+# meta priority 2271560481
+ip test-ip4 input
+  [ meta load priority => reg 1 ]
+  [ cmp eq reg 1 0x87654321 ]
+
