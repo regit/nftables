@@ -164,6 +164,11 @@ static void __init ct_label_table_init(void)
 	ct_label_tbl = rt_symbol_table_init(CONNLABEL_CONF);
 }
 
+static void __exit ct_label_table_exit(void)
+{
+	rt_symbol_table_free(ct_label_tbl);
+}
+
 #ifndef NF_CT_HELPER_NAME_LEN
 #define NF_CT_HELPER_NAME_LEN	16
 #endif
