@@ -13,13 +13,14 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdint.h>
+#include <inttypes.h>
 #include <string.h>
 
 #include <linux/netfilter/nf_tables.h>
 #include <linux/netfilter/nf_conntrack_common.h>
 #include <linux/netfilter/nf_conntrack_tuple_common.h>
 
+#include <errno.h>
 #include <erec.h>
 #include <expression.h>
 #include <datatype.h>
@@ -121,6 +122,7 @@ static struct error_record *ct_label_type_parse(const struct expr *sym,
 	const struct symbolic_constant *s;
 	const struct datatype *dtype;
 	uint8_t data[CT_LABEL_BIT_SIZE];
+	uint64_t bit;
 	mpz_t value;
 
 	for (s = ct_label_tbl->symbols; s->identifier != NULL; s++) {
@@ -129,16 +131,28 @@ static struct error_record *ct_label_type_parse(const struct expr *sym,
 	}
 
 	dtype = sym->dtype;
-	if (s->identifier == NULL)
-		return error(&sym->location, "%s: could not parse %s \"%s\"",
-			     CONNLABEL_CONF, dtype->desc, sym->identifier);
+	if (s->identifier == NULL) {
+		char *ptr;
 
-	if (s->value >= CT_LABEL_BIT_SIZE)
-		return error(&sym->location, "%s: out of range (%u max)",
-			     s->identifier, s->value, CT_LABEL_BIT_SIZE);
+		errno = 0;
+		bit = strtoull(sym->identifier, &ptr, 0);
+		if (*ptr)
+			return error(&sym->location, "%s: could not parse %s \"%s\"",
+				     CONNLABEL_CONF, dtype->desc, sym->identifier);
+		if (errno)
+			return error(&sym->location, "%s: could not parse %s \"%s\": %s",
+				     CONNLABEL_CONF, dtype->desc, sym->identifier, strerror(errno));
+
+	} else {
+		bit = s->value;
+	}
+
+	if (bit >= CT_LABEL_BIT_SIZE)
+		return error(&sym->location, "%s: bit %" PRIu64 " out of range (%u max)",
+			     sym->identifier, bit, CT_LABEL_BIT_SIZE);
 
 	mpz_init2(value, dtype->size);
-	mpz_setbit(value, s->value);
+	mpz_setbit(value, bit);
 	mpz_export_data(data, value, BYTEORDER_HOST_ENDIAN, sizeof(data));
 
 	*res = constant_expr_alloc(&sym->location, dtype,
