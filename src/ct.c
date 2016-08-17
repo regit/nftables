@@ -29,7 +29,7 @@
 #include <utils.h>
 #include <statement.h>
 
-#define CONNLABEL_CONF	DEFAULT_INCLUDE_PATH "connlabel.conf"
+#define CONNLABEL_CONF	DEFAULT_INCLUDE_PATH "/connlabel.conf"
 
 static const struct symbol_table ct_state_tbl = {
 	.symbols	= {
