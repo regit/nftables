@@ -92,3 +92,7 @@ ct saddr 1.2.3.4;fail
 ct original mark 42;fail
 # swapped key and direction
 ct mark original;fail
+
+ct label 127;ok
+ct label set 127;ok
+ct label 128;fail

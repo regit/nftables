@@ -113,7 +113,7 @@ static void ct_label_type_print(const struct expr *expr)
 		return;
 	}
 	/* can happen when connlabel.conf is altered after rules were added */
-	gmp_printf("0x%Zx", expr->value);
+	printf("%ld\n", (long)mpz_scan1(expr->value, 0));
 }
 
 static struct error_record *ct_label_type_parse(const struct expr *sym,
