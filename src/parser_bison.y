@@ -1649,14 +1649,27 @@ stmt_expr		:	map_stmt_expr
 			|	primary_rhs_expr
 			;
 
-nat_stmt_args		:	TO	stmt_expr
+nat_stmt_args		:	stmt_expr
+			{
+				$<stmt>0->nat.addr = $1;
+			}
+			|	TO	stmt_expr
 			{
 				$<stmt>0->nat.addr = $2;
+			}
+			|	stmt_expr	COLON	stmt_expr
+			{
+				$<stmt>0->nat.addr = $1;
+				$<stmt>0->nat.proto = $3;
 			}
 			|	TO	stmt_expr	COLON	stmt_expr
 			{
 				$<stmt>0->nat.addr = $2;
 				$<stmt>0->nat.proto = $4;
+			}
+			|	COLON		stmt_expr
+			{
+				$<stmt>0->nat.proto = $2;
 			}
 			|	TO	COLON		stmt_expr
 			{
