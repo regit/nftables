@@ -425,14 +425,11 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <cmd>			base_cmd add_cmd replace_cmd create_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd export_cmd monitor_cmd describe_cmd
 %destructor { cmd_free($$); }	base_cmd add_cmd replace_cmd create_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd export_cmd monitor_cmd describe_cmd
 
-%type <handle>			table_spec chain_spec chain_identifier ruleid_spec ruleset_spec
-%destructor { handle_free(&$$); } table_spec chain_spec chain_identifier ruleid_spec ruleset_spec
+%type <handle>			table_spec chain_spec chain_identifier ruleid_spec handle_spec position_spec rule_position ruleset_spec
+%destructor { handle_free(&$$); } table_spec chain_spec chain_identifier ruleid_spec handle_spec position_spec rule_position ruleset_spec
 %type <handle>			set_spec set_identifier
 %destructor { handle_free(&$$); } set_spec set_identifier
 %type <val>			family_spec family_spec_explicit chain_policy prio_spec
-
-%type <handle_spec>		handle_spec
-%type <position_spec>		position_spec
 
 %type <string>			dev_spec
 %destructor { xfree($$); }	dev_spec
@@ -720,11 +717,11 @@ add_cmd			:	TABLE		table_spec
 				close_scope(state);
 				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_CHAIN, &$2, &@$, $5);
 			}
-			|	RULE		ruleid_spec	rule
+			|	RULE		rule_position	rule
 			{
 				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_RULE, &$2, &@$, $3);
 			}
-			|	/* empty */	ruleid_spec	rule
+			|	/* empty */	rule_position	rule
 			{
 				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_RULE, &$1, &@$, $2);
 			}
@@ -779,7 +776,7 @@ create_cmd		:	TABLE		table_spec
 			}
 			;
 
-insert_cmd		:	RULE		ruleid_spec	rule
+insert_cmd		:	RULE		rule_position	rule
 			{
 				$$ = cmd_alloc(CMD_INSERT, CMD_OBJ_RULE, &$2, &@$, $3);
 			}
@@ -1252,35 +1249,37 @@ set_identifier		:	identifier
 			}
 			;
 
-handle_spec		:	/* empty */
+handle_spec		:	HANDLE		NUM
 			{
 				memset(&$$, 0, sizeof($$));
-			}
-			|	HANDLE		NUM
-			{
-				memset(&$$, 0, sizeof($$));
-				$$.location	= @$;
-				$$.id		= $2;
+				$$.handle.location	= @$;
+				$$.handle.id		= $2;
 			}
 			;
 
-position_spec		:	/* empty */
+position_spec		:	POSITION	NUM
 			{
 				memset(&$$, 0, sizeof($$));
-			}
-			|	POSITION	NUM
-			{
-				memset(&$$, 0, sizeof($$));
-				$$.location	= @$;
-				$$.id		= $2;
+				$$.position.location	= @$;
+				$$.position.id		= $2;
 			}
 			;
 
-ruleid_spec		:	chain_spec	handle_spec	position_spec
+rule_position		:	chain_spec
 			{
-				$$		= $1;
-				$$.handle	= $2;
-				$$.position	= $3;
+				$$ = $1;
+			}
+			|	chain_spec	position_spec
+			{
+				handle_merge(&$1, &$2);
+				$$ = $1;
+			}
+			;
+
+ruleid_spec		:	chain_spec	handle_spec
+			{
+				handle_merge(&$1, &$2);
+				$$ = $1;
 			}
 			;
 
