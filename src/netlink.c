@@ -1117,8 +1117,10 @@ static struct set *netlink_delinearize_set(struct netlink_ctx *ctx,
 }
 
 static int netlink_add_set_compat(struct netlink_ctx *ctx,
-				  const struct handle *h, struct set *set)
+				  const struct handle *h, struct set *set,
+				  bool excl)
 {
+	unsigned int flags = excl ? NLM_F_EXCL : 0;
 	struct nftnl_set *nls;
 	int err;
 
@@ -1136,7 +1138,7 @@ static int netlink_add_set_compat(struct netlink_ctx *ctx,
 	}
 	netlink_dump_set(nls);
 
-	err = mnl_nft_set_add(nf_sock, nls, NLM_F_EXCL | NLM_F_ECHO);
+	err = mnl_nft_set_add(nf_sock, nls, NLM_F_ECHO | flags);
 	if (err < 0)
 		netlink_io_error(ctx, &set->location, "Could not add set: %s",
 				 strerror(errno));
@@ -1148,7 +1150,8 @@ static int netlink_add_set_compat(struct netlink_ctx *ctx,
 }
 
 static int netlink_add_set_batch(struct netlink_ctx *ctx,
-				 const struct handle *h, struct set *set)
+				 const struct handle *h, struct set *set,
+				 bool excl)
 {
 	struct nftnl_set *nls;
 	int err;
@@ -1183,7 +1186,7 @@ static int netlink_add_set_batch(struct netlink_ctx *ctx,
 
 	netlink_dump_set(nls);
 
-	err = mnl_nft_set_batch_add(nls, NLM_F_EXCL, ctx->seqnum);
+	err = mnl_nft_set_batch_add(nls, excl ? NLM_F_EXCL : 0, ctx->seqnum);
 	if (err < 0)
 		netlink_io_error(ctx, &set->location, "Could not add set: %s",
 				 strerror(errno));
@@ -1193,12 +1196,12 @@ static int netlink_add_set_batch(struct netlink_ctx *ctx,
 }
 
 int netlink_add_set(struct netlink_ctx *ctx, const struct handle *h,
-		    struct set *set)
+		    struct set *set, bool excl)
 {
 	if (ctx->batch_supported)
-		return netlink_add_set_batch(ctx, h, set);
+		return netlink_add_set_batch(ctx, h, set, excl);
 	else
-		return netlink_add_set_compat(ctx, h, set);
+		return netlink_add_set_compat(ctx, h, set, excl);
 }
 
 static int netlink_del_set_compat(struct netlink_ctx *ctx,

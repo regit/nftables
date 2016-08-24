@@ -906,9 +906,9 @@ static int do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
 }
 
 static int do_add_set(struct netlink_ctx *ctx, const struct handle *h,
-		      struct set *set)
+		      struct set *set, bool excl)
 {
-	if (netlink_add_set(ctx, h, set) < 0)
+	if (netlink_add_set(ctx, h, set, excl) < 0)
 		return -1;
 	if (set->init != NULL)
 		return __do_add_setelems(ctx, &set->handle, set, set->init);
@@ -934,7 +934,7 @@ static int do_add_table(struct netlink_ctx *ctx, const struct handle *h,
 		}
 		list_for_each_entry(set, &table->sets, list) {
 			handle_merge(&set->handle, &table->handle);
-			if (do_add_set(ctx, &set->handle, set) < 0)
+			if (do_add_set(ctx, &set->handle, set, excl) < 0)
 				return -1;
 		}
 		list_for_each_entry(chain, &table->chains, list) {
@@ -958,7 +958,7 @@ static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd, bool excl)
 		return netlink_add_rule_batch(ctx, &cmd->handle,
 					      cmd->rule, NLM_F_APPEND);
 	case CMD_OBJ_SET:
-		return do_add_set(ctx, &cmd->handle, cmd->set);
+		return do_add_set(ctx, &cmd->handle, cmd->set, excl);
 	case CMD_OBJ_SETELEM:
 		return do_add_setelems(ctx, &cmd->handle, cmd->expr);
 	default:

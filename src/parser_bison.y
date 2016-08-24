@@ -774,6 +774,20 @@ create_cmd		:	TABLE		table_spec
 				close_scope(state);
 				$$ = cmd_alloc(CMD_CREATE, CMD_OBJ_CHAIN, &$2, &@$, $5);
 			}
+			|	SET		set_spec	set_block_alloc
+						'{'	set_block	'}'
+			{
+				$5->location = @5;
+				handle_merge(&$3->handle, &$2);
+				$$ = cmd_alloc(CMD_CREATE, CMD_OBJ_SET, &$2, &@$, $5);
+			}
+			|	MAP		set_spec	map_block_alloc
+						'{'	map_block	'}'
+			{
+				$5->location = @5;
+				handle_merge(&$3->handle, &$2);
+				$$ = cmd_alloc(CMD_CREATE, CMD_OBJ_SET, &$2, &@$, $5);
+			}
 			;
 
 insert_cmd		:	RULE		rule_position	rule
