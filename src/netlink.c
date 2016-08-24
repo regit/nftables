@@ -1318,7 +1318,7 @@ static void alloc_setelem_cache(const struct expr *set, struct nftnl_set *nls)
 
 static int netlink_add_setelems_batch(struct netlink_ctx *ctx,
 				      const struct handle *h,
-				      const struct expr *expr)
+				      const struct expr *expr, bool excl)
 {
 	struct nftnl_set *nls;
 	int err;
@@ -1327,7 +1327,8 @@ static int netlink_add_setelems_batch(struct netlink_ctx *ctx,
 	alloc_setelem_cache(expr, nls);
 	netlink_dump_set(nls);
 
-	err = mnl_nft_setelem_batch_add(nls, 0, ctx->seqnum);
+	err = mnl_nft_setelem_batch_add(nls, excl ? NLM_F_EXCL : 0,
+					ctx->seqnum);
 	nftnl_set_free(nls);
 	if (err < 0)
 		netlink_io_error(ctx, &expr->location,
@@ -1338,7 +1339,7 @@ static int netlink_add_setelems_batch(struct netlink_ctx *ctx,
 
 static int netlink_add_setelems_compat(struct netlink_ctx *ctx,
 				       const struct handle *h,
-				       const struct expr *expr)
+				       const struct expr *expr, bool excl)
 {
 	struct nftnl_set *nls;
 	int err;
@@ -1347,7 +1348,7 @@ static int netlink_add_setelems_compat(struct netlink_ctx *ctx,
 	alloc_setelem_cache(expr, nls);
 	netlink_dump_set(nls);
 
-	err = mnl_nft_setelem_add(nf_sock, nls, 0);
+	err = mnl_nft_setelem_add(nf_sock, nls, excl ? NLM_F_EXCL : 0);
 	nftnl_set_free(nls);
 	if (err < 0)
 		netlink_io_error(ctx, &expr->location,
@@ -1357,12 +1358,12 @@ static int netlink_add_setelems_compat(struct netlink_ctx *ctx,
 }
 
 int netlink_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
-			 const struct expr *expr)
+			 const struct expr *expr, bool excl)
 {
 	if (ctx->batch_supported)
-		return netlink_add_setelems_batch(ctx, h, expr);
+		return netlink_add_setelems_batch(ctx, h, expr, excl);
 	else
-		return netlink_add_setelems_compat(ctx, h, expr);
+		return netlink_add_setelems_compat(ctx, h, expr, excl);
 }
 
 static int netlink_del_setelems_batch(struct netlink_ctx *ctx,

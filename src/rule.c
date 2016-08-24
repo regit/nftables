@@ -881,20 +881,20 @@ static int do_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 }
 
 static int __do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
-			     struct set *set, struct expr *expr)
+			     struct set *set, struct expr *expr, bool excl)
 {
 	if (set->flags & SET_F_INTERVAL &&
 	    set_to_intervals(ctx->msgs, set, expr, true) < 0)
 		return -1;
 
-	if (netlink_add_setelems(ctx, h, expr) < 0)
+	if (netlink_add_setelems(ctx, h, expr, excl) < 0)
 		return -1;
 
 	return 0;
 }
 
 static int do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
-			   struct expr *init)
+			   struct expr *init, bool excl)
 {
 	struct table *table;
 	struct set *set;
@@ -902,7 +902,7 @@ static int do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	table = table_lookup(h);
 	set = set_lookup(table, h->set);
 
-	return __do_add_setelems(ctx, h, set, init);
+	return __do_add_setelems(ctx, h, set, init, excl);
 }
 
 static int do_add_set(struct netlink_ctx *ctx, const struct handle *h,
@@ -911,7 +911,8 @@ static int do_add_set(struct netlink_ctx *ctx, const struct handle *h,
 	if (netlink_add_set(ctx, h, set, excl) < 0)
 		return -1;
 	if (set->init != NULL)
-		return __do_add_setelems(ctx, &set->handle, set, set->init);
+		return __do_add_setelems(ctx, &set->handle, set, set->init,
+					 false);
 
 	return 0;
 }
@@ -960,7 +961,7 @@ static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd, bool excl)
 	case CMD_OBJ_SET:
 		return do_add_set(ctx, &cmd->handle, cmd->set, excl);
 	case CMD_OBJ_SETELEM:
-		return do_add_setelems(ctx, &cmd->handle, cmd->expr);
+		return do_add_setelems(ctx, &cmd->handle, cmd->expr, excl);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
