@@ -467,6 +467,10 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "proto-dst"		{ return PROTO_DST; }
 "label"			{ return LABEL; }
 
+"numgen"		{ return NUMGEN; }
+"inc"			{ return INC; }
+"mod"			{ return MOD; }
+
 "dup"			{ return DUP; }
 "fwd"			{ return FWD; }
 

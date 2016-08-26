@@ -151,6 +151,19 @@ static void netlink_gen_meta(struct netlink_linearize_ctx *ctx,
 	nftnl_rule_add_expr(ctx->nlr, nle);
 }
 
+static void netlink_gen_numgen(struct netlink_linearize_ctx *ctx,
+			    const struct expr *expr,
+			    enum nft_registers dreg)
+{
+	struct nftnl_expr *nle;
+
+	nle = alloc_nft_expr("numgen");
+	netlink_put_register(nle, NFTNL_EXPR_NG_DREG, dreg);
+	netlink_put_register(nle, NFTNL_EXPR_NG_TYPE, expr->numgen.type);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_NG_UNTIL, expr->numgen.mod);
+	nftnl_rule_add_expr(ctx->nlr, nle);
+}
+
 static void netlink_gen_ct(struct netlink_linearize_ctx *ctx,
 			   const struct expr *expr,
 			   enum nft_registers dreg)
@@ -614,6 +627,8 @@ static void netlink_gen_expr(struct netlink_linearize_ctx *ctx,
 		return netlink_gen_ct(ctx, expr, dreg);
 	case EXPR_SET_ELEM:
 		return netlink_gen_expr(ctx, expr->key, dreg);
+	case EXPR_NUMGEN:
+		return netlink_gen_numgen(ctx, expr, dreg);
 	default:
 		BUG("unknown expression type %s\n", expr->ops->name);
 	}

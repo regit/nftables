@@ -17,6 +17,7 @@ noinst_HEADERS = 	cli.h		\
 			headers.h	\
 			list.h		\
 			meta.h		\
+			numgen.h	\
 			netlink.h	\
 			parser.h	\
 			proto.h		\

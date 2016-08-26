@@ -507,6 +507,22 @@ static void netlink_parse_meta(struct netlink_parse_ctx *ctx,
 		netlink_parse_meta_stmt(ctx, loc, nle);
 }
 
+static void netlink_parse_numgen(struct netlink_parse_ctx *ctx,
+				 const struct location *loc,
+				 const struct nftnl_expr *nle)
+{
+	enum nft_registers dreg;
+	uint32_t type, until;
+	struct expr *expr;
+
+	type  = nftnl_expr_get_u32(nle, NFTNL_EXPR_NG_TYPE);
+	until = nftnl_expr_get_u32(nle, NFTNL_EXPR_NG_UNTIL);
+
+	expr = numgen_expr_alloc(loc, type, until);
+	dreg = netlink_parse_register(nle, NFTNL_EXPR_NG_DREG);
+	netlink_set_register(ctx, dreg, expr);
+}
+
 static void netlink_parse_ct_stmt(struct netlink_parse_ctx *ctx,
 				  const struct location *loc,
 				  const struct nftnl_expr *nle)
@@ -1003,6 +1019,7 @@ static const struct {
 	{ .name = "target",	.parse = netlink_parse_target },
 	{ .name = "match",	.parse = netlink_parse_match },
 	{ .name = "quota",	.parse = netlink_parse_quota },
+	{ .name = "numgen",	.parse = netlink_parse_numgen },
 };
 
 static int netlink_parse_expr(const struct nftnl_expr *nle,
@@ -1622,6 +1639,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 	case EXPR_SET_REF:
 	case EXPR_META:
 	case EXPR_VERDICT:
+	case EXPR_NUMGEN:
 		break;
 	case EXPR_CT:
 		ct_expr_update_type(&ctx->pctx, expr);

@@ -33,6 +33,7 @@
  * @EXPR_UNARY:		byteorder conversion, generated during evaluation
  * @EXPR_BINOP:		binary operations (bitwise, shifts)
  * @EXPR_RELATIONAL:	equality and relational expressions
+ * @EXPR_NUMGEN:	number generation expression
  */
 enum expr_types {
 	EXPR_INVALID,
@@ -55,6 +56,7 @@ enum expr_types {
 	EXPR_UNARY,
 	EXPR_BINOP,
 	EXPR_RELATIONAL,
+	EXPR_NUMGEN,
 };
 
 enum ops {
@@ -170,6 +172,7 @@ enum expr_flags {
 
 #include <payload.h>
 #include <exthdr.h>
+#include <numgen.h>
 #include <meta.h>
 #include <ct.h>
 
@@ -277,6 +280,11 @@ struct expr {
 			enum nft_ct_keys	key;
 			int8_t			direction;
 		} ct;
+		struct {
+			/* EXPR_NUMGEN */
+			enum nft_ng_types	type;
+			uint32_t		mod;
+		} numgen;
 	};
 };
 

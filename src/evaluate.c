@@ -1158,6 +1158,31 @@ static int expr_evaluate_mapping(struct eval_ctx *ctx, struct expr **expr)
 	return 0;
 }
 
+/* We got datatype context via statement. If the basetype is compatible, set
+ * this expression datatype to the one of the statement to make it datatype
+ * compatible. This is a more conservative approach than enabling datatype
+ * compatibility between two different datatypes whose basetype is the same,
+ * let's revisit this later once users come with valid usecases to generalize
+ * this.
+ */
+static void expr_dtype_integer_compatible(struct eval_ctx *ctx,
+					  struct expr *expr)
+{
+	if (ctx->ectx.dtype &&
+	    ctx->ectx.dtype->basetype == &integer_type &&
+	    ctx->ectx.len == 4 * BITS_PER_BYTE) {
+		expr->dtype = ctx->ectx.dtype;
+		expr->len   = ctx->ectx.len;
+	}
+}
+
+static int expr_evaluate_numgen(struct eval_ctx *ctx, struct expr **exprp)
+{
+	expr_dtype_integer_compatible(ctx, *exprp);
+
+	return expr_evaluate_primary(ctx, exprp);
+}
+
 /*
  * Transfer the invertible binops to the constant side of an equality
  * expression. A left shift is only invertible if the low n bits are
@@ -1560,6 +1585,8 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 		return expr_evaluate_mapping(ctx, expr);
 	case EXPR_RELATIONAL:
 		return expr_evaluate_relational(ctx, expr);
+	case EXPR_NUMGEN:
+		return expr_evaluate_numgen(ctx, expr);
 	default:
 		BUG("unknown expression type %s\n", (*expr)->ops->name);
 	}

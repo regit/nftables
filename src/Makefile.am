@@ -37,6 +37,7 @@ nft_SOURCES =	main.c				\
 		payload.c			\
 		exthdr.c			\
 		meta.c				\
+		numgen.c			\
 		ct.c				\
 		netlink.c			\
 		netlink_linearize.c		\
