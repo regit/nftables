@@ -105,6 +105,13 @@ struct queue_stmt {
 
 extern struct stmt *queue_stmt_alloc(const struct location *loc);
 
+struct quota_stmt {
+	uint64_t		bytes;
+	uint32_t		flags;
+};
+
+struct stmt *quota_stmt_alloc(const struct location *loc);
+
 #include <ct.h>
 struct ct_stmt {
 	enum nft_ct_keys		key;
@@ -200,6 +207,7 @@ extern struct stmt *xt_stmt_alloc(const struct location *loc);
  * @STMT_DUP:		dup statement
  * @STMT_FWD:		forward statement
  * @STMT_XT:		XT statement
+ * @STMT_QUOTA:		quota statement
  */
 enum stmt_types {
 	STMT_INVALID,
@@ -221,6 +229,7 @@ enum stmt_types {
 	STMT_DUP,
 	STMT_FWD,
 	STMT_XT,
+	STMT_QUOTA,
 };
 
 /**
@@ -272,6 +281,7 @@ struct stmt {
 		struct masq_stmt	masq;
 		struct redir_stmt	redir;
 		struct queue_stmt	queue;
+		struct quota_stmt	quota;
 		struct ct_stmt		ct;
 		struct set_stmt		set;
 		struct dup_stmt		dup;

@@ -376,6 +376,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token OVER			"over"
 %token UNTIL			"until"
 
+%token QUOTA			"quota"
+
 %token NANOSECOND		"nanosecond"
 %token MICROSECOND		"microsecond"
 %token MILLISECOND		"millisecond"
@@ -431,8 +433,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { handle_free(&$$); } set_spec set_identifier
 %type <val>			family_spec family_spec_explicit chain_policy prio_spec
 
-%type <string>			dev_spec
-%destructor { xfree($$); }	dev_spec
+%type <string>			dev_spec quota_unit
+%destructor { xfree($$); }	dev_spec quota_unit
 
 %type <table>			table_block_alloc table_block
 %destructor { close_scope(state); table_free($$); }	table_block_alloc
@@ -466,9 +468,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <stmt>			log_stmt log_stmt_alloc
 %destructor { stmt_free($$); }	log_stmt log_stmt_alloc
 %type <val>			level_type
-%type <stmt>			limit_stmt
-%destructor { stmt_free($$); }	limit_stmt
-%type <val>			limit_burst limit_mode time_unit
+%type <stmt>			limit_stmt quota_stmt
+%destructor { stmt_free($$); }	limit_stmt quota_stmt
+%type <val>			limit_burst limit_mode time_unit quota_mode
 %type <stmt>			reject_stmt reject_stmt_alloc
 %destructor { stmt_free($$); }	reject_stmt reject_stmt_alloc
 %type <stmt>			nat_stmt nat_stmt_alloc masq_stmt masq_stmt_alloc redir_stmt redir_stmt_alloc
@@ -1373,6 +1375,7 @@ stmt			:	verdict_stmt
 			|	meta_stmt
 			|	log_stmt
 			|	limit_stmt
+			|	quota_stmt
 			|	reject_stmt
 			|	nat_stmt
 			|	queue_stmt
@@ -1539,6 +1542,31 @@ limit_stmt		:	LIMIT	RATE	limit_mode	NUM	SLASH	time_unit	limit_burst
 				$$->limit.burst	= $6;
 				$$->limit.type	= NFT_LIMIT_PKT_BYTES;
 				$$->limit.flags = $3;
+			}
+			;
+
+quota_mode		:	OVER		{ $$ = NFT_QUOTA_F_INV; }
+			|	UNTIL		{ $$ = 0; }
+			|	/* empty */	{ $$ = 0; }
+			;
+
+quota_unit		:	BYTES		{ $$ = xstrdup("bytes"); }
+			|	STRING		{ $$ = $1; }
+			;
+
+quota_stmt		:	QUOTA	quota_mode NUM quota_unit
+			{
+				struct error_record *erec;
+				uint64_t rate;
+
+				erec = data_unit_parse(&@$, $4, &rate);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+				$$ = quota_stmt_alloc(&@$);
+				$$->quota.bytes	= $3 * rate;
+				$$->quota.flags	= $2;
 			}
 			;
 

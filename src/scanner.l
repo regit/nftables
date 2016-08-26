@@ -319,6 +319,8 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "until"			{ return UNTIL; }
 "over"			{ return OVER; }
 
+"quota"			{ return QUOTA; }
+
 "nanosecond"		{ return NANOSECOND; }
 "microsecond"		{ return MICROSECOND; }
 "millisecond"		{ return MILLISECOND; }

@@ -620,6 +620,19 @@ static void netlink_parse_limit(struct netlink_parse_ctx *ctx,
 	ctx->stmt = stmt;
 }
 
+static void netlink_parse_quota(struct netlink_parse_ctx *ctx,
+				const struct location *loc,
+				const struct nftnl_expr *nle)
+{
+	struct stmt *stmt;
+
+	stmt = quota_stmt_alloc(loc);
+	stmt->quota.bytes = nftnl_expr_get_u64(nle, NFTNL_EXPR_QUOTA_BYTES);
+	stmt->quota.flags = nftnl_expr_get_u32(nle, NFTNL_EXPR_QUOTA_FLAGS);
+
+	ctx->stmt = stmt;
+}
+
 static void netlink_parse_reject(struct netlink_parse_ctx *ctx,
 				 const struct location *loc,
 				 const struct nftnl_expr *expr)
@@ -989,6 +1002,7 @@ static const struct {
 	{ .name = "fwd",	.parse = netlink_parse_fwd },
 	{ .name = "target",	.parse = netlink_parse_target },
 	{ .name = "match",	.parse = netlink_parse_match },
+	{ .name = "quota",	.parse = netlink_parse_quota },
 };
 
 static int netlink_parse_expr(const struct nftnl_expr *nle,

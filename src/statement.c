@@ -325,6 +325,32 @@ struct stmt *queue_stmt_alloc(const struct location *loc)
 	return stmt_alloc(loc, &queue_stmt_ops);
 }
 
+static void quota_stmt_print(const struct stmt *stmt)
+{
+	bool inv = stmt->quota.flags & NFT_QUOTA_F_INV;
+	const char *data_unit;
+	uint64_t bytes;
+
+	data_unit = get_rate(stmt->quota.bytes, &bytes);
+	printf("quota %s%"PRIu64" %s",
+	       inv ? "over " : "", bytes, data_unit);
+}
+
+static const struct stmt_ops quota_stmt_ops = {
+	.type		= STMT_QUOTA,
+	.name		= "quota",
+	.print		= quota_stmt_print,
+};
+
+struct stmt *quota_stmt_alloc(const struct location *loc)
+{
+	struct stmt *stmt;
+
+	stmt = stmt_alloc(loc, &quota_stmt_ops);
+	stmt->flags |= STMT_F_STATEFUL;
+	return stmt;
+}
+
 static void reject_stmt_print(const struct stmt *stmt)
 {
 	printf("reject");
