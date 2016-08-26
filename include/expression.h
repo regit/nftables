@@ -34,6 +34,7 @@
  * @EXPR_BINOP:		binary operations (bitwise, shifts)
  * @EXPR_RELATIONAL:	equality and relational expressions
  * @EXPR_NUMGEN:	number generation expression
+ * @EXPR_HASH:		hash expression
  */
 enum expr_types {
 	EXPR_INVALID,
@@ -57,6 +58,7 @@ enum expr_types {
 	EXPR_BINOP,
 	EXPR_RELATIONAL,
 	EXPR_NUMGEN,
+	EXPR_HASH,
 };
 
 enum ops {
@@ -174,6 +176,7 @@ enum expr_flags {
 #include <exthdr.h>
 #include <numgen.h>
 #include <meta.h>
+#include <hash.h>
 #include <ct.h>
 
 /**
@@ -285,6 +288,12 @@ struct expr {
 			enum nft_ng_types	type;
 			uint32_t		mod;
 		} numgen;
+		struct {
+			/* EXPR_HASH */
+			struct expr		*expr;
+			uint32_t		mod;
+			uint32_t		seed;
+		} hash;
 	};
 };
 

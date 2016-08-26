@@ -104,6 +104,27 @@ static void netlink_gen_concat(struct netlink_linearize_ctx *ctx,
 	}
 }
 
+static void netlink_gen_hash(struct netlink_linearize_ctx *ctx,
+			     const struct expr *expr,
+			     enum nft_registers dreg)
+{
+	enum nft_registers sreg;
+	struct nftnl_expr *nle;
+
+	sreg = get_register(ctx, expr->hash.expr);
+	netlink_gen_expr(ctx, expr->hash.expr, sreg);
+	release_register(ctx, expr->hash.expr);
+
+	nle = alloc_nft_expr("hash");
+	netlink_put_register(nle, NFTNL_EXPR_HASH_SREG, sreg);
+	netlink_put_register(nle, NFTNL_EXPR_HASH_DREG, dreg);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_HASH_LEN,
+			   div_round_up(expr->hash.expr->len, BITS_PER_BYTE));
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_HASH_MODULUS, expr->hash.mod);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_HASH_SEED, expr->hash.seed);
+	nftnl_rule_add_expr(ctx->nlr, nle);
+}
+
 static void netlink_gen_payload(struct netlink_linearize_ctx *ctx,
 				const struct expr *expr,
 				enum nft_registers dreg)
@@ -629,6 +650,8 @@ static void netlink_gen_expr(struct netlink_linearize_ctx *ctx,
 		return netlink_gen_expr(ctx, expr->key, dreg);
 	case EXPR_NUMGEN:
 		return netlink_gen_numgen(ctx, expr, dreg);
+	case EXPR_HASH:
+		return netlink_gen_hash(ctx, expr, dreg);
 	default:
 		BUG("unknown expression type %s\n", expr->ops->name);
 	}

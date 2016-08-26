@@ -471,6 +471,9 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "inc"			{ return INC; }
 "mod"			{ return MOD; }
 
+"jhash"			{ return JHASH; }
+"seed"			{ return SEED; }
+
 "dup"			{ return DUP; }
 "fwd"			{ return FWD; }
 

@@ -411,6 +411,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token INC			"inc"
 %token MOD			"mod"
 
+%token JHASH			"jhash"
+%token SEED			"seed"
+
 %token POSITION			"position"
 %token COMMENT			"comment"
 
@@ -556,8 +559,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			arp_hdr_expr
 %destructor { expr_free($$); }	arp_hdr_expr
 %type <val>			arp_hdr_field
-%type <expr>			ip_hdr_expr	icmp_hdr_expr		numgen_expr
-%destructor { expr_free($$); }	ip_hdr_expr	icmp_hdr_expr		numgen_expr
+%type <expr>			ip_hdr_expr	icmp_hdr_expr		numgen_expr	hash_expr
+%destructor { expr_free($$); }	ip_hdr_expr	icmp_hdr_expr		numgen_expr	hash_expr
 %type <val>			ip_hdr_field	icmp_hdr_field
 %type <expr>			ip6_hdr_expr    icmp6_hdr_expr
 %destructor { expr_free($$); }	ip6_hdr_expr	icmp6_hdr_expr
@@ -1972,6 +1975,7 @@ primary_expr		:	symbol_expr			{ $$ = $1; }
 			|	meta_expr			{ $$ = $1; }
 			|	ct_expr				{ $$ = $1; }
 			|	numgen_expr			{ $$ = $1; }
+			|	hash_expr			{ $$ = $1; }
 			|	'('	basic_expr	')'	{ $$ = $2; }
 			;
 
@@ -2466,6 +2470,13 @@ numgen_type		:	INC		{ $$ = NFT_NG_INCREMENTAL; }
 numgen_expr		:	NUMGEN	numgen_type	MOD	NUM
 			{
 				$$ = numgen_expr_alloc(&@$, $2, $4);
+			}
+			;
+
+hash_expr		:	JHASH	expr	MOD	NUM	SEED	NUM
+			{
+				$$ = hash_expr_alloc(&@$, $4, $6);
+				$$->hash.expr = $2;
 			}
 			;
 

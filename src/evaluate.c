@@ -1183,6 +1183,25 @@ static int expr_evaluate_numgen(struct eval_ctx *ctx, struct expr **exprp)
 	return expr_evaluate_primary(ctx, exprp);
 }
 
+static int expr_evaluate_hash(struct eval_ctx *ctx, struct expr **exprp)
+{
+	struct expr *expr = *exprp;
+
+	expr_dtype_integer_compatible(ctx, expr);
+
+	expr_set_context(&ctx->ectx, NULL, 0);
+	if (expr_evaluate(ctx, &expr->hash.expr) < 0)
+		return -1;
+
+	/* expr_evaluate_primary() sets the context to what to the input
+         * expression to be hashed. Since this input is transformed to a 4 bytes
+	 * integer, restore context to the datatype that results from hashing.
+	 */
+	expr_set_context(&ctx->ectx, expr->dtype, expr->len);
+
+	return 0;
+}
+
 /*
  * Transfer the invertible binops to the constant side of an equality
  * expression. A left shift is only invertible if the low n bits are
@@ -1587,6 +1606,8 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 		return expr_evaluate_relational(ctx, expr);
 	case EXPR_NUMGEN:
 		return expr_evaluate_numgen(ctx, expr);
+	case EXPR_HASH:
+		return expr_evaluate_hash(ctx, expr);
 	default:
 		BUG("unknown expression type %s\n", (*expr)->ops->name);
 	}

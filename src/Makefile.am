@@ -36,6 +36,7 @@ nft_SOURCES =	main.c				\
 		proto.c				\
 		payload.c			\
 		exthdr.c			\
+		hash.c				\
 		meta.c				\
 		numgen.c			\
 		ct.c				\

@@ -463,6 +463,34 @@ static void netlink_parse_exthdr(struct netlink_parse_ctx *ctx,
 	netlink_set_register(ctx, dreg, expr);
 }
 
+static void netlink_parse_hash(struct netlink_parse_ctx *ctx,
+			       const struct location *loc,
+			       const struct nftnl_expr *nle)
+{
+	enum nft_registers sreg, dreg;
+	struct expr *expr, *hexpr;
+	uint32_t mod, seed, len;
+
+	sreg = netlink_parse_register(nle, NFTNL_EXPR_HASH_SREG);
+	hexpr = netlink_get_register(ctx, loc, sreg);
+
+	seed = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_SEED);
+	mod  = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_MODULUS);
+	len = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_LEN) * BITS_PER_BYTE;
+
+	if (hexpr->len < len) {
+		hexpr = netlink_parse_concat_expr(ctx, loc, sreg, len);
+		if (hexpr == NULL)
+			return;
+	}
+
+	expr = hash_expr_alloc(loc, mod, seed);
+	expr->hash.expr = hexpr;
+
+	dreg = netlink_parse_register(nle, NFTNL_EXPR_HASH_DREG);
+	netlink_set_register(ctx, dreg, expr);
+}
+
 static void netlink_parse_meta_expr(struct netlink_parse_ctx *ctx,
 				    const struct location *loc,
 				    const struct nftnl_expr *nle)
@@ -1020,6 +1048,7 @@ static const struct {
 	{ .name = "match",	.parse = netlink_parse_match },
 	{ .name = "quota",	.parse = netlink_parse_quota },
 	{ .name = "numgen",	.parse = netlink_parse_numgen },
+	{ .name = "hash",	.parse = netlink_parse_hash },
 };
 
 static int netlink_parse_expr(const struct nftnl_expr *nle,
@@ -1640,6 +1669,9 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 	case EXPR_META:
 	case EXPR_VERDICT:
 	case EXPR_NUMGEN:
+		break;
+	case EXPR_HASH:
+		expr_postprocess(ctx, &expr->hash.expr);
 		break;
 	case EXPR_CT:
 		ct_expr_update_type(&ctx->pctx, expr);
