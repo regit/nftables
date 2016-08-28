@@ -90,7 +90,7 @@ static struct error_record *tchandle_type_parse(const struct expr *sym,
 						struct expr **res)
 {
 	uint32_t handle;
-	char *str;
+	char *str = NULL;
 
 	if (strcmp(sym->identifier, "root") == 0)
 		handle = TC_H_ROOT;
@@ -127,6 +127,7 @@ static struct error_record *tchandle_type_parse(const struct expr *sym,
 		handle = strtoull(sym->identifier, NULL, 0);
 	}
 out:
+	xfree(str);
 	*res = constant_expr_alloc(&sym->location, sym->dtype,
 				   BYTEORDER_HOST_ENDIAN,
 				   sizeof(handle) * BITS_PER_BYTE, &handle);
