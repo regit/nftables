@@ -496,8 +496,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <stmt>			flow_stmt flow_stmt_alloc
 %destructor { stmt_free($$); }	flow_stmt flow_stmt_alloc
 
-%type <expr>			symbol_expr verdict_expr integer_expr
-%destructor { expr_free($$); }	symbol_expr verdict_expr integer_expr
+%type <expr>			symbol_expr verdict_expr integer_expr variable_expr
+%destructor { expr_free($$); }	symbol_expr verdict_expr integer_expr variable_expr
 %type <expr>			primary_expr shift_expr and_expr
 %destructor { expr_free($$); }	primary_expr shift_expr and_expr
 %type <expr>			exclusive_or_expr inclusive_or_expr
@@ -1927,14 +1927,7 @@ match_stmt		:	relational_expr
 			}
 			;
 
-symbol_expr		:	string
-			{
-				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
-						       current_scope(state),
-						       $1);
-				xfree($1);
-			}
-			|	'$'	identifier
+variable_expr		:	'$'	identifier
 			{
 				struct scope *scope = current_scope(state);
 
@@ -1947,6 +1940,16 @@ symbol_expr		:	string
 				$$ = symbol_expr_alloc(&@$, SYMBOL_DEFINE,
 						       scope, $2);
 				xfree($2);
+			}
+			;
+
+symbol_expr		:	variable_expr
+			|	string
+			{
+				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
+						       current_scope(state),
+						       $1);
+				xfree($1);
 			}
 			|	AT	identifier
 			{
