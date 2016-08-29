@@ -525,8 +525,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			verdict_map_expr verdict_map_list_expr verdict_map_list_member_expr
 %destructor { expr_free($$); }	verdict_map_expr verdict_map_list_expr verdict_map_list_member_expr
 
-%type <expr>			set_expr set_list_expr set_list_member_expr
-%destructor { expr_free($$); }	set_expr set_list_expr set_list_member_expr
+%type <expr>			set_expr set_block_expr set_list_expr set_list_member_expr
+%destructor { expr_free($$); }	set_expr set_block_expr set_list_expr set_list_member_expr
 %type <expr>			set_elem_expr set_elem_expr_alloc set_lhs_expr set_rhs_expr
 %destructor { expr_free($$); }	set_elem_expr set_elem_expr_alloc set_lhs_expr set_rhs_expr
 %type <expr>			set_elem_expr_stmt set_elem_expr_stmt_alloc
@@ -1061,12 +1061,16 @@ set_block		:	/* empty */	{ $$ = $<set>-1; }
 				$1->gc_int = $3 * 1000;
 				$$ = $1;
 			}
-			|	set_block	ELEMENTS	'='		set_expr
+			|	set_block	ELEMENTS	'='		set_block_expr
 			{
 				$1->init = $4;
 				$$ = $1;
 			}
 			|	set_block	set_mechanism	stmt_seperator
+			;
+
+set_block_expr		:	set_expr
+			|	variable_expr
 			;
 
 set_flag_list		:	set_flag_list	COMMA		set_flag
@@ -1104,7 +1108,7 @@ map_block		:	/* empty */	{ $$ = $<set>-1; }
 				$1->flags |= $3;
 				$$ = $1;
 			}
-			|	map_block	ELEMENTS	'='		set_expr
+			|	map_block	ELEMENTS	'='		set_block_expr
 			{
 				$1->init = $4;
 				$$ = $1;
