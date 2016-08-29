@@ -266,12 +266,23 @@ static int expr_evaluate_string(struct eval_ctx *ctx, struct expr **exprp)
 static int expr_evaluate_integer(struct eval_ctx *ctx, struct expr **exprp)
 {
 	struct expr *expr = *exprp;
+	char *valstr, *rangestr;
 	mpz_t mask;
+
+	if (ctx->ectx.maxval > 0 &&
+	    mpz_cmp_ui(expr->value, ctx->ectx.maxval) > 0) {
+		valstr = mpz_get_str(NULL, 10, expr->value);
+		expr_error(ctx->msgs, expr,
+			   "Value %s exceeds valid range 0-%u",
+			   valstr, ctx->ectx.maxval);
+		free(valstr);
+		return -1;
+	}
 
 	mpz_init_bitmask(mask, ctx->ectx.len);
 	if (mpz_cmp(expr->value, mask) > 0) {
-		char *valstr = mpz_get_str(NULL, 10, expr->value);
-		char *rangestr = mpz_get_str(NULL, 10, mask);
+		valstr = mpz_get_str(NULL, 10, expr->value);
+		rangestr = mpz_get_str(NULL, 10, mask);
 		expr_error(ctx->msgs, expr,
 			   "Value %s exceeds valid range 0-%s",
 			   valstr, rangestr);
@@ -309,7 +320,7 @@ static int expr_evaluate_value(struct eval_ctx *ctx, struct expr **expr)
 static int expr_evaluate_primary(struct eval_ctx *ctx, struct expr **expr)
 {
 	__expr_set_context(&ctx->ectx, (*expr)->dtype, (*expr)->byteorder,
-			   (*expr)->len);
+			   (*expr)->len, 0);
 	return 0;
 }
 
@@ -1186,9 +1197,13 @@ static void expr_dtype_integer_compatible(struct eval_ctx *ctx,
 
 static int expr_evaluate_numgen(struct eval_ctx *ctx, struct expr **exprp)
 {
-	expr_dtype_integer_compatible(ctx, *exprp);
+	struct expr *expr = *exprp;
 
-	return expr_evaluate_primary(ctx, exprp);
+	expr_dtype_integer_compatible(ctx, expr);
+
+	__expr_set_context(&ctx->ectx, expr->dtype, expr->byteorder, expr->len,
+			   expr->numgen.mod - 1);
+	return 0;
 }
 
 static int expr_evaluate_hash(struct eval_ctx *ctx, struct expr **exprp)
@@ -1205,7 +1220,8 @@ static int expr_evaluate_hash(struct eval_ctx *ctx, struct expr **exprp)
          * expression to be hashed. Since this input is transformed to a 4 bytes
 	 * integer, restore context to the datatype that results from hashing.
 	 */
-	expr_set_context(&ctx->ectx, expr->dtype, expr->len);
+	__expr_set_context(&ctx->ectx, expr->dtype, expr->byteorder, expr->len,
+			   expr->hash.mod - 1);
 
 	return 0;
 }

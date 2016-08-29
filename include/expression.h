@@ -104,21 +104,24 @@ enum symbol_types {
  * @dtype:	expected datatype
  * @byteorder:	expected byteorder
  * @len:	expected len
+ * @maxval:	expected maximum value
  */
 struct expr_ctx {
 	const struct datatype	*dtype;
 	enum byteorder		byteorder;
 	unsigned int		len;
+	unsigned int		maxval;
 };
 
 static inline void __expr_set_context(struct expr_ctx *ctx,
 				      const struct datatype *dtype,
 				      enum byteorder byteorder,
-				      unsigned int len)
+				      unsigned int len, unsigned int maxval)
 {
 	ctx->dtype	= dtype;
 	ctx->byteorder	= byteorder;
 	ctx->len	= len;
+	ctx->maxval	= maxval;
 }
 
 static inline void expr_set_context(struct expr_ctx *ctx,
@@ -126,7 +129,8 @@ static inline void expr_set_context(struct expr_ctx *ctx,
 				    unsigned int len)
 {
 	__expr_set_context(ctx, dtype,
-			   dtype ? dtype->byteorder : BYTEORDER_INVALID, len);
+			   dtype ? dtype->byteorder : BYTEORDER_INVALID,
+			   len, 0);
 }
 
 /**
