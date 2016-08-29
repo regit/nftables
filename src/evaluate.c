@@ -263,27 +263,35 @@ static int expr_evaluate_string(struct eval_ctx *ctx, struct expr **exprp)
 	return 0;
 }
 
-static int expr_evaluate_value(struct eval_ctx *ctx, struct expr **expr)
+static int expr_evaluate_integer(struct eval_ctx *ctx, struct expr **exprp)
 {
+	struct expr *expr = *exprp;
 	mpz_t mask;
 
+	mpz_init_bitmask(mask, ctx->ectx.len);
+	if (mpz_cmp(expr->value, mask) > 0) {
+		char *valstr = mpz_get_str(NULL, 10, expr->value);
+		char *rangestr = mpz_get_str(NULL, 10, mask);
+		expr_error(ctx->msgs, expr,
+			   "Value %s exceeds valid range 0-%s",
+			   valstr, rangestr);
+		free(valstr);
+		free(rangestr);
+		mpz_clear(mask);
+		return -1;
+	}
+	expr->byteorder = ctx->ectx.byteorder;
+	expr->len = ctx->ectx.len;
+	mpz_clear(mask);
+	return 0;
+}
+
+static int expr_evaluate_value(struct eval_ctx *ctx, struct expr **expr)
+{
 	switch (expr_basetype(*expr)->type) {
 	case TYPE_INTEGER:
-		mpz_init_bitmask(mask, ctx->ectx.len);
-		if (mpz_cmp((*expr)->value, mask) > 0) {
-			char *valstr = mpz_get_str(NULL, 10, (*expr)->value);
-			char *rangestr = mpz_get_str(NULL, 10, mask);
-			expr_error(ctx->msgs, *expr,
-				   "Value %s exceeds valid range 0-%s",
-				   valstr, rangestr);
-			free(valstr);
-			free(rangestr);
-			mpz_clear(mask);
+		if (expr_evaluate_integer(ctx, expr) < 0)
 			return -1;
-		}
-		(*expr)->byteorder = ctx->ectx.byteorder;
-		(*expr)->len = ctx->ectx.len;
-		mpz_clear(mask);
 		break;
 	case TYPE_STRING:
 		if (expr_evaluate_string(ctx, expr) < 0)
