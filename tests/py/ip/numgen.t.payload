@@ -1,6 +1,6 @@
 # ct mark set numgen inc mod 2
 ip test-ip4 pre
-  [ numgen reg 1 = inc(2)]
+  [ numgen reg 1 = inc(2) ]
   [ ct set mark with reg 1 ]
 
 # dnat to numgen inc mod 2 map { 0 : 192.168.10.100, 1 : 192.168.20.200 }
@@ -8,7 +8,7 @@ __map%d x b
 __map%d x 0
         element 00000000  : 640aa8c0 0 [end]    element 01000000  : c814a8c0 0 [end]
 ip test-ip4 pre 
-  [ numgen reg 1 = inc(2)]
+  [ numgen reg 1 = inc(2) ]
   [ lookup reg 1 set __map%d dreg 1 ]
   [ nat dnat ip addr_min reg 1 addr_max reg 0 ]
 
@@ -17,7 +17,7 @@ __map%d test-ip4 f
 __map%d test-ip4 0
         element 00000000  : 640aa8c0 0 [end]    element 06000000  : c814a8c0 0 [end]    element 0a000000  : 1 [end]
 ip test-ip4 pre
-  [ numgen reg 1 = inc(10)]
+  [ numgen reg 1 = inc(10) ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
   [ lookup reg 1 set __map%d dreg 1 ]
   [ nat dnat ip addr_min reg 1 addr_max reg 0 ]
