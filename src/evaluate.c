@@ -962,7 +962,10 @@ static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 						 "expressions",
 						 i->dtype->name);
 
-		tmp = concat_subtype_lookup(type, --off);
+		if (dtype == NULL)
+			tmp = datatype_lookup(TYPE_INVALID);
+		else
+			tmp = concat_subtype_lookup(type, --off);
 		expr_set_context(&ctx->ectx, tmp, tmp->size);
 
 		if (list_member_evaluate(ctx, &i) < 0)
