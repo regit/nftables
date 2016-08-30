@@ -2167,9 +2167,7 @@ static int stmt_evaluate_reset(struct eval_ctx *ctx, struct stmt *stmt)
 		return 0;
 
 	base = pctx->protocol[PROTO_BASE_NETWORK_HDR].desc;
-	if (base == NULL &&
-	    (ctx->pctx.family == NFPROTO_INET ||
-	     ctx->pctx.family == NFPROTO_BRIDGE))
+	if (base == NULL)
 		base = &proto_inet_service;
 
 	protonum = proto_find_num(base, desc);
