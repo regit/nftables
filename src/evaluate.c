@@ -221,6 +221,7 @@ static int expr_evaluate_string(struct eval_ctx *ctx, struct expr **exprp)
 	memset(data + len, 0, data_len - len);
 	mpz_export_data(data, expr->value, BYTEORDER_HOST_ENDIAN, len);
 
+	assert(strlen(data) > 0);
 	datalen = strlen(data) - 1;
 	if (data[datalen] != '*') {
 		/* We need to reallocate the constant expression with the right
@@ -234,7 +235,7 @@ static int expr_evaluate_string(struct eval_ctx *ctx, struct expr **exprp)
 		return 0;
 	}
 
-	if (datalen - 1 >= 0 &&
+	if (datalen >= 1 &&
 	    data[datalen - 1] == '\\') {
 		char unescaped_str[data_len];
 
