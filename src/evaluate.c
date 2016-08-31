@@ -1589,7 +1589,8 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 #ifdef DEBUG
 	if (debug_level & DEBUG_EVALUATION) {
 		struct error_record *erec;
-		erec = erec_create(EREC_INFORMATIONAL, &(*expr)->location, "Evaluate");
+		erec = erec_create(EREC_INFORMATIONAL, &(*expr)->location,
+				   "Evaluate %s", (*expr)->ops->name);
 		erec_print(stdout, erec); expr_print(*expr); printf("\n\n");
 	}
 #endif
@@ -2432,7 +2433,8 @@ int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 #ifdef DEBUG
 	if (debug_level & DEBUG_EVALUATION) {
 		struct error_record *erec;
-		erec = erec_create(EREC_INFORMATIONAL, &stmt->location, "Evaluate");
+		erec = erec_create(EREC_INFORMATIONAL, &stmt->location,
+				   "Evaluate %s", stmt->ops->name);
 		erec_print(stdout, erec); stmt_print(stmt); printf("\n\n");
 	}
 #endif
@@ -2934,12 +2936,38 @@ static int cmd_evaluate_export(struct eval_ctx *ctx, struct cmd *cmd)
 	return cache_update(cmd->op, ctx->msgs);
 }
 
+#ifdef DEBUG
+static const char *cmd_op_name[] = {
+	[CMD_INVALID]	= "invalid",
+	[CMD_ADD]	= "add",
+	[CMD_REPLACE]	= "replace",
+	[CMD_CREATE]	= "create",
+	[CMD_INSERT]	= "insert",
+	[CMD_DELETE]	= "delete",
+	[CMD_LIST]	= "list",
+	[CMD_FLUSH]	= "flush",
+	[CMD_RENAME]	= "rename",
+	[CMD_EXPORT]	= "export",
+	[CMD_MONITOR]	= "monitor",
+	[CMD_DESCRIBE]	= "describe",
+};
+
+static const char *cmd_op_to_name(enum cmd_ops op)
+{
+	if (op > CMD_DESCRIBE)
+		return "unknown";
+
+	return cmd_op_name[op];
+}
+#endif
+
 int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 {
 #ifdef DEBUG
 	if (debug_level & DEBUG_EVALUATION) {
 		struct error_record *erec;
-		erec = erec_create(EREC_INFORMATIONAL, &cmd->location, "Evaluate");
+		erec = erec_create(EREC_INFORMATIONAL, &cmd->location,
+				   "Evaluate %s", cmd_op_to_name(cmd->op));
 		erec_print(stdout, erec); printf("\n\n");
 	}
 #endif
