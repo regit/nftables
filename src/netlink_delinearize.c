@@ -428,6 +428,10 @@ static void netlink_parse_payload_stmt(struct netlink_parse_ctx *ctx,
 
 	sreg = netlink_parse_register(nle, NFTNL_EXPR_PAYLOAD_SREG);
 	val  = netlink_get_register(ctx, loc, sreg);
+	if (val == NULL)
+		return netlink_error(ctx, loc,
+				     "payload statement has no expression");
+
 	stmt = payload_stmt_alloc(loc, expr, val);
 
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
@@ -473,6 +477,9 @@ static void netlink_parse_hash(struct netlink_parse_ctx *ctx,
 
 	sreg = netlink_parse_register(nle, NFTNL_EXPR_HASH_SREG);
 	hexpr = netlink_get_register(ctx, loc, sreg);
+	if (hexpr == NULL)
+		return netlink_error(ctx, loc,
+				     "hash statement has no expression");
 
 	seed = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_SEED);
 	mod  = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_MODULUS);
@@ -517,6 +524,9 @@ static void netlink_parse_meta_stmt(struct netlink_parse_ctx *ctx,
 
 	sreg = netlink_parse_register(nle, NFTNL_EXPR_META_SREG);
 	expr = netlink_get_register(ctx, loc, sreg);
+	if (expr == NULL)
+		return netlink_error(ctx, loc,
+				     "meta statement has no expression");
 
 	key  = nftnl_expr_get_u32(nle, NFTNL_EXPR_META_KEY);
 	stmt = meta_stmt_alloc(loc, key, expr);
@@ -562,6 +572,9 @@ static void netlink_parse_ct_stmt(struct netlink_parse_ctx *ctx,
 
 	sreg = netlink_parse_register(nle, NFTNL_EXPR_CT_SREG);
 	expr = netlink_get_register(ctx, loc, sreg);
+	if (expr == NULL)
+		return netlink_error(ctx, loc,
+				     "ct statement has no expression");
 
 	key  = nftnl_expr_get_u32(nle, NFTNL_EXPR_CT_KEY);
 	stmt = ct_stmt_alloc(loc, key, expr);
