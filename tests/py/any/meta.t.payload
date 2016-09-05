@@ -199,18 +199,6 @@ ip test-ip4 input
   [ cmp eq reg 1 0x00000001 ]
   [ immediate reg 0 accept ]
 
-# meta iif "lo" accept
-ip test-ip4 input
-  [ meta load iif => reg 1 ]
-  [ cmp eq reg 1 0x00000001 ]
-  [ immediate reg 0 accept ]
-
-# meta iif != "lo" accept
-ip test-ip4 input
-  [ meta load iif => reg 1 ]
-  [ cmp neq reg 1 0x00000001 ]
-  [ immediate reg 0 accept ]
-
 # meta iif != "lo" accept
 ip test-ip4 input
   [ meta load iif => reg 1 ]

@@ -66,8 +66,6 @@ meta mark xor 0x03 == 0x01;ok;mark 0x00000002
 meta mark xor 0x03 != 0x01;ok;mark != 0x00000002
 
 meta iif "lo" accept;ok;iif "lo" accept
-meta iif "lo" accept;ok;iif "lo" accept
-meta iif != "lo" accept;ok;iif != "lo" accept
 meta iif != "lo" accept;ok;iif != "lo" accept
 
 meta iifname "dummy0";ok;iifname "dummy0"
@@ -92,7 +90,6 @@ meta oif {"lo"} accept;ok
 meta oifname "dummy0";ok;oifname "dummy0"
 meta oifname != "dummy0";ok;oifname != "dummy0"
 meta oifname { "dummy0", "lo"};ok
-- meta iifname != {"dummy0", "lo"};ok
 meta oifname "dummy*";ok;oifname "dummy*"
 meta oifname "dummy\*";ok;oifname "dummy\*"
 
