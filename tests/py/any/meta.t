@@ -65,17 +65,17 @@ meta mark or 0x03 != 0x01;ok;mark | 0x00000003 != 0x00000001
 meta mark xor 0x03 == 0x01;ok;mark 0x00000002
 meta mark xor 0x03 != 0x01;ok;mark != 0x00000002
 
-meta iif "eth0" accept;ok;iif "eth0" accept
-meta iif "eth0" accept;ok;iif "eth0" accept
-meta iif != "eth0" accept;ok;iif != "eth0" accept
-meta iif != "eth0" accept;ok;iif != "eth0" accept
+meta iif "lo" accept;ok;iif "lo" accept
+meta iif "lo" accept;ok;iif "lo" accept
+meta iif != "lo" accept;ok;iif != "lo" accept
+meta iif != "lo" accept;ok;iif != "lo" accept
 
-meta iifname "eth0";ok;iifname "eth0"
-meta iifname != "eth0";ok;iifname != "eth0"
-meta iifname {"eth0", "lo"};ok
-- meta iifname != {"eth0", "lo"};ok
-meta iifname "eth*";ok;iifname "eth*"
-meta iifname "eth\*";ok;iifname "eth\*"
+meta iifname "dummy0";ok;iifname "dummy0"
+meta iifname != "dummy0";ok;iifname != "dummy0"
+meta iifname {"dummy0", "lo"};ok
+- meta iifname != {"dummy0", "lo"};ok
+meta iifname "dummy*";ok;iifname "dummy*"
+meta iifname "dummy\*";ok;iifname "dummy\*"
 
 meta iiftype {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
 - meta iiftype != {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
@@ -86,15 +86,15 @@ meta iiftype ppp;ok;iiftype ppp
 
 meta oif "lo" accept;ok;oif "lo" accept
 meta oif != "lo" accept;ok;oif != "lo" accept
-meta oif {"eth0", "lo"} accept;ok
-- meta oif != {"eth0", "lo"} accept;ok
+meta oif {"lo"} accept;ok
+- meta oif != {"lo"} accept;ok
 
-meta oifname "eth0";ok;oifname "eth0"
-meta oifname != "eth0";ok;oifname != "eth0"
-meta oifname { "eth0", "lo"};ok
-- meta iifname != {"eth0", "lo"};ok
-meta oifname "eth*";ok;oifname "eth*"
-meta oifname "eth\*";ok;oifname "eth\*"
+meta oifname "dummy0";ok;oifname "dummy0"
+meta oifname != "dummy0";ok;oifname != "dummy0"
+meta oifname { "dummy0", "lo"};ok
+- meta iifname != {"dummy0", "lo"};ok
+meta oifname "dummy*";ok;oifname "dummy*"
+meta oifname "dummy\*";ok;oifname "dummy\*"
 
 meta oiftype {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
 - meta oiftype != {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
@@ -146,7 +146,7 @@ meta mark set 0xfffe xor 0x16;ok;mark set 0x0000ffe8
 
 meta iif "lo";ok;iif "lo"
 meta oif "lo";ok;oif "lo"
-meta oifname "eth2" accept;ok;oifname "eth2" accept
+meta oifname "dummy2" accept;ok;oifname "dummy2" accept
 meta skuid 3000;ok;skuid 3000
 meta skgid 3000;ok;skgid 3000
 # BUG:  meta nftrace 1;ok
@@ -201,9 +201,9 @@ meta cgroup != 1048577-1048578;ok;cgroup != 1048577-1048578
 meta cgroup {1048577-1048578};ok;cgroup { 1048577-1048578}
 # meta cgroup != { 1048577-1048578};ok;cgroup != { 1048577-1048578}
 
-meta iif . meta oif { "lo" . "eth0" };ok
-meta iif . meta oif . meta mark { "lo" . "eth0" . 0x0000000a };ok
-meta iif . meta oif vmap { "lo" . "eth0" : drop };ok
+meta iif . meta oif { "lo" . "lo" };ok
+meta iif . meta oif . meta mark { "lo" . "lo" . 0x0000000a };ok
+meta iif . meta oif vmap { "lo" . "lo" : drop };ok
 
 meta random eq 1;ok;meta random 1
 meta random gt 1000000;ok;meta random > 1000000
