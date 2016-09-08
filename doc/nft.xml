@@ -18,6 +18,18 @@ vi:ts=4 sw=4
 		</copyright>
 	</refentryinfo>
 
+	<refentryinfo>
+		<author>
+			<firstname>Pablo Neira</firstname>
+			<surname>Neira Ayuso</surname>
+			<email>pablo@netfilter.org</email>
+		</author>
+		<copyright>
+			<year>2013-2016</year>
+			<holder>Pablo Neira Ayuso</holder>
+		</copyright>
+	</refentryinfo>
+
 	<refmeta>
 		<refentrytitle>nft</refentrytitle>
 		<manvolnum>8</manvolnum>
@@ -2358,15 +2370,16 @@ filter output oif wlan0
 	<refsect1>
 		<title>Authors</title>
 		<para>
-			nftables was written by Patrick McHardy.
+			nftables was written by Patrick McHardy and Pablo Neira Ayuso, among many other contributors from the Netfilter community.
 		</para>
 	</refsect1>
 
 	<refsect1>
 		<title>Copyright</title>
-		<para>
-			Copyright &copy; 2008-2014 Patrick McHardy <email>kaber@trash.net</email>
-		</para>
+		<literallayout>
+Copyright &copy; 2008-2014 Patrick McHardy <email>kaber@trash.net</email>
+Copyright &copy; 2013-2016 Pablo Neira Ayuso <email>pablo@netfilter.org</email>
+		</literallayout>
 		<para>
 			nftables is free software; you can redistribute it and/or modify
 			it under the terms of the GNU General Public License version 2 as
