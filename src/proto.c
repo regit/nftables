@@ -854,7 +854,7 @@ const struct datatype etheraddr_type = {
 	.type		= TYPE_ETHERADDR,
 	.name		= "ether_addr",
 	.desc		= "Ethernet address",
-	.byteorder	= BYTEORDER_HOST_ENDIAN,
+	.byteorder	= BYTEORDER_BIG_ENDIAN,
 	.size		= ETH_ALEN * BITS_PER_BYTE,
 	.basetype	= &lladdr_type,
 };
@@ -892,7 +892,7 @@ const struct datatype ethertype_type = {
 	ETHHDR_TEMPLATE(__name, &ethertype_type, __member)
 #define ETHHDR_ADDR(__name, __member) \
 	PROTO_HDR_TEMPLATE(__name, &etheraddr_type,		\
-			   BYTEORDER_HOST_ENDIAN,		\
+			   BYTEORDER_BIG_ENDIAN,		\
 			   offsetof(struct ether_header, __member) * 8,	\
 			   field_sizeof(struct ether_header, __member) * 8)
 

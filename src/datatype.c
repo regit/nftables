@@ -348,7 +348,8 @@ static void lladdr_type_print(const struct expr *expr)
 	uint8_t data[len];
 	unsigned int i;
 
-	mpz_export_data(data, expr->value, BYTEORDER_HOST_ENDIAN, len);
+	mpz_export_data(data, expr->value, BYTEORDER_BIG_ENDIAN, len);
+
 	for (i = 0; i < len; i++) {
 		printf("%s%.2x", delim, data[i]);
 		delim = ":";
@@ -374,7 +375,7 @@ static struct error_record *lladdr_type_parse(const struct expr *sym,
 	}
 
 	*res = constant_expr_alloc(&sym->location, sym->dtype,
-				   BYTEORDER_HOST_ENDIAN, len * BITS_PER_BYTE,
+				   BYTEORDER_BIG_ENDIAN, len * BITS_PER_BYTE,
 				   buf);
 	return NULL;
 }
@@ -383,7 +384,7 @@ const struct datatype lladdr_type = {
 	.type		= TYPE_LLADDR,
 	.name		= "ll_addr",
 	.desc		= "link layer address",
-	.byteorder	= BYTEORDER_HOST_ENDIAN,
+	.byteorder	= BYTEORDER_BIG_ENDIAN,
 	.basetype	= &integer_type,
 	.print		= lladdr_type_print,
 	.parse		= lladdr_type_parse,
