@@ -1161,8 +1161,6 @@ static void payload_match_expand(struct rule_pp_ctx *ctx,
 	list_for_each_entry(left, &list, list) {
 		tmp = constant_expr_splice(right, left->len);
 		expr_set_type(tmp, left->dtype, left->byteorder);
-		if (tmp->byteorder == BYTEORDER_HOST_ENDIAN)
-			mpz_switch_byteorder(tmp->value, tmp->len / BITS_PER_BYTE);
 
 		nexpr = relational_expr_alloc(&expr->location, expr->op,
 					      left, tmp);
