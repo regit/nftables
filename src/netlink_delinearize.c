@@ -554,7 +554,7 @@ static void netlink_parse_numgen(struct netlink_parse_ctx *ctx,
 	struct expr *expr;
 
 	type  = nftnl_expr_get_u32(nle, NFTNL_EXPR_NG_TYPE);
-	until = nftnl_expr_get_u32(nle, NFTNL_EXPR_NG_UNTIL);
+	until = nftnl_expr_get_u32(nle, NFTNL_EXPR_NG_MODULUS);
 
 	expr = numgen_expr_alloc(loc, type, until);
 	dreg = netlink_parse_register(nle, NFTNL_EXPR_NG_DREG);
