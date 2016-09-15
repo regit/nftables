@@ -162,9 +162,12 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token DASH			"-"
 %token AT			"@"
 %token VMAP			"vmap"
+%token LOOKUP			"lookup"
 
 %token INCLUDE			"include"
 %token DEFINE			"define"
+
+%token FIB			"fib"
 
 %token HOOK			"hook"
 %token DEVICE			"device"
@@ -600,6 +603,10 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			ct_expr
 %destructor { expr_free($$); }	ct_expr
 %type <val>			ct_key		ct_key_dir	ct_key_counters
+
+%type <expr>			fib_expr
+%destructor { expr_free($$); }	fib_expr
+%type <val>			fib_tuple	fib_result	fib_flag
 
 %type <val>			export_format
 %type <string>			monitor_event
@@ -2006,7 +2013,50 @@ primary_expr		:	symbol_expr			{ $$ = $1; }
 			|	ct_expr				{ $$ = $1; }
 			|	numgen_expr			{ $$ = $1; }
 			|	hash_expr			{ $$ = $1; }
+			|	fib_expr			{ $$ = $1; }
 			|	'('	basic_expr	')'	{ $$ = $2; }
+			;
+
+fib_expr		:	FIB	fib_tuple	fib_result
+			{
+				if (($2 & (NFTA_FIB_F_SADDR|NFTA_FIB_F_DADDR)) == 0) {
+					erec_queue(error(&@2, "fib: need either saddr or daddr"), state->msgs);
+					YYERROR;
+				}
+
+				if (($2 & (NFTA_FIB_F_SADDR|NFTA_FIB_F_DADDR)) ==
+					  (NFTA_FIB_F_SADDR|NFTA_FIB_F_DADDR)) {
+					erec_queue(error(&@2, "fib: saddr and daddr are mutually exclusive"), state->msgs);
+					YYERROR;
+				}
+
+				if (($2 & (NFTA_FIB_F_IIF|NFTA_FIB_F_OIF)) ==
+					  (NFTA_FIB_F_IIF|NFTA_FIB_F_OIF)) {
+					erec_queue(error(&@2, "fib: iif and oif are mutually exclusive"), state->msgs);
+					YYERROR;
+				}
+
+				$$ = fib_expr_alloc(&@$, $2, $3);
+			}
+			;
+
+fib_result		:	OIF	{ $$ =NFT_FIB_RESULT_OIF; }
+			|	OIFNAME { $$ =NFT_FIB_RESULT_OIFNAME; }
+			|	TYPE	{ $$ =NFT_FIB_RESULT_ADDRTYPE; }
+			;
+
+fib_flag		:       SADDR	{ $$ = NFTA_FIB_F_SADDR; }
+			|	DADDR	{ $$ = NFTA_FIB_F_DADDR; }
+			|	MARK	{ $$ = NFTA_FIB_F_MARK; }
+			|	IIF	{ $$ = NFTA_FIB_F_IIF; }
+			|	OIF	{ $$ = NFTA_FIB_F_OIF; }
+			;
+
+fib_tuple		:  	fib_flag	DOT	fib_tuple
+			{
+				$$ = $1 | $3;
+			}
+			|	fib_flag
 			;
 
 shift_expr		:	primary_expr

@@ -465,6 +465,8 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "dup"			{ return DUP; }
 "fwd"			{ return FWD; }
 
+"fib"			{ return FIB; }
+
 "xml"			{ return XML; }
 "json"			{ return JSON; }
 

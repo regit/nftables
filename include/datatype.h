@@ -81,6 +81,7 @@ enum datatypes {
 	TYPE_DEVGROUP,
 	TYPE_DSCP,
 	TYPE_ECN,
+	TYPE_FIB_ADDR,
 	__TYPE_MAX
 };
 #define TYPE_MAX		(__TYPE_MAX - 1)

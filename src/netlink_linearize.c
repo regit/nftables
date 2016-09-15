@@ -104,6 +104,20 @@ static void netlink_gen_concat(struct netlink_linearize_ctx *ctx,
 	}
 }
 
+static void netlink_gen_fib(struct netlink_linearize_ctx *ctx,
+			    const struct expr *expr,
+			    enum nft_registers dreg)
+{
+	struct nftnl_expr *nle;
+
+	nle = alloc_nft_expr("fib");
+	netlink_put_register(nle, NFTNL_EXPR_FIB_DREG, dreg);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_FIB_RESULT, expr->fib.result);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_FIB_FLAGS, expr->fib.flags);
+
+	nftnl_rule_add_expr(ctx->nlr, nle);
+}
+
 static void netlink_gen_hash(struct netlink_linearize_ctx *ctx,
 			     const struct expr *expr,
 			     enum nft_registers dreg)
@@ -663,6 +677,8 @@ static void netlink_gen_expr(struct netlink_linearize_ctx *ctx,
 		return netlink_gen_numgen(ctx, expr, dreg);
 	case EXPR_HASH:
 		return netlink_gen_hash(ctx, expr, dreg);
+	case EXPR_FIB:
+		return netlink_gen_fib(ctx, expr, dreg);
 	default:
 		BUG("unknown expression type %s\n", expr->ops->name);
 	}

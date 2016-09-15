@@ -1222,7 +1222,82 @@ filter output oif eth0
 				</example>
 			</para>
 		</refsect2>
+		<refsect2>
+			<title>fib expressions</title>
+			<para>
+				<cmdsynopsis>
+					<command>fib</command>
+					<group choice="req">
+						<arg>saddr</arg>
+						<arg>daddr</arg>
+					<group choice="opt">
+						<arg>mark</arg>
+						<arg>iif</arg>
+						<arg>oif</arg>
+					</group>
+					</group>
+					<group choice="req">
+						<arg>oif</arg>
+						<arg>oifname</arg>
+						<arg>type</arg>
+					</group>
+				</cmdsynopsis>
+			</para>
+			<para>
+				A fib expression queries the fib (forwarding information base)
+				to obtain information such as the output interface index a particular address would use.  The input is a tuple of elements that is used as input to the fib lookup
+				functions.
+			</para>
+			<para>
+				<table frame="all">
+					<title>fib expression specific types</title>
+					<tgroup cols='3' align='left' colsep='1' rowsep='1'>
+						<colspec colname='c1'/>
+						<colspec colname='c2'/>
+						<colspec colname='c3'/>
+						<thead>
+							<row>
+								<entry>Keyword</entry>
+								<entry>Description</entry>
+								<entry>Type</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry>oif</entry>
+								<entry>Output interface index</entry>
+								<entry>integer (32 bit)</entry>
+							</row>
+							<row>
+								<entry>oifname</entry>
+								<entry>Output interface name</entry>
+								<entry>string</entry>
+							</row>
+							<row>
+								<entry>type</entry>
+								<entry>Address type</entry>
+								<entry>fib_addrtype</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</table>
+			</para>
+			<para>
+				<example>
+					<title>Using fib expressions</title>
+					<programlisting>
+# drop packets without a reverse path
+filter prerouting fib saddr . iif oif eq 0 drop
 
+# drop packets to address not configured on ininterface
+filter input fib daddr . iif type not { local, broadcast, multicast } drop
+
+# perform lookup in a specific 'blackhole' table (0xdead, needs ip appropriate ip rule)
+filter prerouting meta mark set 0xdead fib daddr . mark type vmap { backhole : drop, prohibit : jump prohibited, unreachable : drop }
+					</programlisting>
+				</example>
+			</para>
+		</refsect2>
 		<refsect2>
 			<title>Routing expressions</title>
 			<para>

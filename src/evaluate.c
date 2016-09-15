@@ -1638,6 +1638,7 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 		return expr_evaluate_exthdr(ctx, expr);
 	case EXPR_VERDICT:
 	case EXPR_META:
+	case EXPR_FIB:
 		return expr_evaluate_primary(ctx, expr);
 	case EXPR_PAYLOAD:
 		return expr_evaluate_payload(ctx, expr);

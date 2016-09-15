@@ -538,6 +538,23 @@ static void netlink_parse_hash(struct netlink_parse_ctx *ctx,
 	netlink_set_register(ctx, dreg, expr);
 }
 
+static void netlink_parse_fib(struct netlink_parse_ctx *ctx,
+			      const struct location *loc,
+			      const struct nftnl_expr *nle)
+{
+	enum nft_registers dreg;
+	struct expr *expr;
+	uint32_t flags, result;
+
+	flags = nftnl_expr_get_u32(nle, NFTNL_EXPR_FIB_FLAGS);
+	result = nftnl_expr_get_u32(nle, NFTNL_EXPR_FIB_RESULT);
+
+	expr = fib_expr_alloc(loc, flags, result);
+
+	dreg = netlink_parse_register(nle, NFTNL_EXPR_FIB_DREG);
+	netlink_set_register(ctx, dreg, expr);
+}
+
 static void netlink_parse_meta_expr(struct netlink_parse_ctx *ctx,
 				    const struct location *loc,
 				    const struct nftnl_expr *nle)
@@ -1120,6 +1137,7 @@ static const struct {
 	{ .name = "quota",	.parse = netlink_parse_quota },
 	{ .name = "numgen",	.parse = netlink_parse_numgen },
 	{ .name = "hash",	.parse = netlink_parse_hash },
+	{ .name = "fib",	.parse = netlink_parse_fib },
 };
 
 static int netlink_parse_expr(const struct nftnl_expr *nle,
@@ -1743,6 +1761,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 	case EXPR_RT:
 	case EXPR_VERDICT:
 	case EXPR_NUMGEN:
+	case EXPR_FIB:
 		break;
 	case EXPR_HASH:
 		expr_postprocess(ctx, &expr->hash.expr);

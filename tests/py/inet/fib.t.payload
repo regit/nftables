@@ -1,0 +1,22 @@
+# fib saddr . iif oif ne 0
+ip test-ip prerouting
+  [ fib saddr . iif oif => reg 1 ]
+  [ cmp neq reg 1 0x00000000 ]
+
+# fib saddr . iif oifname "lo"
+ip test-ip prerouting
+  [ fib saddr . iif oifname => reg 1 ]
+  [ cmp eq reg 1 0x00006f6c 0x00000000 0x00000000 0x00000000 ]
+
+# fib daddr . iif type local
+ip test-ip prerouting
+  [ fib daddr . iif type => reg 1 ]
+  [ cmp eq reg 1 0x00000002 ]
+
+# fib daddr . iif type vmap { blackhole : drop, prohibit : drop, unicast : accept }
+__map%d test-ip b
+__map%d test-ip 0
+        element 00000006  : 0 [end]     element 00000008  : 0 [end]     element 00000001  : 0 [end]
+ip test-ip prerouting
+  [ fib daddr . iif type => reg 1 ]
+  [ lookup reg 1 set __map%d dreg 0 ]

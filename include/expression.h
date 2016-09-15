@@ -61,6 +61,7 @@ enum expr_types {
 	EXPR_NUMGEN,
 	EXPR_HASH,
 	EXPR_RT,
+	EXPR_FIB,
 };
 
 enum ops {
@@ -180,6 +181,7 @@ enum expr_flags {
 
 #include <payload.h>
 #include <exthdr.h>
+#include <fib.h>
 #include <numgen.h>
 #include <meta.h>
 #include <rt.h>
@@ -306,6 +308,11 @@ struct expr {
 			uint32_t		mod;
 			uint32_t		seed;
 		} hash;
+		struct {
+			/* EXPR_FIB */
+			uint32_t		flags;
+			uint32_t		result;
+		} fib;
 	};
 };
 
