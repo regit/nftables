@@ -186,6 +186,46 @@ static void netlink_parse_immediate(struct netlink_parse_ctx *ctx,
 		netlink_set_register(ctx, dreg, expr);
 }
 
+static enum ops netlink_parse_range_op(const struct nftnl_expr *nle)
+{
+	switch (nftnl_expr_get_u32(nle, NFTNL_EXPR_RANGE_OP)) {
+	case NFT_RANGE_EQ:
+		return OP_EQ;
+	case NFT_RANGE_NEQ:
+		return OP_NEQ;
+	default:
+		return OP_INVALID;
+	}
+}
+
+static void netlink_parse_range(struct netlink_parse_ctx *ctx,
+				const struct location *loc,
+				const struct nftnl_expr *nle)
+{
+	struct expr *expr, *left, *right, *from, *to;
+	struct nft_data_delinearize nld;
+	enum nft_registers sreg;
+	enum ops op;
+
+	sreg = netlink_parse_register(nle, NFTNL_EXPR_RANGE_SREG);
+	left = netlink_get_register(ctx, loc, sreg);
+	if (left == NULL)
+		return netlink_error(ctx, loc,
+				     "Relational expression has no left hand side");
+
+	op = netlink_parse_range_op(nle);
+
+	nld.value = nftnl_expr_get(nle, NFTNL_EXPR_RANGE_FROM_DATA, &nld.len);
+	from = netlink_alloc_value(loc, &nld);
+
+	nld.value = nftnl_expr_get(nle, NFTNL_EXPR_RANGE_TO_DATA, &nld.len);
+	to = netlink_alloc_value(loc, &nld);
+
+	right = range_expr_alloc(loc, from, to);
+	expr = relational_expr_alloc(loc, op, left, right);
+	ctx->stmt = expr_stmt_alloc(loc, expr);
+}
+
 static enum ops netlink_parse_cmp_op(const struct nftnl_expr *nle)
 {
 	switch (nftnl_expr_get_u32(nle, NFTNL_EXPR_CMP_OP)) {
@@ -1049,6 +1089,7 @@ static const struct {
 	{ .name = "counter",	.parse = netlink_parse_counter },
 	{ .name = "log",	.parse = netlink_parse_log },
 	{ .name = "limit",	.parse = netlink_parse_limit },
+	{ .name = "range",	.parse = netlink_parse_range },
 	{ .name = "reject",	.parse = netlink_parse_reject },
 	{ .name = "nat",	.parse = netlink_parse_nat },
 	{ .name = "masq",	.parse = netlink_parse_masq },
@@ -1362,6 +1403,10 @@ static void __binop_adjust(const struct expr *binop, struct expr *right,
 				BUG("unknown expression type %s\n", i->key->ops->name);
 			}
 		}
+		break;
+	case EXPR_RANGE:
+		binop_adjust_one(binop, right->left, shift);
+		binop_adjust_one(binop, right->right, shift);
 		break;
 	default:
 		BUG("unknown expression type %s\n", right->ops->name);

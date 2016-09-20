@@ -25,8 +25,7 @@ ip test-ip4 input
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000032 ]
   [ payload load 4b @ transport header + 0 => reg 1 ]
-  [ cmp lt reg 1 0x6f000000 ]
-  [ cmp gt reg 1 0xde000000 ]
+  [ range neq reg 1 0x6f000000 0xde000000 ]
 
 # esp spi { 100, 102}
 __set%d test-ip4 3
@@ -68,8 +67,7 @@ ip test-ip4 input
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000032 ]
   [ payload load 4b @ transport header + 4 => reg 1 ]
-  [ cmp lt reg 1 0x16000000 ]
-  [ cmp gt reg 1 0x18000000 ]
+  [ range neq reg 1 0x16000000 0x18000000 ]
 
 # esp sequence { 22, 24}
 __set%d test-ip4 3

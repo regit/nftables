@@ -39,8 +39,7 @@ netdev test-netdev ingress
   [ meta load protocol => reg 1 ]
   [ cmp eq reg 1 0x00000608 ]
   [ payload load 2b @ network header + 0 => reg 1 ]
-  [ cmp lt reg 1 0x00002100 ]
-  [ cmp gt reg 1 0x00002d00 ]
+  [ range neq reg 1 0x00002100 0x00002d00 ]
 
 # arp htype { 33, 55, 67, 88}
 __set%d test-netdev 3
@@ -96,8 +95,7 @@ netdev test-netdev ingress
   [ meta load protocol => reg 1 ]
   [ cmp eq reg 1 0x00000608 ]
   [ payload load 1b @ network header + 4 => reg 1 ]
-  [ cmp lt reg 1 0x00000021 ]
-  [ cmp gt reg 1 0x0000002d ]
+  [ range neq reg 1 0x00000021 0x0000002d ]
 
 # arp hlen { 33, 55, 67, 88}
 __set%d test-netdev 3
@@ -146,8 +144,7 @@ netdev test-netdev ingress
   [ meta load protocol => reg 1 ]
   [ cmp eq reg 1 0x00000608 ]
   [ payload load 1b @ network header + 5 => reg 1 ]
-  [ cmp lt reg 1 0x00000021 ]
-  [ cmp gt reg 1 0x0000002d ]
+  [ range neq reg 1 0x00000021 0x0000002d ]
 
 # arp plen { 33, 55, 67, 88}
 __set%d test-netdev 3

@@ -11,8 +11,7 @@ ip test-ip4 input
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000021 ]
   [ payload load 2b @ transport header + 0 => reg 1 ]
-  [ cmp lt reg 1 0x00001500 ]
-  [ cmp gt reg 1 0x00002300 ]
+  [ range neq reg 1 0x00001500 0x00002300 ]
 
 # dccp sport {23, 24, 25}
 __set%d test-ip4 3

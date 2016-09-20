@@ -25,8 +25,7 @@ inet test-inet filter-input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x0000000a ]
   [ exthdr load 1b @ 0 + 1 => reg 1 ]
-  [ cmp lt reg 1 0x00000021 ]
-  [ cmp gt reg 1 0x0000002d ]
+  [ range neq reg 1 0x00000021 0x0000002d ]
 
 # hbh hdrlength {33, 55, 67, 88}
 __set%d test-inet 3
@@ -85,8 +84,7 @@ inet test-inet filter-input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x0000000a ]
   [ exthdr load 1b @ 0 + 0 => reg 1 ]
-  [ cmp lt reg 1 0x00000021 ]
-  [ cmp gt reg 1 0x0000002d ]
+  [ range neq reg 1 0x00000021 0x0000002d ]
 
 # hbh nexthdr {33, 55, 67, 88}
 __set%d test-inet 3

@@ -45,8 +45,7 @@ ip6 test-ip6 output
 # frag reserved != 33-45
 ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 1 => reg 1 ]
-  [ cmp lt reg 1 0x00000021 ]
-  [ cmp gt reg 1 0x0000002d ]
+  [ range neq reg 1 0x00000021 0x0000002d ]
 
 # frag reserved { 33, 55, 67, 88}
 __set%d test-ip6 3
@@ -87,8 +86,7 @@ ip6 test-ip6 output
 ip6 test-ip6 output
   [ exthdr load 2b @ 44 + 2 => reg 1 ]
   [ bitwise reg 1 = (reg=1 & 0x0000f8ff ) ^ 0x00000000 ]
-  [ cmp lt reg 1 0x00000801 ]
-  [ cmp gt reg 1 0x00006801 ]
+  [ range neq reg 1 0x00000801 0x00006801 ]
 
 # frag frag-off { 33, 55, 67, 88}
 __set%d test-ip6 3
@@ -138,8 +136,7 @@ ip6 test-ip6 output
 # frag id != 33-45
 ip6 test-ip6 output
   [ exthdr load 4b @ 44 + 4 => reg 1 ]
-  [ cmp lt reg 1 0x21000000 ]
-  [ cmp gt reg 1 0x2d000000 ]
+  [ range neq reg 1 0x21000000 0x2d000000 ]
 
 # frag id { 33, 55, 67, 88}
 __set%d test-ip6 3

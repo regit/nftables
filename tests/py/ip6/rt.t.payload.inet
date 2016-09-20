@@ -63,8 +63,7 @@ inet test-inet input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x0000000a ]
   [ exthdr load 1b @ 43 + 0 => reg 1 ]
-  [ cmp lt reg 1 0x00000021 ]
-  [ cmp gt reg 1 0x0000002d ]
+  [ range neq reg 1 0x00000021 0x0000002d ]
 
 # rt nexthdr { 33, 55, 67, 88}
 __set%d test-inet 3
@@ -113,8 +112,7 @@ inet test-inet input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x0000000a ]
   [ exthdr load 1b @ 43 + 1 => reg 1 ]
-  [ cmp lt reg 1 0x00000021 ]
-  [ cmp gt reg 1 0x0000002d ]
+  [ range neq reg 1 0x00000021 0x0000002d ]
 
 # rt hdrlength { 33, 55, 67, 88}
 __set%d test-inet 3
@@ -163,8 +161,7 @@ inet test-inet input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x0000000a ]
   [ exthdr load 1b @ 43 + 2 => reg 1 ]
-  [ cmp lt reg 1 0x00000021 ]
-  [ cmp gt reg 1 0x0000002d ]
+  [ range neq reg 1 0x00000021 0x0000002d ]
 
 # rt type { 33, 55, 67, 88}
 __set%d test-inet 3
@@ -213,8 +210,7 @@ inet test-inet input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x0000000a ]
   [ exthdr load 1b @ 43 + 3 => reg 1 ]
-  [ cmp lt reg 1 0x00000021 ]
-  [ cmp gt reg 1 0x0000002d ]
+  [ range neq reg 1 0x00000021 0x0000002d ]
 
 # rt seg-left { 33, 55, 67, 88}
 __set%d test-inet 3

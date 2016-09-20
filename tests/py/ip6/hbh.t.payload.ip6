@@ -17,8 +17,7 @@ ip6 test-ip6 filter-input
 # hbh hdrlength != 33-45
 ip6 test-ip6 filter-input
   [ exthdr load 1b @ 0 + 1 => reg 1 ]
-  [ cmp lt reg 1 0x00000021 ]
-  [ cmp gt reg 1 0x0000002d ]
+  [ range neq reg 1 0x00000021 0x0000002d ]
 
 # hbh hdrlength {33, 55, 67, 88}
 __set%d test-ip6 3
@@ -63,8 +62,7 @@ ip6 test-ip6 filter-input
 # hbh nexthdr != 33-45
 ip6 test-ip6 filter-input
   [ exthdr load 1b @ 0 + 0 => reg 1 ]
-  [ cmp lt reg 1 0x00000021 ]
-  [ cmp gt reg 1 0x0000002d ]
+  [ range neq reg 1 0x00000021 0x0000002d ]
 
 # hbh nexthdr {33, 55, 67, 88}
 __set%d test-ip6 3

@@ -155,8 +155,7 @@ ip test-ip4 output
 ip test-ip4 output
   [ ct load mark => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ cmp lt reg 1 0x32000000 ]
-  [ cmp gt reg 1 0x45000000 ]
+  [ range neq reg 1 0x32000000 0x45000000 ]
 
 # ct mark {0x32, 0x2222, 0x42de3}
 __set%d test-ip4 3
@@ -221,8 +220,7 @@ ip test-ip4 output
 ip test-ip4 output
   [ ct load expiration => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ cmp lt reg 1 0xe8800000 ]
-  [ cmp gt reg 1 0xc8af0000 ]
+  [ range neq reg 1 0xe8800000 0xc8af0000 ]
 
 # ct expiration {33, 55, 67, 88}
 __set%d test-ip4 3

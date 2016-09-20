@@ -24,8 +24,7 @@ ip test-ip4 input
 ip test-ip4 input
   [ meta load len => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ cmp lt reg 1 0x21000000 ]
-  [ cmp gt reg 1 0x2d000000 ]
+  [ range neq reg 1 0x21000000 0x2d000000 ]
 
 # meta length { 33, 55, 67, 88}
 __set%d test-ip4 3
@@ -119,8 +118,7 @@ ip test-ip4 input
 ip test-ip4 input
   [ meta load l4proto => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 2, 1) ]
-  [ cmp lt reg 1 0x00000021 ]
-  [ cmp gt reg 1 0x0000002d ]
+  [ range neq reg 1 0x00000021 0x0000002d ]
 
 # meta l4proto { 33, 55, 67, 88}
 __set%d test-ip4 3
@@ -379,8 +377,7 @@ ip test-ip4 input
 ip test-ip4 input
   [ meta load skuid => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ cmp lt reg 1 0xd1070000 ]
-  [ cmp gt reg 1 0xd5070000 ]
+  [ range neq reg 1 0xd1070000 0xd5070000 ]
   [ immediate reg 0 accept ]
 
 # meta skuid { 2001-2005} accept
@@ -444,8 +441,7 @@ ip test-ip4 input
 ip test-ip4 input
   [ meta load skgid => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ cmp lt reg 1 0xd1070000 ]
-  [ cmp gt reg 1 0xd5070000 ]
+  [ range neq reg 1 0xd1070000 0xd5070000 ]
   [ immediate reg 0 accept ]
 
 # meta skgid { 2001-2005} accept
@@ -589,8 +585,7 @@ ip test-ip4 input
 ip test-ip4 input
   [ meta load cpu => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ cmp lt reg 1 0x01000000 ]
-  [ cmp gt reg 1 0x02000000 ]
+  [ range neq reg 1 0x01000000 0x02000000 ]
 
 # meta cpu { 2,3}
 __set%d test-ip4 3
@@ -728,8 +723,7 @@ ip test-ip4 input
 ip test-ip4 input
   [ meta load cgroup => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ cmp lt reg 1 0x01001000 ]
-  [ cmp gt reg 1 0x02001000 ]
+  [ range neq reg 1 0x01001000 0x02001000 ]
 
 # meta cgroup {1048577-1048578}
 __set%d test-ip4 7
@@ -825,8 +819,7 @@ ip test-ip4 input
 ip test-ip4 input
   [ meta load priority => reg 1 ]
   [ byteorder reg 1 = hton(reg 1, 4, 4) ]
-  [ cmp lt reg 1 0xdadaadbc ]
-  [ cmp gt reg 1 0xdcdaadbc ]
+  [ range neq reg 1 0xdadaadbc 0xdcdaadbc ]
 
 # meta priority {bcad:dada, bcad:dadc, aaaa:bbbb}
 __set%d test-ip4 3

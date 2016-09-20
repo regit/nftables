@@ -142,8 +142,7 @@ ip test-ip4 input
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
   [ payload load 1b @ transport header + 1 => reg 1 ]
-  [ cmp lt reg 1 0x00000021 ]
-  [ cmp gt reg 1 0x00000037 ]
+  [ range neq reg 1 0x00000021 0x00000037 ]
 
 # icmp code { 33-55}
 __set%d test-ip4 7
@@ -195,8 +194,7 @@ ip test-ip4 input
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
-  [ cmp lt reg 1 0x00000b00 ]
-  [ cmp gt reg 1 0x00005701 ]
+  [ range neq reg 1 0x00000b00 0x00005701 ]
   [ immediate reg 0 accept ]
 
 # icmp checksum { 11-343} accept
@@ -256,8 +254,7 @@ ip test-ip4 input
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
   [ payload load 2b @ transport header + 4 => reg 1 ]
-  [ cmp lt reg 1 0x00002100 ]
-  [ cmp gt reg 1 0x00002d00 ]
+  [ range neq reg 1 0x00002100 0x00002d00 ]
 
 # icmp id { 33-55}
 __set%d test-ip4 7
@@ -306,8 +303,7 @@ ip test-ip4 input
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
   [ payload load 2b @ transport header + 6 => reg 1 ]
-  [ cmp lt reg 1 0x00002100 ]
-  [ cmp gt reg 1 0x00002d00 ]
+  [ range neq reg 1 0x00002100 0x00002d00 ]
 
 # icmp sequence { 33, 55, 67, 88}
 __set%d test-ip4 3
@@ -381,8 +377,7 @@ ip test-ip4 input
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
   [ payload load 2b @ transport header + 6 => reg 1 ]
-  [ cmp lt reg 1 0x00002100 ]
-  [ cmp gt reg 1 0x00002d00 ]
+  [ range neq reg 1 0x00002100 0x00002d00 ]
 
 # icmp mtu { 33, 55, 67, 88}
 __set%d test-ip4 3
@@ -431,8 +426,7 @@ ip test-ip4 input
   [ payload load 1b @ network header + 9 => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
   [ payload load 4b @ transport header + 4 => reg 1 ]
-  [ cmp lt reg 1 0x21000000 ]
-  [ cmp gt reg 1 0x2d000000 ]
+  [ range neq reg 1 0x21000000 0x2d000000 ]
 
 # icmp gateway { 33, 55, 67, 88}
 __set%d test-ip4 3

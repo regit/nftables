@@ -106,8 +106,7 @@ inet test-inet input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x0000000a ]
   [ payload load 2b @ network header + 4 => reg 1 ]
-  [ cmp lt reg 1 0x00002100 ]
-  [ cmp gt reg 1 0x00002d00 ]
+  [ range neq reg 1 0x00002100 0x00002d00 ]
 
 # ip6 length { 33-55}
 __set%d test-inet 7
@@ -176,8 +175,7 @@ inet test-inet input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x0000000a ]
   [ payload load 1b @ network header + 6 => reg 1 ]
-  [ cmp lt reg 1 0x00000021 ]
-  [ cmp gt reg 1 0x0000002c ]
+  [ range neq reg 1 0x00000021 0x0000002c ]
 
 # ip6 hoplimit 1
 inet test-inet input
@@ -206,8 +204,7 @@ inet test-inet input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x0000000a ]
   [ payload load 1b @ network header + 7 => reg 1 ]
-  [ cmp lt reg 1 0x00000021 ]
-  [ cmp gt reg 1 0x0000002d ]
+  [ range neq reg 1 0x00000021 0x0000002d ]
 
 # ip6 hoplimit {33, 55, 67, 88}
 __set%d test-inet 3
@@ -510,8 +507,7 @@ inet test-inet input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x0000000a ]
   [ payload load 16b @ network header + 24 => reg 1 ]
-  [ cmp lt reg 1 0x34120000 0x34123412 0x34123412 0x34123412 ]
-  [ cmp gt reg 1 0x34123412 0x34120000 0x34123412 0x34123412 ]
+  [ range neq reg 1 0x34120000 0x34123412 0x34123412 0x34123412 0x34123412 0x34120000 0x34123412 0x34123412 ]
 
 # iif "lo" ip6 daddr set ::1
 inet test-inet input

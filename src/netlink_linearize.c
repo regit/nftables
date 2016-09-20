@@ -368,45 +368,41 @@ static void netlink_gen_range(struct netlink_linearize_ctx *ctx,
 	sreg = get_register(ctx, expr->left);
 	netlink_gen_expr(ctx, expr->left, sreg);
 
-	nle = alloc_nft_expr("cmp");
-	netlink_put_register(nle, NFTNL_EXPR_CMP_SREG, sreg);
 	switch (expr->op) {
 	case OP_NEQ:
-		nftnl_expr_set_u32(nle, NFTNL_EXPR_CMP_OP,
-				   netlink_gen_cmp_op(OP_LT));
+		nle = alloc_nft_expr("range");
+		netlink_put_register(nle, NFTNL_EXPR_RANGE_SREG, sreg);
+		nftnl_expr_set_u32(nle, NFTNL_EXPR_RANGE_OP, NFT_RANGE_NEQ);
+		netlink_gen_data(range->left, &nld);
+		nftnl_expr_set(nle, NFTNL_EXPR_RANGE_FROM_DATA,
+			       nld.value, nld.len);
+		netlink_gen_data(range->right, &nld);
+		nftnl_expr_set(nle, NFTNL_EXPR_RANGE_TO_DATA,
+			       nld.value, nld.len);
+		nftnl_rule_add_expr(ctx->nlr, nle);
 		break;
 	case OP_RANGE:
 	case OP_EQ:
+		nle = alloc_nft_expr("cmp");
+		netlink_put_register(nle, NFTNL_EXPR_CMP_SREG, sreg);
 		nftnl_expr_set_u32(nle, NFTNL_EXPR_CMP_OP,
 				   netlink_gen_cmp_op(OP_GTE));
-		break;
-	default:
-		BUG("invalid range operation %u\n", expr->op);
-	}
+		netlink_gen_data(range->left, &nld);
+		nftnl_expr_set(nle, NFTNL_EXPR_CMP_DATA, nld.value, nld.len);
+		nftnl_rule_add_expr(ctx->nlr, nle);
 
-	netlink_gen_data(range->left, &nld);
-	nftnl_expr_set(nle, NFTNL_EXPR_CMP_DATA, nld.value, nld.len);
-	nftnl_rule_add_expr(ctx->nlr, nle);
-
-	nle = alloc_nft_expr("cmp");
-	netlink_put_register(nle, NFTNL_EXPR_CMP_SREG, sreg);
-	switch (expr->op) {
-	case OP_NEQ:
-		nftnl_expr_set_u32(nle, NFTNL_EXPR_CMP_OP,
-				   netlink_gen_cmp_op(OP_GT));
-		break;
-	case OP_RANGE:
-	case OP_EQ:
+		nle = alloc_nft_expr("cmp");
+		netlink_put_register(nle, NFTNL_EXPR_CMP_SREG, sreg);
 		nftnl_expr_set_u32(nle, NFTNL_EXPR_CMP_OP,
 				   netlink_gen_cmp_op(OP_LTE));
+		netlink_gen_data(range->right, &nld);
+		nftnl_expr_set(nle, NFTNL_EXPR_CMP_DATA, nld.value, nld.len);
+		nftnl_rule_add_expr(ctx->nlr, nle);
 		break;
 	default:
 		BUG("invalid range operation %u\n", expr->op);
-	}
 
-	netlink_gen_data(range->right, &nld);
-	nftnl_expr_set(nle, NFTNL_EXPR_CMP_DATA, nld.value, nld.len);
-	nftnl_rule_add_expr(ctx->nlr, nle);
+	}
 
 	release_register(ctx, expr->left);
 }
