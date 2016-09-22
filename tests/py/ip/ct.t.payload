@@ -42,14 +42,14 @@ ip test-ip4 output
   [ bitwise reg 1 = (reg=1 & 0x00ffffff ) ^ 0x00000000 ]
   [ cmp eq reg 1 0x0001a8c0 ]
 
-# ct original l3proto ipv4
+# ct l3proto ipv4
 ip test-ip4 output
-  [ ct load l3protocol => reg 1 , dir original ]
+  [ ct load l3protocol => reg 1 ]
   [ cmp eq reg 1 0x00000002 ]
 
-# ct original protocol 6 ct original proto-dst 22
+# ct protocol 6 ct original proto-dst 22
 ip test-ip4 output
-  [ ct load protocol => reg 1 , dir original ]
+  [ ct load protocol => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
   [ ct load proto_dst => reg 1 , dir original ]
   [ cmp eq reg 1 0x00001600 ]
