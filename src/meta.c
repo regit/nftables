@@ -11,6 +11,7 @@
  */
 
 #include <errno.h>
+#include <limits.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -166,8 +167,18 @@ static struct error_record *ifindex_type_parse(const struct expr *sym,
 	int ifindex;
 
 	ifindex = nft_if_nametoindex(sym->identifier);
-	if (ifindex == 0)
-		return error(&sym->location, "Interface does not exist");
+	if (ifindex == 0) {
+		char *end;
+		long res;
+
+		errno = 0;
+		res = strtol(sym->identifier, &end, 10);
+
+		if (res < 0 || res > INT_MAX || *end || errno)
+			return error(&sym->location, "Interface does not exist");
+
+		ifindex = (int)res;
+	}
 
 	*res = constant_expr_alloc(&sym->location, sym->dtype,
 				   BYTEORDER_HOST_ENDIAN,
