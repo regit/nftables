@@ -54,9 +54,11 @@ kernel_cleanup() {
 	nft_redir_ipv4 nft_redir_ipv6 nft_redir \
 	nft_dup_ipv4 nft_dup_ipv6 nft_dup nft_nat \
 	nft_masq_ipv4 nft_masq_ipv6 nft_masq \
-	nft_exthdr nft_payload nft_cmp \
+	nft_exthdr nft_payload nft_cmp nft_range \
+	nft_quota nft_queue nft_numgen \
 	nft_meta nft_meta_bridge nft_counter nft_log nft_limit \
-	nft_hash nft_rbtree nft_ct nft_compat \
+	nft_hash nft_ct nft_compat \
+	nft_set_hash nft_set_rbtree \
 	nft_chain_nat_ipv4 nft_chain_nat_ipv6 \
 	nf_tables_inet nf_tables_bridge nf_tables_arp \
 	nf_tables_ipv4 nf_tables_ipv6 nf_tables
