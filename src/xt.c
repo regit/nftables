@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013-2015 Pablo Neira Ayuso <pablo@netfilter.org>
- * Copyright (c) 2015 Arturo Borrero Gonzalez <arturo.borrero.glez@gmail.com>
+ * Copyright (c) 2015 Arturo Borrero Gonzalez <arturo@debian.org>
  *
  * This program is free software; you can redistribute it and/or modifyi
  * it under the terms of the GNU General Public License version 2 as
