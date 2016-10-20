@@ -2340,6 +2340,7 @@ next:
 static void trace_print_packet(const struct nftnl_trace *nlt)
 {
 	struct list_head stmts = LIST_HEAD_INIT(stmts);
+	const struct proto_desc *ll_desc;
 	struct payload_dep_ctx pctx = {};
 	struct proto_ctx ctx;
 	uint16_t dev_type;
@@ -2359,12 +2360,14 @@ static void trace_print_packet(const struct nftnl_trace *nlt)
 						 NFT_META_OIF));
 
 	proto_ctx_init(&ctx, nftnl_trace_get_u32(nlt, NFTNL_TRACE_FAMILY));
-	if (ctx.protocol[PROTO_BASE_LL_HDR].desc == &proto_inet &&
+	ll_desc = ctx.protocol[PROTO_BASE_LL_HDR].desc;
+	if ((ll_desc == &proto_inet || ll_desc  == &proto_netdev) &&
 	    nftnl_trace_is_set(nlt, NFTNL_TRACE_NFPROTO)) {
 		nfproto = nftnl_trace_get_u32(nlt, NFTNL_TRACE_NFPROTO);
+
 		proto_ctx_update(&ctx, PROTO_BASE_LL_HDR, &netlink_location, NULL);
 		proto_ctx_update(&ctx, PROTO_BASE_NETWORK_HDR, &netlink_location,
-				 proto_find_upper(&proto_inet, nfproto));
+				 proto_find_upper(ll_desc, nfproto));
 	}
 	if (ctx.protocol[PROTO_BASE_LL_HDR].desc == NULL &&
 	    nftnl_trace_is_set(nlt, NFTNL_TRACE_IIFTYPE)) {
