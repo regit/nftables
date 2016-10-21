@@ -748,7 +748,7 @@ add_cmd			:	TABLE		table_spec
 				handle_merge(&$3->handle, &$2);
 				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_SET, &$2, &@$, $5);
 			}
-			|	ELEMENT		set_spec	set_expr
+			|	ELEMENT		set_spec	set_block_expr
 			{
 				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_SETELEM, &$2, &@$, $3);
 			}
@@ -797,7 +797,7 @@ create_cmd		:	TABLE		table_spec
 				handle_merge(&$3->handle, &$2);
 				$$ = cmd_alloc(CMD_CREATE, CMD_OBJ_SET, &$2, &@$, $5);
 			}
-			|	ELEMENT		set_spec	set_expr
+			|	ELEMENT		set_spec	set_block_expr
 			{
 				$$ = cmd_alloc(CMD_CREATE, CMD_OBJ_SETELEM, &$2, &@$, $3);
 			}
@@ -829,7 +829,7 @@ delete_cmd		:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_SET, &$2, &@$, NULL);
 			}
-			|	ELEMENT		set_spec	set_expr
+			|	ELEMENT		set_spec	set_block_expr
 			{
 				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_SETELEM, &$2, &@$, $3);
 			}
