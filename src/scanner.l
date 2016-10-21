@@ -299,14 +299,6 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "snaplen"		{ return SNAPLEN; }
 "queue-threshold"	{ return QUEUE_THRESHOLD; }
 "level"			{ return LEVEL; }
-"emerg"			{ return LEVEL_EMERG; }
-"alert"			{ return LEVEL_ALERT; }
-"crit"			{ return LEVEL_CRIT; }
-"err"			{ return LEVEL_ERR; }
-"warn"			{ return LEVEL_WARN; }
-"notice"		{ return LEVEL_NOTICE; }
-"info"			{ return LEVEL_INFO; }
-"debug"			{ return LEVEL_DEBUG; }
 
 "queue"			{ return QUEUE;}
 "num"			{ return QUEUENUM;}

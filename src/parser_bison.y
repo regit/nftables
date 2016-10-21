@@ -1517,14 +1517,30 @@ log_arg			:	PREFIX			string
 			}
 			;
 
-level_type		:	LEVEL_EMERG	{ $$ = LOG_EMERG; }
-			|	LEVEL_ALERT	{ $$ = LOG_ALERT; }
-			|	LEVEL_CRIT	{ $$ = LOG_CRIT; }
-			|	LEVEL_ERR	{ $$ = LOG_ERR; }
-			|	LEVEL_WARN	{ $$ = LOG_WARNING; }
-			|	LEVEL_NOTICE	{ $$ = LOG_NOTICE; }
-			|	LEVEL_INFO	{ $$ = LOG_INFO; }
-			|	LEVEL_DEBUG	{ $$ = LOG_DEBUG; }
+level_type		:	string
+			{
+				if (!strcmp("emerg", $1))
+					$$ = LOG_EMERG;
+				else if (!strcmp("alert", $1))
+					$$ = LOG_ALERT;
+				else if (!strcmp("crit", $1))
+					$$ = LOG_CRIT;
+				else if (!strcmp("err", $1))
+					$$ = LOG_ERR;
+				else if (!strcmp("warning", $1))
+					$$ = LOG_WARNING;
+				else if (!strcmp("notice", $1))
+					$$ = LOG_NOTICE;
+				else if (!strcmp("info", $1))
+					$$ = LOG_INFO;
+				else if (!strcmp("debug", $1))
+					$$ = LOG_DEBUG;
+				else {
+					erec_queue(error(&@1, "invalid log level", $1),
+						   state->msgs);
+					YYERROR;
+				}
+			}
 			;
 
 limit_stmt		:	LIMIT	RATE	limit_mode	NUM	SLASH	time_unit	limit_burst
