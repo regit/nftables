@@ -590,13 +590,14 @@ static void netlink_parse_numgen(struct netlink_parse_ctx *ctx,
 				 const struct nftnl_expr *nle)
 {
 	enum nft_registers dreg;
-	uint32_t type, until;
+	uint32_t type, until, offset;
 	struct expr *expr;
 
 	type  = nftnl_expr_get_u32(nle, NFTNL_EXPR_NG_TYPE);
 	until = nftnl_expr_get_u32(nle, NFTNL_EXPR_NG_MODULUS);
+	offset = nftnl_expr_get_u32(nle, NFTNL_EXPR_NG_OFFSET);
 
-	expr = numgen_expr_alloc(loc, type, until);
+	expr = numgen_expr_alloc(loc, type, until, offset);
 	dreg = netlink_parse_register(nle, NFTNL_EXPR_NG_DREG);
 	netlink_set_register(ctx, dreg, expr);
 }

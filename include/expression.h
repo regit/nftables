@@ -291,6 +291,7 @@ struct expr {
 			/* EXPR_NUMGEN */
 			enum nft_ng_types	type;
 			uint32_t		mod;
+			uint32_t		offset;
 		} numgen;
 		struct {
 			/* EXPR_HASH */

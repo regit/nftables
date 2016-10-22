@@ -2490,9 +2490,9 @@ numgen_type		:	INC		{ $$ = NFT_NG_INCREMENTAL; }
 			|	RANDOM		{ $$ = NFT_NG_RANDOM; }
 			;
 
-numgen_expr		:	NUMGEN	numgen_type	MOD	NUM
+numgen_expr		:	NUMGEN	numgen_type	MOD	NUM	offset_opt
 			{
-				$$ = numgen_expr_alloc(&@$, $2, $4);
+				$$ = numgen_expr_alloc(&@$, $2, $4, $5);
 			}
 			;
 

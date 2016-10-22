@@ -32,18 +32,22 @@ static void numgen_expr_print(const struct expr *expr)
 {
 	printf("numgen %s mod %u", numgen_type_str(expr->numgen.type),
 	       expr->numgen.mod);
+	if (expr->numgen.offset)
+		printf(" offset %u", expr->numgen.offset);
 }
 
 static bool numgen_expr_cmp(const struct expr *e1, const struct expr *e2)
 {
 	return e1->numgen.type == e2->numgen.type &&
-	       e1->numgen.mod == e2->numgen.mod;
+	       e1->numgen.mod == e2->numgen.mod &&
+	       e1->numgen.offset == e2->numgen.offset;
 }
 
 static void numgen_expr_clone(struct expr *new, const struct expr *expr)
 {
 	new->numgen.type = expr->numgen.type;
 	new->numgen.mod = expr->numgen.mod;
+	new->numgen.offset = expr->numgen.offset;
 }
 
 static const struct expr_ops numgen_expr_ops = {
@@ -55,7 +59,8 @@ static const struct expr_ops numgen_expr_ops = {
 };
 
 struct expr *numgen_expr_alloc(const struct location *loc,
-			       enum nft_ng_types type, uint32_t mod)
+			       enum nft_ng_types type, uint32_t mod,
+			       uint32_t offset)
 {
 	struct expr *expr;
 
@@ -63,6 +68,7 @@ struct expr *numgen_expr_alloc(const struct location *loc,
 			  BYTEORDER_HOST_ENDIAN, 4 * BITS_PER_BYTE);
 	expr->numgen.type  = type;
 	expr->numgen.mod   = mod;
+	expr->numgen.offset = offset;
 
 	return expr;
 }
