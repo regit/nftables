@@ -180,7 +180,7 @@ static void netlink_gen_numgen(struct netlink_linearize_ctx *ctx,
 
 	nle = alloc_nft_expr("numgen");
 	netlink_put_register(nle, NFTNL_EXPR_NG_DREG, dreg);
-	netlink_put_register(nle, NFTNL_EXPR_NG_TYPE, expr->numgen.type);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_NG_TYPE, expr->numgen.type);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_NG_MODULUS, expr->numgen.mod);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_NG_OFFSET, expr->numgen.offset);
 	nftnl_rule_add_expr(ctx->nlr, nle);
