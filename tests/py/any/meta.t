@@ -152,10 +152,10 @@ meta skgid 3000;ok;skgid 3000
 meta rtclassid "cosmos";ok;rtclassid "cosmos"
 
 meta pkttype broadcast;ok;pkttype broadcast
-meta pkttype unicast;ok;pkttype unicast
+meta pkttype host;ok;pkttype host
 meta pkttype multicast;ok;pkttype multicast
 meta pkttype != broadcast;ok;pkttype != broadcast
-meta pkttype != unicast;ok;pkttype != unicast
+meta pkttype != host;ok;pkttype != host
 meta pkttype != multicast;ok;pkttype != multicast
 meta pkttype broadcastttt;fail
 meta pkttype { broadcast, multicast} accept;ok

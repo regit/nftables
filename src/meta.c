@@ -327,9 +327,11 @@ static const struct datatype gid_type = {
 
 static const struct symbol_table pkttype_type_tbl = {
 	.symbols	= {
-		SYMBOL("unicast", PACKET_HOST),
+		SYMBOL("host", PACKET_HOST),
+		SYMBOL("unicast", PACKET_HOST), /* backwards compat */
 		SYMBOL("broadcast", PACKET_BROADCAST),
 		SYMBOL("multicast", PACKET_MULTICAST),
+		SYMBOL("other", PACKET_OTHERHOST),
 		SYMBOL_LIST_END,
 	},
 };
