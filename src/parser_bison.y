@@ -410,6 +410,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token NUMGEN			"numgen"
 %token INC			"inc"
 %token MOD			"mod"
+%token OFFSET			"offset"
 
 %token JHASH			"jhash"
 %token SEED			"seed"
@@ -482,7 +483,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { stmt_free($$); }	reject_stmt reject_stmt_alloc
 %type <stmt>			nat_stmt nat_stmt_alloc masq_stmt masq_stmt_alloc redir_stmt redir_stmt_alloc
 %destructor { stmt_free($$); }	nat_stmt nat_stmt_alloc masq_stmt masq_stmt_alloc redir_stmt redir_stmt_alloc
-%type <val>			nf_nat_flags nf_nat_flag
+%type <val>			nf_nat_flags nf_nat_flag offset_opt
 %type <stmt>			queue_stmt queue_stmt_alloc
 %destructor { stmt_free($$); }	queue_stmt queue_stmt_alloc
 %type <val>			queue_stmt_flags queue_stmt_flag
@@ -2484,6 +2485,10 @@ meta_stmt		:	META	meta_key	SET	expr
 			{
 				$$ = meta_stmt_alloc(&@$, $1, $3);
 			}
+			;
+
+offset_opt		:	/* empty */	{ $$ = 0; }
+			|	OFFSET	NUM	{ $$ = $2; }
 			;
 
 numgen_type		:	INC		{ $$ = NFT_NG_INCREMENTAL; }

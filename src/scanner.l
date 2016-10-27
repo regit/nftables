@@ -462,6 +462,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "numgen"		{ return NUMGEN; }
 "inc"			{ return INC; }
 "mod"			{ return MOD; }
+"offset"		{ return OFFSET; }
 
 "jhash"			{ return JHASH; }
 "seed"			{ return SEED; }
