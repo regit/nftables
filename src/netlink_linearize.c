@@ -172,6 +172,18 @@ static void netlink_gen_meta(struct netlink_linearize_ctx *ctx,
 	nftnl_rule_add_expr(ctx->nlr, nle);
 }
 
+static void netlink_gen_rt(struct netlink_linearize_ctx *ctx,
+			     const struct expr *expr,
+			     enum nft_registers dreg)
+{
+	struct nftnl_expr *nle;
+
+	nle = alloc_nft_expr("rt");
+	netlink_put_register(nle, NFTNL_EXPR_RT_DREG, dreg);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_RT_KEY, expr->rt.key);
+	nftnl_rule_add_expr(ctx->nlr, nle);
+}
+
 static void netlink_gen_numgen(struct netlink_linearize_ctx *ctx,
 			    const struct expr *expr,
 			    enum nft_registers dreg)
@@ -641,6 +653,8 @@ static void netlink_gen_expr(struct netlink_linearize_ctx *ctx,
 		return netlink_gen_exthdr(ctx, expr, dreg);
 	case EXPR_META:
 		return netlink_gen_meta(ctx, expr, dreg);
+	case EXPR_RT:
+		return netlink_gen_rt(ctx, expr, dreg);
 	case EXPR_CT:
 		return netlink_gen_ct(ctx, expr, dreg);
 	case EXPR_SET_ELEM:

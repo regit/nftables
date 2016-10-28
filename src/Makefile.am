@@ -38,6 +38,7 @@ nft_SOURCES =	main.c				\
 		exthdr.c			\
 		hash.c				\
 		meta.c				\
+		rt.c				\
 		numgen.c			\
 		ct.c				\
 		netlink.c			\

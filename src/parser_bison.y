@@ -338,6 +338,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token OIFGROUP			"oifgroup"
 %token CGROUP			"cgroup"
 
+%token CLASSID			"classid"
+%token NEXTHOP			"nexthop"
+
 %token CT			"ct"
 %token DIRECTION		"direction"
 %token STATE			"state"
@@ -589,6 +592,10 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			meta_expr
 %destructor { expr_free($$); }	meta_expr
 %type <val>			meta_key	meta_key_qualified	meta_key_unqualified	numgen_type
+
+%type <expr>			rt_expr
+%destructor { expr_free($$); }	rt_expr
+%type <val>			rt_key
 
 %type <expr>			ct_expr
 %destructor { expr_free($$); }	ct_expr
@@ -1995,6 +2002,7 @@ primary_expr		:	symbol_expr			{ $$ = $1; }
 			|	payload_expr			{ $$ = $1; }
 			|	exthdr_expr			{ $$ = $1; }
 			|	meta_expr			{ $$ = $1; }
+			|	rt_expr				{ $$ = $1; }
 			|	ct_expr				{ $$ = $1; }
 			|	numgen_expr			{ $$ = $1; }
 			|	hash_expr			{ $$ = $1; }
@@ -2527,6 +2535,16 @@ hash_expr		:	JHASH	expr	MOD	NUM	SEED	NUM
 				$$ = hash_expr_alloc(&@$, $4, $6);
 				$$->hash.expr = $2;
 			}
+			;
+
+rt_expr			:	RT	rt_key
+			{
+				$$ = rt_expr_alloc(&@$, $2, true);
+			}
+			;
+
+rt_key			:	CLASSID		{ $$ = NFT_RT_CLASSID; }
+			|	NEXTHOP		{ $$ = NFT_RT_NEXTHOP4; }
 			;
 
 ct_expr			: 	CT	ct_key

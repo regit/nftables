@@ -446,6 +446,9 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "oifgroup"		{ return OIFGROUP; }
 "cgroup"		{ return CGROUP; }
 
+"classid"		{ return CLASSID; }
+"nexthop"		{ return NEXTHOP; }
+
 "ct"			{ return CT; }
 "l3proto"		{ return L3PROTOCOL; }
 "proto-src"		{ return PROTO_SRC; }

@@ -612,6 +612,38 @@ static int expr_evaluate_payload(struct eval_ctx *ctx, struct expr **exprp)
 }
 
 /*
+ * RT expression: validate protocol dependencies.
+ */
+static int expr_evaluate_rt(struct eval_ctx *ctx, struct expr **expr)
+{
+	const struct proto_desc *base;
+	struct expr *rt = *expr;
+
+	rt_expr_update_type(&ctx->pctx, rt);
+
+	base = ctx->pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
+	switch (rt->rt.key) {
+	case NFT_RT_NEXTHOP4:
+		if (base != &proto_ip)
+			goto err;
+		break;
+	case NFT_RT_NEXTHOP6:
+		if (base != &proto_ip6)
+			goto err;
+		break;
+	default:
+		break;
+	}
+
+	return expr_evaluate_primary(ctx, expr);
+
+err:
+	return expr_error(ctx->msgs, rt,
+			  "ether type ip or ip6 must be specified before "
+			  "routing expression");
+}
+
+/*
  * CT expression: update the protocol dependant types bases on the protocol
  * context.
  */
@@ -1609,6 +1641,8 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 		return expr_evaluate_primary(ctx, expr);
 	case EXPR_PAYLOAD:
 		return expr_evaluate_payload(ctx, expr);
+	case EXPR_RT:
+		return expr_evaluate_rt(ctx, expr);
 	case EXPR_CT:
 		return expr_evaluate_ct(ctx, expr);
 	case EXPR_PREFIX:

@@ -35,6 +35,7 @@
  * @EXPR_RELATIONAL:	equality and relational expressions
  * @EXPR_NUMGEN:	number generation expression
  * @EXPR_HASH:		hash expression
+ * @EXPR_RT:		routing expression
  */
 enum expr_types {
 	EXPR_INVALID,
@@ -59,6 +60,7 @@ enum expr_types {
 	EXPR_RELATIONAL,
 	EXPR_NUMGEN,
 	EXPR_HASH,
+	EXPR_RT,
 };
 
 enum ops {
@@ -180,6 +182,7 @@ enum expr_flags {
 #include <exthdr.h>
 #include <numgen.h>
 #include <meta.h>
+#include <rt.h>
 #include <hash.h>
 #include <ct.h>
 
@@ -282,6 +285,10 @@ struct expr {
 			enum nft_meta_keys	key;
 			enum proto_bases	base;
 		} meta;
+		struct {
+			/* EXPR_RT */
+			enum nft_rt_keys	key;
+		} rt;
 		struct {
 			/* EXPR_CT */
 			enum nft_ct_keys	key;

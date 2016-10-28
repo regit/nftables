@@ -1,0 +1,21 @@
+#! nft -f
+
+add table ip filter
+add chain ip filter output { type filter hook output priority 0 ; }
+
+add table ip6 filter
+add chain ip6 filter output { type filter hook output priority 0 ; }
+
+add table inet filter
+add chain inet filter output { type filter hook output priority 0 ; }
+
+# rt: classid (see /etc/iproute2/rt_realms)
+add rule ip filter output rt classid cosmos counter
+add rule ip6 filter output rt classid cosmos counter
+add rule inet filter output rt classid cosmos counter
+
+# rt: nexthop
+add rule ip filter output rt nexthop 192.168.0.1 counter
+add rule ip6 filter output rt nexthop fd00::1 counter
+add rule inet filter output ether type ip rt nexthop 192.168.0.1 counter
+add rule inet filter output ether type ip6 rt nexthop fd00::1 counter
