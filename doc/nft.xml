@@ -2128,22 +2128,27 @@ inet filter meta nfproto ipv6 output rt nexthop fd00::1
 						<arg>expiration</arg>
 						<arg>helper</arg>
 						<arg>label</arg>
+						<arg>l3proto</arg>
+						<arg>protocol</arg>
 						<arg>bytes</arg>
 						<arg>packets</arg>
 					</group>
+				</cmdsynopsis>
+				<cmdsynopsis>
+					<command>ct</command>
 					<group choice="req">
 						<arg>original</arg>
 						<arg>reply</arg>
-						<group choice="req">
-							<arg>l3proto</arg>
-							<arg>protocol</arg>
-							<arg>saddr</arg>
-							<arg>daddr</arg>
-							<arg>proto-src</arg>
-							<arg>proto-dst</arg>
-							<arg>bytes</arg>
-							<arg>packets</arg>
-						</group>
+					</group>
+					<group choice="req">
+						<arg>l3proto</arg>
+						<arg>protocol</arg>
+						<arg>saddr</arg>
+						<arg>daddr</arg>
+						<arg>proto-src</arg>
+						<arg>proto-dst</arg>
+						<arg>bytes</arg>
+						<arg>packets</arg>
 					</group>
 				</cmdsynopsis>
 			</para>
