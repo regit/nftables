@@ -639,8 +639,8 @@ static int expr_evaluate_rt(struct eval_ctx *ctx, struct expr **expr)
 
 err:
 	return expr_error(ctx->msgs, rt,
-			  "ether type ip or ip6 must be specified before "
-			  "routing expression");
+			  "meta nfproto ipv4 or ipv6 must be specified "
+			  "before routing expression");
 }
 
 /*

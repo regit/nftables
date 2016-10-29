@@ -1,0 +1,5 @@
+# rt classid "cosmos"
+ip test-ip4 input
+  [ rt load classid => reg 1 ]
+  [ cmp eq reg 1 0x00000000 ]
+

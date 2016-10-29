@@ -1315,7 +1315,7 @@ filter prerouting meta mark set 0xdead fib daddr . mark type vmap { backhole : d
 			<para>
 				<table frame="all">
 					<title>Routing expression types</title>
-					<tgroup cols='4' align='left' colsep='1' rowsep='1'>
+					<tgroup cols='3' align='left' colsep='1' rowsep='1'>
 						<colspec colname='c1'/>
 						<colspec colname='c2'/>
 						<colspec colname='c3'/>
@@ -1375,8 +1375,8 @@ filter output rt classid 10
 # IP family dependent rt expressions
 ip filter output rt nexthop 192.168.0.1
 ip6 filter output rt nexthop fd00::1
-inet filter ether type ip output rt nexthop 192.168.0.1
-inet filter ether type ip6 output rt nexthop fd00::1
+inet filter meta nfproto ipv4 output rt nexthop 192.168.0.1
+inet filter meta nfproto ipv6 output rt nexthop fd00::1
 					</programlisting>
 				</example>
 			</para>

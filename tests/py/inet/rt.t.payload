@@ -1,0 +1,14 @@
+# meta nfproto ipv4 rt nexthop 192.168.0.1
+inet test-inet output
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x00000002 ]
+  [ rt load nexthop4 => reg 1 ]
+  [ cmp eq reg 1 0x0100a8c0 ]
+
+# meta nfproto ipv6 rt nexthop fd00::1
+inet test-inet output
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ rt load nexthop6 => reg 1 ]
+  [ cmp eq reg 1 0x000000fd 0x00000000 0x00000000 0x01000000 ]
+
