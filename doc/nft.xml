@@ -111,12 +111,10 @@ vi:ts=4 sw=4
 				<term><option>-n, --numeric</option></term>
 				<listitem>
 					<para>
-						Numeric output: Addresses and other information
-						that might need network traffic to resolve to symbolic names
-						are shown numerically (default behaviour). When used twice,
-						internet services are translated. When used twice, internet
-						services and UIDs/GIDs are also shown numerically. When used
-						three times, protocol numbers are also shown numerically.
+						Show data numerically. When used once (the default behaviour), skip
+						lookup of addresses to symbolic names. Use twice to also show Internet
+						services (port numbers) numerically. Use three times to also show
+						protocols and UIDs/GIDs numerically.
 					</para>
 				</listitem>
 			</varlistentry>
@@ -124,7 +122,7 @@ vi:ts=4 sw=4
 				<term><option>-N</option></term>
 				<listitem>
 					<para>
-						Translate IP addresses to DNS names.
+						Translate IP addresses to names. Usually requires network traffic for DNS lookup.
 					</para>
 				</listitem>
 			</varlistentry>
