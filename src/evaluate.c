@@ -987,13 +987,6 @@ static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 						 "expecting %s",
 						 dtype->desc);
 
-		if (dtype == NULL && i->dtype->size == 0)
-			return expr_binary_error(ctx->msgs, i, *expr,
-						 "can not use variable sized "
-						 "data types (%s) in concat "
-						 "expressions",
-						 i->dtype->name);
-
 		if (dtype == NULL)
 			tmp = datatype_lookup(TYPE_INVALID);
 		else
@@ -1003,6 +996,13 @@ static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 		if (list_member_evaluate(ctx, &i) < 0)
 			return -1;
 		flags &= i->flags;
+
+		if (dtype == NULL && i->dtype->size == 0)
+			return expr_binary_error(ctx->msgs, i, *expr,
+						 "can not use variable sized "
+						 "data types (%s) in concat "
+						 "expressions",
+						 i->dtype->name);
 
 		ntype = concat_subtype_add(ntype, i->dtype->type);
 	}
