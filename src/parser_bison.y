@@ -2629,7 +2629,9 @@ ct_expr			: 	CT	ct_key
 			}
 			;
 
-ct_key			:	MARK		{ $$ = NFT_CT_MARK; }
+ct_key			:	L3PROTOCOL	{ $$ = NFT_CT_L3PROTOCOL; }
+			|	PROTOCOL	{ $$ = NFT_CT_PROTOCOL; }
+			|	MARK		{ $$ = NFT_CT_MARK; }
 			|	ct_key_counters
 			;
 ct_key_dir		:	SADDR		{ $$ = NFT_CT_SRC; }
