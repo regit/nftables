@@ -1540,7 +1540,7 @@ level_type		:	string
 					$$ = LOG_CRIT;
 				else if (!strcmp("err", $1))
 					$$ = LOG_ERR;
-				else if (!strcmp("warning", $1))
+				else if (!strcmp("warn", $1))
 					$$ = LOG_WARNING;
 				else if (!strcmp("notice", $1))
 					$$ = LOG_NOTICE;
