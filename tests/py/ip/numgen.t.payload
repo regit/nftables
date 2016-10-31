@@ -22,3 +22,8 @@ ip test-ip4 pre
   [ lookup reg 1 set __map%d dreg 1 ]
   [ nat dnat ip addr_min reg 1 addr_max reg 0 ]
 
+# ct mark set numgen inc mod 2 offset 100
+ip test-ip4 pre
+  [ numgen reg 1 = inc mod 2 offset 100 ]
+  [ ct set mark with reg 1 ]
+
