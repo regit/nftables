@@ -1,0 +1,16 @@
+# flow table acct_out { meta iif . ip6 saddr timeout 600s counter }
+acct_out test-ip6 31
+acct_out test-ip6 0
+ip6 test-ip6 input
+  [ meta load iif => reg 1 ]
+  [ payload load 16b @ network header + 8 => reg 9 ]
+  [ dynset update reg_key 1 set acct_out timeout 600000ms expr [ counter pkts 0 bytes 0 ] ]
+
+# flow table acct_out { ip6 saddr . meta iif timeout 600s counter }
+acct_out test-ip6 31
+acct_out test-ip6 0
+ip6 test-ip6 input
+  [ payload load 16b @ network header + 8 => reg 1 ]
+  [ meta load iif => reg 2 ]
+  [ dynset update reg_key 1 set acct_out timeout 600000ms expr [ counter pkts 0 bytes 0 ] ]
+

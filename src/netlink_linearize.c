@@ -1124,9 +1124,9 @@ static void netlink_gen_flow_stmt(struct netlink_linearize_ctx *ctx,
 	enum nft_dynset_ops op;
 	struct set *set;
 
-	sreg_key = get_register(ctx, stmt->flow.key);
-	netlink_gen_expr(ctx, stmt->flow.key, sreg_key);
-	release_register(ctx, stmt->flow.key);
+	sreg_key = get_register(ctx, stmt->flow.key->key);
+	netlink_gen_expr(ctx, stmt->flow.key->key, sreg_key);
+	release_register(ctx, stmt->flow.key->key);
 
 	set = stmt->flow.set->set;
 	if (stmt->flow.key->timeout)
