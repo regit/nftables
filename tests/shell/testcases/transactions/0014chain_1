@@ -16,5 +16,5 @@ delete chain x y
 delete chain x y"
 
 echo "$RULESET" > $tmpfile
-$NFT -f $tmpfile
+$NFT -f $tmpfile 2>/dev/null
 echo "E: allowing double-removal of chain" >&2
