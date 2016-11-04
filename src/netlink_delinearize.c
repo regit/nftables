@@ -513,7 +513,7 @@ static void netlink_parse_hash(struct netlink_parse_ctx *ctx,
 {
 	enum nft_registers sreg, dreg;
 	struct expr *expr, *hexpr;
-	uint32_t mod, seed, len;
+	uint32_t mod, seed, len, offset;
 
 	sreg = netlink_parse_register(nle, NFTNL_EXPR_HASH_SREG);
 	hexpr = netlink_get_register(ctx, loc, sreg);
@@ -521,6 +521,7 @@ static void netlink_parse_hash(struct netlink_parse_ctx *ctx,
 		return netlink_error(ctx, loc,
 				     "hash statement has no expression");
 
+	offset = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_OFFSET);
 	seed = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_SEED);
 	mod  = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_MODULUS);
 	len = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_LEN) * BITS_PER_BYTE;
@@ -531,7 +532,7 @@ static void netlink_parse_hash(struct netlink_parse_ctx *ctx,
 			return;
 	}
 
-	expr = hash_expr_alloc(loc, mod, seed);
+	expr = hash_expr_alloc(loc, mod, seed, offset);
 	expr->hash.expr = hexpr;
 
 	dreg = netlink_parse_register(nle, NFTNL_EXPR_HASH_DREG);

@@ -307,6 +307,7 @@ struct expr {
 			struct expr		*expr;
 			uint32_t		mod;
 			uint32_t		seed;
+			uint32_t		offset;
 		} hash;
 		struct {
 			/* EXPR_FIB */

@@ -2580,14 +2580,14 @@ numgen_expr		:	NUMGEN	numgen_type	MOD	NUM	offset_opt
 			}
 			;
 
-hash_expr		:	JHASH	expr	MOD	NUM	SEED	NUM
+hash_expr		:	JHASH	expr	MOD	NUM	SEED	NUM	offset_opt
 			{
-				$$ = hash_expr_alloc(&@$, $4, $6);
+				$$ = hash_expr_alloc(&@$, $4, $6, $7);
 				$$->hash.expr = $2;
 			}
-			|	JHASH	expr	MOD	NUM
+			|	JHASH	expr	MOD	NUM	offset_opt
 			{
-				$$ = hash_expr_alloc(&@$, $4, 0);
+				$$ = hash_expr_alloc(&@$, $4, 0, $5);
 				$$->hash.expr = $2;
 			}
 			;

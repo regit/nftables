@@ -22,13 +22,16 @@ static void hash_expr_print(const struct expr *expr)
 	printf(" mod %u", expr->hash.mod);
 	if (expr->hash.seed)
 		printf(" seed 0x%x", expr->hash.seed);
+	if (expr->hash.offset)
+		printf(" offset %u", expr->hash.offset);
 }
 
 static bool hash_expr_cmp(const struct expr *e1, const struct expr *e2)
 {
 	return expr_cmp(e1->hash.expr, e2->hash.expr) &&
 	       e1->hash.mod == e2->hash.mod &&
-	       e1->hash.seed == e2->hash.seed;
+	       e1->hash.seed == e2->hash.seed &&
+	       e1->hash.offset == e2->hash.offset;
 }
 
 static void hash_expr_clone(struct expr *new, const struct expr *expr)
@@ -36,6 +39,7 @@ static void hash_expr_clone(struct expr *new, const struct expr *expr)
 	new->hash.expr = expr_clone(expr->hash.expr);
 	new->hash.mod = expr->hash.mod;
 	new->hash.seed = expr->hash.seed;
+	new->hash.offset = expr->hash.offset;
 }
 
 static const struct expr_ops hash_expr_ops = {
@@ -47,7 +51,7 @@ static const struct expr_ops hash_expr_ops = {
 };
 
 struct expr *hash_expr_alloc(const struct location *loc, uint32_t mod,
-			     uint32_t seed)
+			     uint32_t seed, uint32_t offset)
 {
 	struct expr *expr;
 
@@ -55,6 +59,7 @@ struct expr *hash_expr_alloc(const struct location *loc, uint32_t mod,
 			  BYTEORDER_HOST_ENDIAN, 4 * BITS_PER_BYTE);
 	expr->hash.mod  = mod;
 	expr->hash.seed = seed;
+	expr->hash.offset = offset;
 
 	return expr;
 }
