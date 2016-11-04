@@ -2585,6 +2585,11 @@ hash_expr		:	JHASH	expr	MOD	NUM	SEED	NUM
 				$$ = hash_expr_alloc(&@$, $4, $6);
 				$$->hash.expr = $2;
 			}
+			|	JHASH	expr	MOD	NUM
+			{
+				$$ = hash_expr_alloc(&@$, $4, 0);
+				$$->hash.expr = $2;
+			}
 			;
 
 rt_expr			:	RT	rt_key
