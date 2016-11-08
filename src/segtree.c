@@ -522,9 +522,13 @@ static void set_insert_interval(struct expr *set, struct seg_tree *tree,
 	mpz_set(expr->value, ei->left);
 	expr = set_elem_expr_alloc(&internal_location, expr);
 
-	if (ei->expr != NULL && ei->expr->ops->type == EXPR_MAPPING)
-		expr = mapping_expr_alloc(&ei->expr->location, expr,
-					  expr_get(ei->expr->right));
+	if (ei->expr != NULL) {
+		if (ei->expr->comment)
+			expr->comment = xstrdup(ei->expr->comment);
+		if (ei->expr->ops->type == EXPR_MAPPING)
+			expr = mapping_expr_alloc(&ei->expr->location, expr,
+						  expr_get(ei->expr->right));
+	}
 
 	if (ei->flags & EI_F_INTERVAL_END)
 		expr->flags |= EXPR_F_INTERVAL_END;
