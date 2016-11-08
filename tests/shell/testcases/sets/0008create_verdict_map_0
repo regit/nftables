@@ -1,0 +1,25 @@
+#!/bin/bash
+
+tmpfile=$(mktemp)
+if [ ! -w $tmpfile ] ; then
+	echo "Failed to create tmp file" >&2
+	exit 0
+fi
+
+trap "rm -rf $tmpfile" EXIT # cleanup if aborted
+
+echo "
+table ip t {
+	map sourcemap {
+		type ipv4_addr : verdict;
+	}
+	chain postrouting {
+		ip saddr vmap @sourcemap accept
+	}
+}
+add chain t c
+add element t sourcemap { 100.123.10.2 : jump c }
+" > $tmpfile
+
+set -e
+$NFT -f $tmpfile
