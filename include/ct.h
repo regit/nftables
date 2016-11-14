@@ -31,4 +31,7 @@ extern struct error_record *ct_dir_parse(const struct location *loc,
 					 const char *str, int8_t *dir);
 extern struct error_record *ct_key_parse(const struct location *loc, const char *str,
 					 unsigned int *key);
+
+extern struct stmt *notrack_stmt_alloc(const struct location *loc);
+
 #endif /* NFTABLES_CT_H */

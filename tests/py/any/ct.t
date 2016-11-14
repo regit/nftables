@@ -101,3 +101,5 @@ ct invalid;fail
 ct invalid original;fail
 ct set invalid original 42;fail
 ct set invalid 42;fail
+
+notrack;ok

@@ -414,6 +414,22 @@ struct stmt *ct_stmt_alloc(const struct location *loc, enum nft_ct_keys key,
 	return stmt;
 }
 
+static void notrack_stmt_print(const struct stmt *stmt)
+{
+	printf("notrack");
+}
+
+static const struct stmt_ops notrack_stmt_ops = {
+	.type		= STMT_NOTRACK,
+	.name		= "notrack",
+	.print		= notrack_stmt_print,
+};
+
+struct stmt *notrack_stmt_alloc(const struct location *loc)
+{
+	return stmt_alloc(loc, &notrack_stmt_ops);
+}
+
 static void __init ct_init(void)
 {
 	datatype_register(&ct_state_type);

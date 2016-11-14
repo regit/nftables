@@ -467,6 +467,8 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 "fib"			{ return FIB; }
 
+"notrack"		{ return NOTRACK; }
+
 "xml"			{ return XML; }
 "json"			{ return JSON; }
 

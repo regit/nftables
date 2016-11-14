@@ -1095,6 +1095,15 @@ static void netlink_gen_ct_stmt(struct netlink_linearize_ctx *ctx,
 	nftnl_rule_add_expr(ctx->nlr, nle);
 }
 
+static void netlink_gen_notrack_stmt(struct netlink_linearize_ctx *ctx,
+				     const struct stmt *stmt)
+{
+	struct nftnl_expr *nle;
+
+	nle = alloc_nft_expr("notrack");
+	nftnl_rule_add_expr(ctx->nlr, nle);
+}
+
 static void netlink_gen_set_stmt(struct netlink_linearize_ctx *ctx,
 				 const struct stmt *stmt)
 {
@@ -1190,6 +1199,8 @@ static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 		nle = netlink_gen_stmt_stateful(ctx, stmt);
 		nftnl_rule_add_expr(ctx->nlr, nle);
 		break;
+	case STMT_NOTRACK:
+		return netlink_gen_notrack_stmt(ctx, stmt);
 	default:
 		BUG("unknown statement type %s\n", stmt->ops->name);
 	}

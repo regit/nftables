@@ -208,6 +208,7 @@ extern struct stmt *xt_stmt_alloc(const struct location *loc);
  * @STMT_FWD:		forward statement
  * @STMT_XT:		XT statement
  * @STMT_QUOTA:		quota statement
+ * @STMT_NOTRACK:	notrack statement
  */
 enum stmt_types {
 	STMT_INVALID,
@@ -230,6 +231,7 @@ enum stmt_types {
 	STMT_FWD,
 	STMT_XT,
 	STMT_QUOTA,
+	STMT_NOTRACK,
 };
 
 /**

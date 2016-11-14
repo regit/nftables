@@ -425,6 +425,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token XML			"xml"
 %token JSON			"json"
 
+%token NOTRACK			"notrack"
+
 %type <string>			identifier type_identifier string comment_spec
 %destructor { xfree($$); }	identifier type_identifier string comment_spec
 
@@ -2563,6 +2565,10 @@ meta_stmt		:	META	meta_key	SET	expr
 				}
 
 				$$ = meta_stmt_alloc(&@$, key, $4);
+			}
+			|	NOTRACK
+			{
+				$$ = notrack_stmt_alloc(&@$);
 			}
 			;
 

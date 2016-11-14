@@ -635,6 +635,13 @@ static void netlink_parse_numgen(struct netlink_parse_ctx *ctx,
 	netlink_set_register(ctx, dreg, expr);
 }
 
+static void netlink_parse_notrack(struct netlink_parse_ctx *ctx,
+				  const struct location *loc,
+				  const struct nftnl_expr *nle)
+{
+	ctx->stmt = notrack_stmt_alloc(loc);
+}
+
 static void netlink_parse_ct_stmt(struct netlink_parse_ctx *ctx,
 				  const struct location *loc,
 				  const struct nftnl_expr *nle)
@@ -1127,6 +1134,7 @@ static const struct {
 	{ .name = "range",	.parse = netlink_parse_range },
 	{ .name = "reject",	.parse = netlink_parse_reject },
 	{ .name = "nat",	.parse = netlink_parse_nat },
+	{ .name = "notrack",	.parse = netlink_parse_notrack },
 	{ .name = "masq",	.parse = netlink_parse_masq },
 	{ .name = "redir",	.parse = netlink_parse_redir },
 	{ .name = "dup",	.parse = netlink_parse_dup },
