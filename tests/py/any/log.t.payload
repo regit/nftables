@@ -1,52 +1,52 @@
 # log
 ip test-ip4 output
-  [ log prefix (null) ]
+  [ log ]
 
 # log level emerg
 ip test-ip4 output
-  [ log prefix (null) level 0 flags 0]
+  [ log level 0 ]
 
 # log level alert
 ip test-ip4 output
-  [ log prefix (null) level 1 flags 0]
+  [ log level 1 ]
 
 # log level crit
 ip test-ip4 output
-  [ log prefix (null) level 2 flags 0]
+  [ log level 2 ]
 
 # log level err
 ip test-ip4 output
-  [ log prefix (null) level 3 flags 0]
+  [ log level 3 ]
 
 # log level warn
 ip test-ip4 output
-  [ log prefix (null) level 4 flags 0]
+  [ log level 4 ]
 
 # log level notice
 ip test-ip4 output
-  [ log prefix (null) level 5 flags 0]
+  [ log level 5 ]
 
 # log level info
 ip test-ip4 output
-  [ log prefix (null) level 6 flags 0]
+  [ log level 6 ]
 
 # log level debug
 ip test-ip4 output
-  [ log prefix (null) level 7 flags 0]
+  [ log level 7 ]
 
 # log prefix aaaaa-aaaaaa group 2 snaplen 33
 ip test-ip4 output
-  [ log prefix aaaaa-aaaaaa group 2 snaplen 33 qthreshold 0]
+  [ log prefix aaaaa-aaaaaa group 2 snaplen 33 qthreshold 0 ]
 
 # log group 2 queue-threshold 2
 ip test-ip4 output
-  [ log prefix (null) group 2 snaplen 0 qthreshold 2]
+  [ log group 2 snaplen 0 qthreshold 2 ]
 
 # log group 2 snaplen 33
 ip test-ip4 output
-  [ log prefix (null) group 2 snaplen 33 qthreshold 0]
+  [ log group 2 snaplen 33 qthreshold 0 ]
 
 # log group 2 prefix \"nft-test: \"
 ip test-ip4 output
-  [ log prefix nft-test:  group 2 snaplen 0 qthreshold 0]
+  [ log prefix nft-test:  group 2 snaplen 0 qthreshold 0 ]
 

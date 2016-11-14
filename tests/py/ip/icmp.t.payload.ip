@@ -225,7 +225,7 @@ ip test-ip4 input
   [ cmp eq reg 1 0x00000001 ]
   [ payload load 2b @ transport header + 4 => reg 1 ]
   [ cmp eq reg 1 0x0000dd04 ]
-  [ log prefix (null) ]
+  [ log ]
 
 # icmp id 22
 ip test-ip4 input

@@ -193,7 +193,7 @@ ip6 test-ip6 input
   [ cmp eq reg 1 0x0000003a ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x0000ae08 ]
-  [ log prefix (null) ]
+  [ log ]
 
 # icmpv6 checksum != 2222 log
 ip6 test-ip6 input
@@ -201,7 +201,7 @@ ip6 test-ip6 input
   [ cmp eq reg 1 0x0000003a ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp neq reg 1 0x0000ae08 ]
-  [ log prefix (null) ]
+  [ log ]
 
 # icmpv6 checksum 222-226
 ip6 test-ip6 input
@@ -217,7 +217,7 @@ ip6 test-ip6 input
   [ cmp eq reg 1 0x0000003a ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp neq reg 1 0x0000ae08 ]
-  [ log prefix (null) ]
+  [ log ]
 
 # icmpv6 checksum { 222, 226}
 __set%d test-ip6 3
