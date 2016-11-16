@@ -43,6 +43,13 @@ if [ ! -x "$MODPROBE" ] ; then
 	msg_error "no modprobe binary found"
 fi
 
+if [ -x "$1" ] ; then
+	if grep ^.*${RETURNCODE_SEPARATOR}[0-9]\\+$ <<< $1 >/dev/null ; then
+		SINGLE=$1
+		VERBOSE=y
+	fi
+fi
+
 if [ "$1" == "-v" ] ; then
 	VERBOSE=y
 fi
@@ -65,6 +72,10 @@ kernel_cleanup() {
 }
 
 find_tests() {
+	if [ ! -z "$SINGLE" ] ; then
+		echo $SINGLE
+		return
+	fi
 	${FIND} ${TESTDIR} -executable -regex \
 		.*${RETURNCODE_SEPARATOR}[0-9]+ | sort
 }
