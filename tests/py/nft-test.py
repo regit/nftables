@@ -28,7 +28,6 @@ table_list = []
 chain_list = []
 all_set = dict()
 signal_received = 0
-modules = []
 
 
 class Colors:
@@ -113,30 +112,6 @@ def print_differences_error(filename, lineno, cmd):
     reason = "Listing is broken."
     print filename + ": " + Colors.RED + "ERROR: " + Colors.ENDC + "line: " + \
           str(lineno + 1) + ": '" + cmd + "': " + reason
-
-
-def cleanup_modules():
-    for i in modules:
-        modprobe(i, remove=True)
-
-
-def modprobe(name, remove=False):
-    '''
-    Loads or removes a kernel module
-    '''
-    if name is None:
-        return -1
-
-    cmds = {
-        'ins': ['modprobe', '--first-time', '--quiet', name],
-        'del': ['modprobe', '-r', name],
-    }
-
-    ret = subprocess.call(cmds['del' if remove else 'ins']) == 0
-    if ret and not remove:
-        # the kernel module has been loaded -> remove it afterwards
-        global modules
-        modules.append(name)
 
 
 def table_exist(table, filename, lineno):
@@ -711,8 +686,6 @@ def cleanup_on_exit():
             set_delete(table)
         table_delete(table)
 
-    cleanup_modules()
-
 
 def signal_handler(signal, frame):
     global signal_received
@@ -992,8 +965,6 @@ def main():
         print "The nft binary does not exist. You need to build the project."
         return
 
-    modprobe('dummy')
-
     test_files = files_ok = run_total = 0
     tests = passed = warnings = errors = 0
     global log_file
@@ -1001,7 +972,6 @@ def main():
         log_file = open(LOGFILE, 'w')
     except IOError:
         print "Cannot open log file %s" % LOGFILE
-        cleanup_modules()
         return
 
     file_list = []
@@ -1049,8 +1019,6 @@ def main():
                 print "%d test files, %d files passed, %d unit tests, " \
                       "%d error, %d warning" \
                       % (test_files, files_ok, tests, errors, warnings)
-
-    cleanup_modules()
 
 
 if __name__ == '__main__':
