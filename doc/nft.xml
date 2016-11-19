@@ -2400,6 +2400,8 @@ ip forward ip dscp set 42
 					<replaceable>quoted_string</replaceable></arg>
 					<arg choice="opt">level
 					<replaceable>syslog-level</replaceable></arg>
+					<arg choice="opt">flags
+					<replaceable>log-flags</replaceable></arg>
 				</cmdsynopsis>
 				<cmdsynopsis>
 					<command>log</command>
@@ -2459,6 +2461,60 @@ ip forward ip dscp set 42
 						</tbody>
 					</tgroup>
 				</table>
+				<table frame="all">
+					<title>log-flags</title>
+					<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+						<colspec colname='c1'/>
+						<colspec colname='c2'/>
+						<thead>
+							<row>
+								<entry>Flag</entry>
+								<entry>Description</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry>tcp sequence</entry>
+								<entry>Log TCP sequence numbers.</entry>
+							</row>
+							<row>
+								<entry>tcp options</entry>
+								<entry>Log options from the TCP packet header.</entry>
+							</row>
+							<row>
+								<entry>ip options</entry>
+								<entry>Log options from the IP/IPv6 packet header.</entry>
+							</row>
+							<row>
+								<entry>skuid</entry>
+								<entry>Log the userid of the process which generated the packet.</entry>
+							</row>
+							<row>
+								<entry>ether</entry>
+								<entry>Decode MAC addresses and protocol.</entry>
+							</row>
+							<row>
+								<entry>all</entry>
+								<entry>Enable all log flags listed above.</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</table>
+			</para>
+			<para>
+				<example>
+					<title>Using log statement</title>
+					<programlisting>
+# log the UID which generated the packet and ip options
+ip filter output log flags skuid flags ip options
+
+# log the tcp sequence numbers and tcp options from the TCP packet
+ip filter output log flags tcp sequence,options
+
+# enable all supported log flags
+ip6 filter output log flags all
+					</programlisting>
+				</example>
 			</para>
                 </refsect2>
 		<refsect2>

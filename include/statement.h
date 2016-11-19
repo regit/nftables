@@ -50,6 +50,7 @@ struct log_stmt {
 	uint16_t		group;
 	uint16_t		qthreshold;
 	uint32_t		level;
+	uint32_t		logflags;
 	uint32_t		flags;
 };
 

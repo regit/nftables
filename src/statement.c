@@ -27,6 +27,7 @@
 
 #include <netinet/in.h>
 #include <linux/netfilter/nf_nat.h>
+#include <linux/netfilter/nf_log.h>
 
 struct stmt *stmt_alloc(const struct location *loc,
 			const struct stmt_ops *ops)
@@ -193,6 +194,28 @@ static void log_stmt_print(const struct stmt *stmt)
 	if ((stmt->log.flags & STMT_LOG_LEVEL) &&
 	    stmt->log.level != LOG_WARNING)
 		printf(" level %s", log_level(stmt->log.level));
+
+	if ((stmt->log.logflags & NF_LOG_MASK) == NF_LOG_MASK) {
+		printf(" flags all");
+	} else {
+		if (stmt->log.logflags & (NF_LOG_TCPSEQ | NF_LOG_TCPOPT)) {
+			const char *delim = " ";
+
+			printf(" flags tcp");
+			if (stmt->log.logflags & NF_LOG_TCPSEQ) {
+				printf(" sequence");
+				delim = ",";
+			}
+			if (stmt->log.logflags & NF_LOG_TCPOPT)
+				printf("%soptions", delim);
+		}
+		if (stmt->log.logflags & NF_LOG_IPOPT)
+			printf(" flags ip options");
+		if (stmt->log.logflags & NF_LOG_UID)
+			printf(" flags skuid");
+		if (stmt->log.logflags & NF_LOG_MACDECODE)
+			printf(" flags ether");
+	}
 }
 
 static void log_stmt_destroy(struct stmt *stmt)

@@ -50,3 +50,18 @@ ip test-ip4 output
 ip test-ip4 output
   [ log prefix nft-test:  group 2 snaplen 0 qthreshold 0 ]
 
+# log flags all
+ip test-ip4 output
+  [ log tcpseq tcpopt ipopt uid macdecode ]
+
+# log level debug flags ip options flags skuid
+ip test-ip4 output
+  [ log level 7 ipopt uid ]
+
+# log flags tcp sequence,options
+ip test-ip4 output
+  [ log tcpseq tcpopt ]
+
+# log flags ip options flags ether flags skuid flags tcp sequence,options
+ip test-ip4 output
+  [ log tcpseq tcpopt ipopt uid macdecode ]

@@ -469,6 +469,9 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 "notrack"		{ return NOTRACK; }
 
+"options"		{ return OPTIONS; }
+"all"			{ return ALL; }
+
 "xml"			{ return XML; }
 "json"			{ return JSON; }
 

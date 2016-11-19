@@ -20,6 +20,7 @@
 #include <linux/netfilter/nf_tables.h>
 #include <linux/netfilter/nf_conntrack_tuple_common.h>
 #include <linux/netfilter/nf_nat.h>
+#include <linux/netfilter/nf_log.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/icmp6.h>
 #include <libnftnl/common.h>
@@ -201,6 +202,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token EXPORT			"export"
 %token MONITOR			"monitor"
 
+%token ALL			"all"
+
 %token ACCEPT			"accept"
 %token DROP			"drop"
 %token CONTINUE			"continue"
@@ -267,6 +270,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token SEQUENCE			"seq"
 %token GATEWAY			"gateway"
 %token MTU			"mtu"
+
+%token OPTIONS			"options"
 
 %token IP6			"ip6"
 %token PRIORITY			"priority"
@@ -481,7 +486,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { stmt_free($$); }	meta_stmt
 %type <stmt>			log_stmt log_stmt_alloc
 %destructor { stmt_free($$); }	log_stmt log_stmt_alloc
-%type <val>			level_type
+%type <val>			level_type log_flags log_flags_tcp log_flag_tcp
 %type <stmt>			limit_stmt quota_stmt
 %destructor { stmt_free($$); }	limit_stmt quota_stmt
 %type <val>			limit_burst limit_mode time_unit quota_mode
@@ -1530,6 +1535,10 @@ log_arg			:	PREFIX			string
 				$<stmt>0->log.level	= $2;
 				$<stmt>0->log.flags 	|= STMT_LOG_LEVEL;
 			}
+			|	FLAGS			log_flags
+			{
+				$<stmt>0->log.logflags	|= $2;
+			}
 			;
 
 level_type		:	string
@@ -1555,6 +1564,45 @@ level_type		:	string
 						   state->msgs);
 					YYERROR;
 				}
+			}
+			;
+
+log_flags		:	TCP	log_flags_tcp
+			{
+				$$ = $2;
+			}
+			|	IP	OPTIONS
+			{
+				$$ = NF_LOG_IPOPT;
+			}
+			|	SKUID
+			{
+				$$ = NF_LOG_UID;
+			}
+			|	ETHER
+			{
+				$$ = NF_LOG_MACDECODE;
+			}
+			|	ALL
+			{
+				$$ = NF_LOG_MASK;
+			}
+			;
+
+log_flags_tcp		:	log_flags_tcp	COMMA	log_flag_tcp
+			{
+				$$ = $1 | $3;
+			}
+			|	log_flag_tcp
+			;
+
+log_flag_tcp		:	SEQUENCE
+			{
+				$$ = NF_LOG_TCPSEQ;
+			}
+			|	OPTIONS
+			{
+				$$ = NF_LOG_TCPOPT;
 			}
 			;
 

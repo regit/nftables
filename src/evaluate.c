@@ -2429,12 +2429,14 @@ static int stmt_evaluate_queue(struct eval_ctx *ctx, struct stmt *stmt)
 
 static int stmt_evaluate_log(struct eval_ctx *ctx, struct stmt *stmt)
 {
-	if (stmt->log.flags & STMT_LOG_LEVEL &&
-	    (stmt->log.flags & STMT_LOG_GROUP	||
-	     stmt->log.flags & STMT_LOG_SNAPLEN	||
-	     stmt->log.flags & STMT_LOG_QTHRESHOLD)) {
-		return stmt_error(ctx, stmt,
+	if (stmt->log.flags & (STMT_LOG_GROUP | STMT_LOG_SNAPLEN |
+			       STMT_LOG_QTHRESHOLD)) {
+		if (stmt->log.flags & STMT_LOG_LEVEL)
+			return stmt_error(ctx, stmt,
 				  "level and group are mutually exclusive");
+		if (stmt->log.logflags)
+			return stmt_error(ctx, stmt,
+				  "flags and group are mutually exclusive");
 	}
 	return 0;
 }

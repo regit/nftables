@@ -738,6 +738,10 @@ static void netlink_parse_log(struct netlink_parse_ctx *ctx,
 			nftnl_expr_get_u32(nle, NFTNL_EXPR_LOG_LEVEL);
 		stmt->log.flags |= STMT_LOG_LEVEL;
 	}
+	if (nftnl_expr_is_set(nle, NFTNL_EXPR_LOG_FLAGS)) {
+		stmt->log.logflags =
+			nftnl_expr_get_u32(nle, NFTNL_EXPR_LOG_FLAGS);
+	}
 
 	ctx->stmt = stmt;
 }

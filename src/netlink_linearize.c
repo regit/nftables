@@ -833,6 +833,9 @@ static void netlink_gen_log_stmt(struct netlink_linearize_ctx *ctx,
 		if (stmt->log.flags & STMT_LOG_LEVEL)
 			nftnl_expr_set_u32(nle, NFTNL_EXPR_LOG_LEVEL,
 					   stmt->log.level);
+		if (stmt->log.logflags)
+			nftnl_expr_set_u32(nle, NFTNL_EXPR_LOG_FLAGS,
+					   stmt->log.logflags);
 	}
 	nftnl_rule_add_expr(ctx->nlr, nle);
 }
