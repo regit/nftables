@@ -292,6 +292,7 @@ static void netlink_parse_lookup(struct netlink_parse_ctx *ctx,
 	const char *name;
 	struct expr *expr, *left, *right;
 	struct set *set;
+	uint32_t flag;
 
 	name = nftnl_expr_get_str(nle, NFTNL_EXPR_LOOKUP_SET);
 	set  = set_lookup(ctx->table, name);
@@ -321,6 +322,12 @@ static void netlink_parse_lookup(struct netlink_parse_ctx *ctx,
 			return netlink_set_register(ctx, dreg, expr);
 	} else {
 		expr = relational_expr_alloc(loc, OP_LOOKUP, left, right);
+	}
+
+	if (nftnl_expr_is_set(nle, NFTNL_EXPR_LOOKUP_FLAGS)) {
+		flag = nftnl_expr_get_u32(nle, NFTNL_EXPR_LOOKUP_FLAGS);
+		if (flag & NFT_LOOKUP_F_INV)
+			expr->op = OP_NEQ;
 	}
 
 	ctx->stmt = expr_stmt_alloc(loc, expr);
@@ -1316,6 +1323,9 @@ static void ct_meta_common_postprocess(const struct expr *expr)
 	struct expr *right = expr->right;
 
 	switch (expr->op) {
+	case OP_NEQ:
+		if (right->ops->type != EXPR_SET && right->ops->type != EXPR_SET_REF)
+			break;
 	case OP_LOOKUP:
 		expr_set_type(right, left->dtype, left->byteorder);
 		if (right->dtype == &integer_type)

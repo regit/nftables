@@ -1526,6 +1526,20 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 			if (byteorder_conversion(ctx, &rel->right, left->byteorder) < 0)
 				return -1;
 			break;
+		case EXPR_SET:
+			assert(rel->op == OP_NEQ);
+			right = rel->right =
+				implicit_set_declaration(ctx, "__set%d",
+							 left->dtype, left->len,
+							 right);
+			/* fall through */
+		case EXPR_SET_REF:
+			assert(rel->op == OP_NEQ);
+			/* Data for range lookups needs to be in big endian order */
+			if (right->set->flags & SET_F_INTERVAL &&
+			    byteorder_conversion(ctx, &rel->left, BYTEORDER_BIG_ENDIAN) < 0)
+				return -1;
+			break;
 		default:
 			BUG("invalid expression type %s\n", right->ops->name);
 		}
