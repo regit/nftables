@@ -16,6 +16,14 @@ ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 0 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# frag nexthdr != {esp, ah, comp, udp, udplite, tcp, dccp, sctp}
+__set%d test-ip6 3
+__set%d test-ip6 0
+	element 00000032  : 0 [end]	element 00000033  : 0 [end]	element 0000006c  : 0 [end]	element 00000011  : 0 [end]	element 00000088  : 0 [end]	element 00000006  : 0 [end]	element 00000021  : 0 [end]	element 00000084  : 0 [end]
+ip6 test-ip6 output
+  [ exthdr load 1b @ 44 + 0 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # frag nexthdr esp
 ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 0 => reg 1 ]
@@ -55,6 +63,14 @@ ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 1 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# frag reserved != { 33, 55, 67, 88}
+__set%d test-ip6 3
+__set%d test-ip6 0
+	element 00000021  : 0 [end]	element 00000037  : 0 [end]	element 00000043  : 0 [end]	element 00000058  : 0 [end]
+ip6 test-ip6 output
+  [ exthdr load 1b @ 44 + 1 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # frag reserved { 33-55}
 __set%d test-ip6 7
 __set%d test-ip6 0
@@ -62,6 +78,14 @@ __set%d test-ip6 0
 ip6 test-ip6 output
   [ exthdr load 1b @ 44 + 1 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# frag reserved != { 33-55}
+__set%d test-ip6 7
+__set%d test-ip6 0
+	element 00000000  : 1 [end]	element 00000021  : 0 [end]	element 00000038  : 1 [end]
+ip6 test-ip6 output
+  [ exthdr load 1b @ 44 + 1 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # frag frag-off 22
 ip6 test-ip6 output
@@ -97,6 +121,15 @@ ip6 test-ip6 output
   [ bitwise reg 1 = (reg=1 & 0x0000f8ff ) ^ 0x00000000 ]
   [ lookup reg 1 set __set%d ]
 
+# frag frag-off != { 33, 55, 67, 88}
+__set%d test-ip6 3
+__set%d test-ip6 0
+	element 00000801  : 0 [end]	element 0000b801  : 0 [end]	element 00001802  : 0 [end]	element 0000c002  : 0 [end]
+ip6 test-ip6 output
+  [ exthdr load 2b @ 44 + 2 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x0000f8ff ) ^ 0x00000000 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # frag frag-off { 33-55}
 __set%d test-ip6 7
 __set%d test-ip6 0
@@ -105,6 +138,15 @@ ip6 test-ip6 output
   [ exthdr load 2b @ 44 + 2 => reg 1 ]
   [ bitwise reg 1 = (reg=1 & 0x0000f8ff ) ^ 0x00000000 ]
   [ lookup reg 1 set __set%d ]
+
+# frag frag-off != { 33-55}
+__set%d test-ip6 7
+__set%d test-ip6 0
+	element 00000000  : 1 [end]	element 00000801  : 0 [end]	element 0000b901  : 1 [end]
+ip6 test-ip6 output 
+  [ exthdr load 2b @ 44 + 2 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x0000f8ff ) ^ 0x00000000 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # frag more-fragments 1
 ip6 test-ip6 output
@@ -146,6 +188,14 @@ ip6 test-ip6 output
   [ exthdr load 4b @ 44 + 4 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# frag id != { 33, 55, 67, 88}
+__set%d test-ip6 3
+__set%d test-ip6 0
+	element 21000000  : 0 [end]	element 37000000  : 0 [end]	element 43000000  : 0 [end]	element 58000000  : 0 [end]
+ip6 test-ip6 output
+  [ exthdr load 4b @ 44 + 4 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # frag id { 33-55}
 __set%d test-ip6 7
 __set%d test-ip6 0
@@ -153,6 +203,14 @@ __set%d test-ip6 0
 ip6 test-ip6 output
   [ exthdr load 4b @ 44 + 4 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# frag id != { 33-55}
+__set%d test-ip6 7
+__set%d test-ip6 0
+	element 00000000  : 1 [end]	element 21000000  : 0 [end]	element 38000000  : 1 [end]
+ip6 test-ip6 output
+  [ exthdr load 4b @ 44 + 4 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # frag reserved2 1
 ip6 test-ip6 output

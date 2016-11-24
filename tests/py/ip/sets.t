@@ -29,8 +29,11 @@
 ?set2 192.168.3.10 192.168.3.11;ok
 
 ip saddr @set1 drop;ok
+ip saddr != @set1 drop;ok
 ip saddr @set2 drop;ok
+ip saddr != @set2 drop;ok
 ip saddr @set33 drop;fail
+ip saddr != @set33 drop;fail
 
 !set3 type ipv4_addr flags interval;ok
 ?set3 192.168.0.0/16;ok

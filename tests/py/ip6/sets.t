@@ -22,7 +22,9 @@
 ?set2 1234:1234:1234::1234;ok
 
 ip6 saddr @set2 drop;ok
+ip6 saddr != @set2 drop;ok
 ip6 saddr @set33 drop;fail
+ip6 saddr != @set33 drop;fail
 
 !set3 type ipv6_addr flags interval;ok
 ?set3 1234:1234:1234:1234::/64;ok

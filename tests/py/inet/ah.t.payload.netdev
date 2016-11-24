@@ -23,6 +23,16 @@ netdev test-netdev ingress
   [ payload load 1b @ transport header + 1 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# ah hdrlength != { 11-23}
+__set%d test-netdev 7
+__set%d test-netdev 0
+	element 00000000  : 1 [end]	element 0000000b  : 0 [end]	element 00000018  : 1 [end]
+netdev test-netdev ingress 
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000033 ]
+  [ payload load 1b @ transport header + 1 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # ah hdrlength {11, 23, 44 }
 __set%d test-netdev 3
 __set%d test-netdev 0
@@ -32,6 +42,16 @@ netdev test-netdev ingress
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 1b @ transport header + 1 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# ah hdrlength != {11, 23, 44 }
+__set%d test-netdev 3
+__set%d test-netdev 0
+	element 0000000b  : 0 [end]	element 00000017  : 0 [end]	element 0000002c  : 0 [end]
+netdev test-netdev ingress 
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000033 ]
+  [ payload load 1b @ transport header + 1 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # ah reserved 22
 netdev test-netdev ingress 
@@ -72,6 +92,16 @@ netdev test-netdev ingress
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# ah reserved != {23, 100}
+__set%d test-netdev 3
+__set%d test-netdev 0
+	element 00001700  : 0 [end]	element 00006400  : 0 [end]
+netdev test-netdev ingress 
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000033 ]
+  [ payload load 2b @ transport header + 2 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # ah reserved { 33-55}
 __set%d test-netdev 7
 __set%d test-netdev 0
@@ -81,6 +111,16 @@ netdev test-netdev ingress
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# ah reserved != { 33-55}
+__set%d test-netdev 7
+__set%d test-netdev 0
+	element 00000000  : 1 [end]	element 00002100  : 0 [end]	element 00003800  : 1 [end]
+netdev test-netdev ingress 
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000033 ]
+  [ payload load 2b @ transport header + 2 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # ah spi 111
 netdev test-netdev ingress 
@@ -121,6 +161,16 @@ netdev test-netdev ingress
   [ payload load 4b @ transport header + 4 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# ah spi != {111, 122}
+__set%d test-netdev 3
+__set%d test-netdev 0
+	element 6f000000  : 0 [end]	element 7a000000  : 0 [end]
+netdev test-netdev ingress 
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000033 ]
+  [ payload load 4b @ transport header + 4 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # ah spi { 111-122}
 __set%d test-netdev 7
 __set%d test-netdev 0
@@ -130,6 +180,16 @@ netdev test-netdev ingress
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 4 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# ah spi != { 111-122}
+__set%d test-netdev 7
+__set%d test-netdev 0
+	element 00000000  : 1 [end]	element 6f000000  : 0 [end]	element 7b000000  : 1 [end]
+netdev test-netdev ingress 
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000033 ]
+  [ payload load 4b @ transport header + 4 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # ah sequence 123
 netdev test-netdev ingress 
@@ -155,6 +215,16 @@ netdev test-netdev ingress
   [ payload load 4b @ transport header + 8 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# ah sequence != {23, 25, 33}
+__set%d test-netdev 3
+__set%d test-netdev 0
+	element 17000000  : 0 [end]	element 19000000  : 0 [end]	element 21000000  : 0 [end]
+netdev test-netdev ingress 
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000033 ]
+  [ payload load 4b @ transport header + 8 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # ah sequence { 23-33}
 __set%d test-netdev 7
 __set%d test-netdev 0
@@ -164,6 +234,16 @@ netdev test-netdev ingress
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 8 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# ah sequence != { 23-33}
+__set%d test-netdev 7
+__set%d test-netdev 0
+	element 00000000  : 1 [end]	element 17000000  : 0 [end]	element 22000000  : 1 [end]
+netdev test-netdev ingress 
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000033 ]
+  [ payload load 4b @ transport header + 8 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # ah sequence 23-33
 netdev test-netdev ingress 

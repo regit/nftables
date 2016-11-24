@@ -4,3 +4,9 @@ ip6 test-ip6 input
   [ lookup reg 1 set set2 ]
   [ immediate reg 0 drop ]
 
+# ip6 saddr != @set2 drop
+ip6 test-ip6 input
+  [ payload load 16b @ network header + 8 => reg 1 ]
+  [ lookup reg 1 set set2 0x1 ]
+  [ immediate reg 0 drop ]
+

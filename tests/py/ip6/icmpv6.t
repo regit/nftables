@@ -22,23 +22,23 @@ icmpv6 type router-renumbering accept;ok
 icmpv6 type {destination-unreachable, time-exceeded, nd-router-solicit} accept;ok
 icmpv6 type {router-renumbering, mld-listener-reduction, time-exceeded, nd-router-solicit} accept;ok
 icmpv6 type {mld-listener-query, time-exceeded, nd-router-advert} accept;ok
-- icmpv6 type != {mld-listener-query, time-exceeded, nd-router-advert} accept;ok
+icmpv6 type != {mld-listener-query, time-exceeded, nd-router-advert} accept;ok
 
 icmpv6 code 4;ok
 icmpv6 code 3-66;ok
 icmpv6 code {5, 6, 7} accept;ok
-- icmpv6 code != {3, 66, 34};ok
+icmpv6 code != {5, 6, 7} accept;ok
 icmpv6 code { 3-66};ok
-- icmpv6 code != { 3-44};ok
+icmpv6 code != { 3-66};ok
 
 icmpv6 checksum 2222 log;ok
 icmpv6 checksum != 2222 log;ok
 icmpv6 checksum 222-226;ok
 icmpv6 checksum != 2222 log;ok
 icmpv6 checksum { 222, 226};ok
-- icmpv6 checksum != { 222, 226};ok
+icmpv6 checksum != { 222, 226};ok
 icmpv6 checksum { 222-226};ok
-- icmpv6 checksum != { 222-226};ok
+icmpv6 checksum != { 222-226};ok
 
 # BUG: icmpv6 parameter-problem, pptr, mtu, packet-too-big
 # [ICMP6HDR_PPTR]         = ICMP6HDR_FIELD("parameter-problem", icmp6_pptr),
@@ -65,34 +65,34 @@ icmpv6 mtu != 233;ok
 icmpv6 mtu 33-45;ok
 icmpv6 mtu != 33-45;ok
 icmpv6 mtu {33, 55, 67, 88};ok
-- icmpv6 mtu != {33, 55, 67, 88};ok
+icmpv6 mtu != {33, 55, 67, 88};ok
 icmpv6 mtu {33-55};ok
-- icmpv6 mtu != {33-55};ok
+icmpv6 mtu != {33-55};ok
 
 - icmpv6 id 2;ok
 - icmpv6 id != 233;ok
 icmpv6 id 33-45;ok
 icmpv6 id != 33-45;ok
 icmpv6 id {33, 55, 67, 88};ok
-- icmpv6 id != {33, 55, 67, 88};ok
+icmpv6 id != {33, 55, 67, 88};ok
 icmpv6 id {33-55};ok
-- icmpv6 id != {33-55};ok
+icmpv6 id != {33-55};ok
 
 icmpv6 sequence 2;ok
 icmpv6 sequence {3, 4, 5, 6, 7} accept;ok
 
 icmpv6 sequence {2, 4};ok
-- icmpv6 sequence != {2, 4};ok
+icmpv6 sequence != {2, 4};ok
 icmpv6 sequence 2-4;ok
 icmpv6 sequence != 2-4;ok
 icmpv6 sequence { 2-4};ok
-- icmpv6 sequence != {2-4};ok
+icmpv6 sequence != { 2-4};ok
 
 - icmpv6 max-delay 22;ok
 - icmpv6 max-delay != 233;ok
 icmpv6 max-delay 33-45;ok
 icmpv6 max-delay != 33-45;ok
 icmpv6 max-delay {33, 55, 67, 88};ok
-- icmpv6 max-delay != {33, 55, 67, 88};ok
+icmpv6 max-delay != {33, 55, 67, 88};ok
 icmpv6 max-delay {33-55};ok
-- icmpv6 max-delay != {33-55};ok
+icmpv6 max-delay != {33-55};ok

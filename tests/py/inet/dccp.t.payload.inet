@@ -23,6 +23,16 @@ inet test-inet input
   [ payload load 2b @ transport header + 0 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# dccp sport != {23, 24, 25}
+__set%d test-inet 3
+__set%d test-inet 0
+	element 00001700  : 0 [end]	element 00001800  : 0 [end]	element 00001900  : 0 [end]
+inet test-inet input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 2b @ transport header + 0 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # dccp sport { 20-50 }
 __set%d test-ip4 7
 __set%d test-ip4 0
@@ -59,6 +69,16 @@ inet test-inet input
   [ payload load 2b @ transport header + 0 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# dccp sport != { 20-50}
+__set%d test-ip4 7
+__set%d test-ip4 0
+	element 00000000  : 1 [end]	element 00001400  : 0 [end]	element 00003300  : 1 [end]
+inet test-inet input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 2b @ transport header + 0 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # dccp dport {23, 24, 25}
 __set%d test-ip4 3
 __set%d test-ip4 0
@@ -68,6 +88,16 @@ inet test-inet input
   [ cmp eq reg 1 0x00000021 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# dccp dport != {23, 24, 25}
+__set%d test-ip4 3
+__set%d test-ip4 0
+	element 00001700  : 0 [end]	element 00001800  : 0 [end]	element 00001900  : 0 [end]
+inet test-inet input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 2b @ transport header + 2 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # dccp dport { 20-50}
 __set%d test-ip4 7
@@ -79,6 +109,16 @@ inet test-inet input
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# dccp dport != { 20-50}
+__set%d test-ip4 7
+__set%d test-ip4 0
+	element 00000000  : 1 [end]	element 00001400  : 0 [end]	element 00003300  : 1 [end]
+inet test-inet input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 2b @ transport header + 2 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # dccp type {request, response, data, ack, dataack, closereq, close, reset, sync, syncack}
 __set%d test-inet 3
 __set%d test-inet 0
@@ -89,6 +129,17 @@ inet test-inet input
   [ payload load 1b @ transport header + 8 => reg 1 ]
   [ bitwise reg 1 = (reg=1 & 0x0000001e ) ^ 0x00000000 ]
   [ lookup reg 1 set __set%d ]
+
+# dccp type != {request, response, data, ack, dataack, closereq, close, reset, sync, syncack}
+__set%d test-inet 3
+__set%d test-inet 0
+	element 00000000  : 0 [end]	element 00000002  : 0 [end]	element 00000004  : 0 [end]	element 00000006  : 0 [end]	element 00000008  : 0 [end]	element 0000000a  : 0 [end]	element 0000000c  : 0 [end]	element 0000000e  : 0 [end]	element 00000010  : 0 [end]	element 00000012  : 0 [end]
+inet test-inet input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x00000021 ]
+  [ payload load 1b @ transport header + 8 => reg 1 ]
+  [ bitwise reg 1 = (reg=1 & 0x0000001e ) ^ 0x00000000 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # dccp type request
 inet test-inet input

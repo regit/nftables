@@ -7,7 +7,7 @@
 ct state new,established, related, untracked;ok;ct state established,related,new,untracked
 ct state != related;ok
 ct state {new,established, related, untracked};ok
-- ct state != {new,established, related, untracked};ok
+ct state != {new,established, related, untracked};ok
 ct state invalid drop;ok
 ct state established accept;ok
 ct state 8;ok;ct state new
@@ -18,7 +18,7 @@ ct direction != original;ok
 ct direction reply;ok
 ct direction != reply;ok
 ct direction {reply, original};ok
-- ct direction != {reply, original};ok
+ct direction != {reply, original};ok
 ct direction xxx;fail
 
 ct status expected;ok
@@ -45,7 +45,7 @@ ct mark 0x00000032-0x00000045;ok
 ct mark != 0x00000032-0x00000045;ok
 ct mark {0x32, 0x2222, 0x42de3};ok;ct mark { 0x00042de3, 0x00002222, 0x00000032}
 ct mark {0x32-0x2222, 0x4444-0x42de3};ok;ct mark { 0x00000032-0x00002222, 0x00004444-0x00042de3}
-- ct mark != {0x32, 0x2222, 0x42de3};ok
+ct mark != {0x32, 0x2222, 0x42de3};ok;ct mark != { 0x00042de3, 0x00002222, 0x00000032}
 
 # ct mark != {0x32, 0x2222, 0x42de3};ok
 # BUG: invalid expression type set
@@ -64,9 +64,9 @@ ct expiration != 233;ok;ct expiration != 3m53s
 ct expiration 33-45;ok;ct expiration 33s-45s
 ct expiration != 33-45;ok;ct expiration != 33s-45s
 ct expiration {33, 55, 67, 88};ok;ct expiration { 1m7s, 33s, 55s, 1m28s}
-- ct expiration != {33, 55, 67, 88};ok;ct expiration { 1m7s, 33s, 55s, 1m28s}
+ct expiration != {33, 55, 67, 88};ok;ct expiration { 1m7s, 33s, 55s, 1m28s}
 ct expiration {33-55};ok;ct expiration { 33s-55s}
-- ct expiration != {33-55};ok
+ct expiration != {33-55};ok; ct expiration != { 33s-55s}
 
 ct helper "ftp";ok
 ct helper "12345678901234567";fail

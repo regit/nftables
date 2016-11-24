@@ -23,39 +23,34 @@
 ah hdrlength 11-23;ok
 ah hdrlength != 11-23;ok
 ah hdrlength { 11-23};ok
-- ah hdrlength != { 11-23};ok
+ah hdrlength != { 11-23};ok
 ah hdrlength {11, 23, 44 };ok
-- ah hdrlength != {11-23 };ok
+ah hdrlength != {11, 23, 44 };ok
 
 ah reserved 22;ok
 ah reserved != 233;ok
 ah reserved 33-45;ok
 ah reserved != 33-45;ok
 ah reserved {23, 100};ok
-- ah reserved != {33, 55, 67, 88};ok
+ah reserved != {23, 100};ok
 ah reserved { 33-55};ok
-- ah reserved != { 33-55};ok
+ah reserved != { 33-55};ok
 
 ah spi 111;ok
 ah spi != 111;ok
 ah spi 111-222;ok
 ah spi != 111-222;ok
 ah spi {111, 122};ok
-- ah spi != {111, 122};ok
-# BUG: invalid expression type set
-# nft: src/evaluate.c:975: expr_evaluate_relational: Assertion '0' failed.
-
+ah spi != {111, 122};ok
 ah spi { 111-122};ok
-- ah spi != { 111-122};ok
-# BUG: invalid expression type set
-# nft: src/evaluate.c:975: expr_evaluate_relational: Assertion '0' failed.
+ah spi != { 111-122};ok
 
 # sequence
 ah sequence 123;ok
 ah sequence != 123;ok
 ah sequence {23, 25, 33};ok
-- ah sequence != {23, 25, 33};ok
+ah sequence != {23, 25, 33};ok
 ah sequence { 23-33};ok
-- ah sequence != { 33-44};ok
+ah sequence != { 23-33};ok
 ah sequence 23-33;ok
 ah sequence != 23-33;ok

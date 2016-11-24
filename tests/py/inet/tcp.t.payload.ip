@@ -37,6 +37,16 @@ ip test-ip4 input
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# tcp dport != { 33, 55, 67, 88}
+__set%d test-ip4 3
+__set%d test-ip4 0
+	element 00002100  : 0 [end]	element 00003700  : 0 [end]	element 00004300  : 0 [end]	element 00005800  : 0 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 2b @ transport header + 2 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # tcp dport { 33-55}
 __set%d test-ip4 7
 __set%d test-ip4 0
@@ -46,6 +56,16 @@ ip test-ip4 input
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# tcp dport != { 33-55}
+__set%d test-ip4 7
+__set%d test-ip4 0
+	element 00000000  : 1 [end]	element 00002100  : 0 [end]	element 00003800  : 1 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 2b @ transport header + 2 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # tcp dport {telnet, http, https} accept
 __set%d test-ip4 3
@@ -88,6 +108,16 @@ ip test-ip4 input
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# tcp dport != { 22, 53, 80, 110 }
+__set%d test-ip4 3
+__set%d test-ip4 0
+	element 00001600  : 0 [end]	element 00003500  : 0 [end]	element 00005000  : 0 [end]	element 00006e00  : 0 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 2b @ transport header + 2 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # tcp sport 22
 ip test-ip4 input
   [ payload load 1b @ network header + 9 => reg 1 ]
@@ -127,6 +157,16 @@ ip test-ip4 input
   [ payload load 2b @ transport header + 0 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# tcp sport != { 33, 55, 67, 88}
+__set%d test-ip4 3
+__set%d test-ip4 0
+	element 00002100  : 0 [end]	element 00003700  : 0 [end]	element 00004300  : 0 [end]	element 00005800  : 0 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 2b @ transport header + 0 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # tcp sport { 33-55}
 __set%d test-ip4 7
 __set%d test-ip4 0
@@ -136,6 +176,16 @@ ip test-ip4 input
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 0 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# tcp sport != { 33-55}
+__set%d test-ip4 7
+__set%d test-ip4 0
+	element 00000000  : 1 [end]	element 00002100  : 0 [end]	element 00003800  : 1 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 2b @ transport header + 0 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # tcp sport vmap { 25:accept, 28:drop }
 __map%d test-ip4 b
@@ -227,6 +277,16 @@ ip test-ip4 input
   [ payload load 4b @ transport header + 4 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# tcp sequence != { 33, 55, 67, 88}
+__set%d test-ip4 3
+__set%d test-ip4 0
+	element 21000000  : 0 [end]	element 37000000  : 0 [end]	element 43000000  : 0 [end]	element 58000000  : 0 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 4b @ transport header + 4 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # tcp sequence { 33-55}
 __set%d test-ip4 7
 __set%d test-ip4 0
@@ -236,6 +296,16 @@ ip test-ip4 input
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 4b @ transport header + 4 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# tcp sequence != { 33-55}
+__set%d test-ip4 7
+__set%d test-ip4 0
+	element 00000000  : 1 [end]	element 21000000  : 0 [end]	element 38000000  : 1 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 4b @ transport header + 4 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # tcp ackseq 42949672 drop
 ip test-ip4 input
@@ -284,6 +354,16 @@ ip test-ip4 input
   [ payload load 4b @ transport header + 8 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# tcp ackseq != { 33, 55, 67, 88}
+__set%d test-ip4 3
+__set%d test-ip4 0
+	element 21000000  : 0 [end]	element 37000000  : 0 [end]	element 43000000  : 0 [end]	element 58000000  : 0 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 4b @ transport header + 8 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # tcp ackseq { 33-55}
 __set%d test-ip4 7
 __set%d test-ip4 0
@@ -294,6 +374,16 @@ ip test-ip4 input
   [ payload load 4b @ transport header + 8 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# tcp ackseq != { 33-55}
+__set%d test-ip4 7
+__set%d test-ip4 0
+	element 00000000  : 1 [end]	element 21000000  : 0 [end]	element 38000000  : 1 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 4b @ transport header + 8 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # tcp flags { fin, syn, rst, psh, ack, urg, ecn, cwr} drop
 __set%d test-ip4 3
 __set%d test-ip4 0
@@ -303,6 +393,17 @@ ip test-ip4 input
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 1b @ transport header + 13 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+  [ immediate reg 0 drop ]
+
+# tcp flags != { fin, urg, ecn, cwr} drop
+__set%d test-ip4 3
+__set%d test-ip4 0
+	element 00000001  : 0 [end]	element 00000020  : 0 [end]	element 00000040  : 0 [end]	element 00000080  : 0 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ transport header + 13 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
   [ immediate reg 0 drop ]
 
 # tcp flags cwr
@@ -366,6 +467,16 @@ ip test-ip4 input
   [ payload load 2b @ transport header + 14 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# tcp window != { 33, 55, 67, 88}
+__set%d test-ip4 3
+__set%d test-ip4 0
+	element 00002100  : 0 [end]	element 00003700  : 0 [end]	element 00004300  : 0 [end]	element 00005800  : 0 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 2b @ transport header + 14 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # tcp window { 33-55}
 __set%d test-ip4 7
 __set%d test-ip4 0
@@ -375,6 +486,16 @@ ip test-ip4 input
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 14 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# tcp window != { 33-55}
+__set%d test-ip4 7
+__set%d test-ip4 0
+	element 00000000  : 1 [end]	element 00002100  : 0 [end]	element 00003800  : 1 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 2b @ transport header + 14 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # tcp checksum 22
 ip test-ip4 input
@@ -415,6 +536,16 @@ ip test-ip4 input
   [ payload load 2b @ transport header + 16 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# tcp checksum != { 33, 55, 67, 88}
+__set%d test-ip4 3
+__set%d test-ip4 0
+	element 00002100  : 0 [end]	element 00003700  : 0 [end]	element 00004300  : 0 [end]	element 00005800  : 0 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 2b @ transport header + 16 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # tcp checksum { 33-55}
 __set%d test-ip4 7
 __set%d test-ip4 0
@@ -424,6 +555,16 @@ ip test-ip4 input
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 16 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# tcp checksum != { 33-55}
+__set%d test-ip4 7
+__set%d test-ip4 0
+	element 00000000  : 1 [end]	element 00002100  : 0 [end]	element 00003800  : 1 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 2b @ transport header + 16 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # tcp urgptr 1234 accept
 ip test-ip4 input
@@ -472,6 +613,16 @@ ip test-ip4 input
   [ payload load 2b @ transport header + 18 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# tcp urgptr != { 33, 55, 67, 88}
+__set%d test-ip4 3
+__set%d test-ip4 0
+	element 00002100  : 0 [end]	element 00003700  : 0 [end]	element 00004300  : 0 [end]	element 00005800  : 0 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 2b @ transport header + 18 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # tcp urgptr { 33-55}
 __set%d test-ip4 7
 __set%d test-ip4 0
@@ -481,6 +632,16 @@ ip test-ip4 input
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 18 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# tcp urgptr != { 33-55}
+__set%d test-ip4 7
+__set%d test-ip4 0
+	element 00000000  : 1 [end]	element 00002100  : 0 [end]	element 00003800  : 1 [end]
+ip test-ip4 input
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 2b @ transport header + 18 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # tcp doff 8
 ip test-ip4 input

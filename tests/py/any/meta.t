@@ -16,27 +16,28 @@ meta length != 33-45;ok
 meta length { 33, 55, 67, 88};ok
 meta length { 33-55, 67-88};ok
 meta length { 33-55, 55-88, 100-120};ok;meta length { 33-88, 100-120}
-- meta length != { 33, 55, 67, 88};ok
+meta length != { 33, 55, 67, 88};ok
 meta length { 33-55};ok
-- meta length != { 33-55};ok
+meta length != { 33-55};ok
 
 meta protocol { ip, arp, ip6, vlan };ok;meta protocol { ip6, ip, vlan, arp}
-- meta protocol != {ip, arp, ip6, vlan};ok
+meta protocol != {ip, arp, ip6, vlan};ok
 meta protocol ip;ok
 meta protocol != ip;ok
 
 meta nfproto ipv4;ok
 meta nfproto ipv6;ok
 meta nfproto {ipv4, ipv6};ok
+meta nfproto != {ipv4, ipv6};ok
 
 meta l4proto 22;ok
 meta l4proto != 233;ok
 meta l4proto 33-45;ok
 meta l4proto != 33-45;ok
 meta l4proto { 33, 55, 67, 88};ok;meta l4proto { 33, 55, 67, 88}
-- meta l4proto != { 33, 55, 67, 88};ok
+meta l4proto != { 33, 55, 67, 88};ok
 meta l4proto { 33-55};ok
-- meta l4proto != { 33-55};ok
+meta l4proto != { 33-55};ok
 
 meta priority root;ok
 meta priority none;ok
@@ -51,7 +52,7 @@ meta priority bcad:dada-bcad:dadc;ok
 meta priority != bcad:dada-bcad:dadc;ok
 meta priority {bcad:dada, bcad:dadc, aaaa:bbbb};ok
 meta priority set cafe:beef;ok
-- meta priority != {bcad:dada, bcad:dadc, aaaa:bbbb};ok
+meta priority != {bcad:dada, bcad:dadc, aaaa:bbbb};ok
 
 meta mark 0x4;ok;mark 0x00000004
 meta mark 0x32;ok;mark 0x00000032
@@ -71,12 +72,12 @@ meta iif != "lo" accept;ok;iif != "lo" accept
 meta iifname "dummy0";ok;iifname "dummy0"
 meta iifname != "dummy0";ok;iifname != "dummy0"
 meta iifname {"dummy0", "lo"};ok
-- meta iifname != {"dummy0", "lo"};ok
+meta iifname != {"dummy0", "lo"};ok
 meta iifname "dummy*";ok;iifname "dummy*"
 meta iifname "dummy\*";ok;iifname "dummy\*"
 
 meta iiftype {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
-- meta iiftype != {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
+meta iiftype != {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
 meta iiftype != ether;ok;iiftype != ether
 meta iiftype ether;ok;iiftype ether
 meta iiftype != ppp;ok;iiftype != ppp
@@ -85,7 +86,7 @@ meta iiftype ppp;ok;iiftype ppp
 meta oif "lo" accept;ok;oif "lo" accept
 meta oif != "lo" accept;ok;oif != "lo" accept
 meta oif {"lo"} accept;ok
-- meta oif != {"lo"} accept;ok
+meta oif != {"lo"} accept;ok
 
 meta oifname "dummy0";ok;oifname "dummy0"
 meta oifname != "dummy0";ok;oifname != "dummy0"
@@ -94,12 +95,12 @@ meta oifname "dummy*";ok;oifname "dummy*"
 meta oifname "dummy\*";ok;oifname "dummy\*"
 
 meta oiftype {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
-- meta oiftype != {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
+meta oiftype != {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
 meta oiftype != ether;ok;oiftype != ether
 meta oiftype ether;ok;oiftype ether
 
 meta skuid {"bin", "root", "daemon"} accept;ok;skuid { 0, 1, 2} accept
-- meta skuid != {"bin", "root", "daemon"} accept;ok
+meta skuid != {"bin", "root", "daemon"} accept;ok;skuid != { 1, 0, 2} accept
 meta skuid "root";ok;skuid 0
 meta skuid != "root";ok;skuid != 0
 meta skuid lt 3000 accept;ok;skuid < 3000 accept
@@ -108,10 +109,10 @@ meta skuid eq 3000 accept;ok;skuid 3000 accept
 meta skuid 3001-3005 accept;ok;skuid 3001-3005 accept
 meta skuid != 2001-2005 accept;ok;skuid != 2001-2005 accept
 meta skuid { 2001-2005} accept;ok;skuid { 2001-2005} accept
-- meta skuid != { 2001-2005} accept;ok
+meta skuid != { 2001-2005} accept;ok
 
 meta skgid {"bin", "root", "daemon"} accept;ok;skgid { 0, 1, 2} accept
-- meta skgid != {"bin", "root", "daemon"} accept;ok
+meta skgid != {"bin", "root", "daemon"} accept;ok;skgid != { 1, 0, 2} accept
 meta skgid "root";ok;skgid 0
 meta skgid != "root";ok;skgid != 0
 meta skgid lt 3000 accept;ok;skgid < 3000 accept
@@ -120,7 +121,7 @@ meta skgid eq 3000 accept;ok;skgid 3000 accept
 meta skgid 2001-2005 accept;ok;skgid 2001-2005 accept
 meta skgid != 2001-2005 accept;ok;skgid != 2001-2005 accept
 meta skgid { 2001-2005} accept;ok;skgid { 2001-2005} accept
-- meta skgid != { 2001-2005} accept;ok;skgid != { 2001-2005} accept
+meta skgid != { 2001-2005} accept;ok;skgid != { 2001-2005} accept
 
 # BUG: meta nftrace 2 and meta nftrace 1
 # $ sudo nft add rule ip test input meta nftrace 2
@@ -166,37 +167,37 @@ meta cpu 1-3;ok;cpu 1-3
 meta cpu != 1-2;ok;cpu != 1-2
 meta cpu { 2,3};ok;cpu { 2,3}
 meta cpu { 2-3, 5-7};ok
--meta cpu != { 2,3};ok; cpu != { 2,3}
+meta cpu != { 2,3};ok; cpu != { 2,3}
 
 meta iifgroup 0;ok;iifgroup "default"
 meta iifgroup != 0;ok;iifgroup != "default"
 meta iifgroup "default";ok;iifgroup "default"
 meta iifgroup != "default";ok;iifgroup != "default"
 meta iifgroup {"default"};ok;iifgroup {"default"}
-- meta iifgroup != {"default"};ok
+meta iifgroup != {"default"};ok
 meta iifgroup { 11,33};ok
 meta iifgroup {11-33};ok
-- meta iifgroup != {11,33};ok
-- meta iifgroup != {11-33};ok
+meta iifgroup != { 11,33};ok
+meta iifgroup != {11-33};ok
 meta oifgroup 0;ok;oifgroup "default"
 meta oifgroup != 0;ok;oifgroup != "default"
 meta oifgroup "default";ok;oifgroup "default"
 meta oifgroup != "default";ok;oifgroup != "default"
 meta oifgroup {"default"};ok;oifgroup {"default"}
-- meta oifgroup != {"default"};ok
+meta oifgroup != {"default"};ok;oifgroup != {"default"}
 meta oifgroup { 11,33};ok
 meta oifgroup {11-33};ok
-- meta oifgroup != {11,33};ok
-- meta oifgroup != {11-33};ok
+meta oifgroup != { 11,33};ok
+meta oifgroup != {11-33};ok
 
 meta cgroup 1048577;ok;cgroup 1048577
 meta cgroup != 1048577;ok;cgroup != 1048577
 meta cgroup { 1048577, 1048578 };ok;cgroup { 1048577, 1048578}
-# meta cgroup != { 1048577, 1048578};ok;cgroup != { 1048577, 1048578}
+meta cgroup != { 1048577, 1048578};ok;cgroup != { 1048577, 1048578}
 meta cgroup 1048577-1048578;ok;cgroup 1048577-1048578
 meta cgroup != 1048577-1048578;ok;cgroup != 1048577-1048578
 meta cgroup {1048577-1048578};ok;cgroup { 1048577-1048578}
-# meta cgroup != { 1048577-1048578};ok;cgroup != { 1048577-1048578}
+meta cgroup != { 1048577-1048578};ok;cgroup != { 1048577-1048578}
 
 meta iif . meta oif { "lo" . "lo" };ok
 meta iif . meta oif . meta mark { "lo" . "lo" . 0x0000000a };ok

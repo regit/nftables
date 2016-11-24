@@ -6,3 +6,11 @@ inet test-inet input
   [ lookup reg 1 set set2 ]
   [ immediate reg 0 drop ]
 
+# ip6 saddr != @set2 drop
+inet test-inet input 
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ payload load 16b @ network header + 8 => reg 1 ]
+  [ lookup reg 1 set set2 0x1 ]
+  [ immediate reg 0 drop ]
+

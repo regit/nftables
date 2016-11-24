@@ -7,7 +7,7 @@
 frag nexthdr tcp;ok;frag nexthdr 6
 frag nexthdr != icmp;ok;frag nexthdr != 1
 frag nexthdr {esp, ah, comp, udp, udplite, tcp, dccp, sctp};ok;frag nexthdr { 51, 136, 132, 6, 108, 50, 17, 33}
-- frag nexthdr != {esp, ah, comp, udp, udplite, tcp, dccp, sctp};ok
+frag nexthdr != {esp, ah, comp, udp, udplite, tcp, dccp, sctp};ok;frag nexthdr != { 51, 136, 132, 6, 108, 50, 17, 33}
 frag nexthdr esp;ok;frag nexthdr 50
 frag nexthdr ah;ok;frag nexthdr 51
 
@@ -16,18 +16,18 @@ frag reserved != 233;ok
 frag reserved 33-45;ok
 frag reserved != 33-45;ok
 frag reserved { 33, 55, 67, 88};ok
-- frag reserved != { 33, 55, 67, 88};ok
+frag reserved != { 33, 55, 67, 88};ok
 frag reserved { 33-55};ok
-- frag reserved != { 33-55};ok
+frag reserved != { 33-55};ok
 
 frag frag-off 22;ok
 frag frag-off != 233;ok
 frag frag-off 33-45;ok
 frag frag-off != 33-45;ok
 frag frag-off { 33, 55, 67, 88};ok
-- frag frag-off != { 33, 55, 67, 88};ok
+frag frag-off != { 33, 55, 67, 88};ok
 frag frag-off { 33-55};ok
-- frag frag-off != { 33-55};ok
+frag frag-off != { 33-55};ok
 
 frag reserved2 1;ok
 frag more-fragments 0;ok
@@ -39,6 +39,6 @@ frag id != 33;ok
 frag id 33-45;ok
 frag id != 33-45;ok
 frag id { 33, 55, 67, 88};ok
-- frag id != { 33, 55, 67, 88};ok
+frag id != { 33, 55, 67, 88};ok
 frag id { 33-55};ok
-- frag id != { 33-55};ok
+frag id != { 33-55};ok

@@ -151,6 +151,17 @@ ip6 test-ip6 input
   [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
+# icmpv6 type != {mld-listener-query, time-exceeded, nd-router-advert} accept
+__set%d test-ip6 3
+__set%d test-ip6 0
+	element 00000082  : 0 [end]	element 00000003  : 0 [end]	element 00000086  : 0 [end]
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 1b @ transport header + 0 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+  [ immediate reg 0 accept ]
+
 # icmpv6 code 4
 ip6 test-ip6 input
   [ payload load 1b @ network header + 6 => reg 1 ]
@@ -177,6 +188,17 @@ ip6 test-ip6 input
   [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
+# icmpv6 code != {5, 6, 7} accept
+__set%d test-ip6 3
+__set%d test-ip6 0
+	element 00000005  : 0 [end]	element 00000006  : 0 [end]	element 00000007  : 0 [end]
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 1b @ transport header + 1 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+  [ immediate reg 0 accept ]
+
 # icmpv6 code { 3-66}
 __set%d test-ip6 7
 __set%d test-ip6 0
@@ -186,6 +208,16 @@ ip6 test-ip6 input
   [ cmp eq reg 1 0x0000003a ]
   [ payload load 1b @ transport header + 1 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# icmpv6 code != { 3-66}
+__set%d test-ip6 7
+__set%d test-ip6 0
+	element 00000000  : 1 [end]	element 00000003  : 0 [end]	element 00000043  : 1 [end]
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 1b @ transport header + 1 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # icmpv6 checksum 2222 log
 ip6 test-ip6 input
@@ -229,6 +261,16 @@ ip6 test-ip6 input
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# icmpv6 checksum != { 222, 226}
+__set%d test-ip6 3
+__set%d test-ip6 0
+	element 0000de00  : 0 [end]	element 0000e200  : 0 [end]
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 2b @ transport header + 2 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # icmpv6 checksum { 222-226}
 __set%d test-ip6 7
 __set%d test-ip6 0
@@ -238,6 +280,16 @@ ip6 test-ip6 input
   [ cmp eq reg 1 0x0000003a ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# icmpv6 checksum != { 222-226}
+__set%d test-ip6 7
+__set%d test-ip6 0
+	element 00000000  : 1 [end]	element 0000de00  : 0 [end]	element 0000e300  : 1 [end]
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 2b @ transport header + 2 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # icmpv6 mtu 22
 ip6 test-ip6 input
@@ -278,6 +330,16 @@ ip6 test-ip6 input
   [ payload load 4b @ transport header + 4 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# icmpv6 mtu != {33, 55, 67, 88}
+__set%d test-ip6 3
+__set%d test-ip6 0
+	element 21000000  : 0 [end]	element 37000000  : 0 [end]	element 43000000  : 0 [end]	element 58000000  : 0 [end]
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 4b @ transport header + 4 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # icmpv6 mtu {33-55}
 __set%d test-ip6 7
 __set%d test-ip6 0
@@ -287,6 +349,16 @@ ip6 test-ip6 input
   [ cmp eq reg 1 0x0000003a ]
   [ payload load 4b @ transport header + 4 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# icmpv6 mtu != {33-55}
+__set%d test-ip6 7
+__set%d test-ip6 0
+	element 00000000  : 1 [end]	element 21000000  : 0 [end]	element 38000000  : 1 [end]
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 4b @ transport header + 4 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # icmpv6 id 33-45
 ip6 test-ip6 input
@@ -313,6 +385,16 @@ ip6 test-ip6 input
   [ payload load 2b @ transport header + 4 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# icmpv6 id != {33, 55, 67, 88}
+__set%d test-ip6 3
+__set%d test-ip6 0
+	element 00002100  : 0 [end]	element 00003700  : 0 [end]	element 00004300  : 0 [end]	element 00005800  : 0 [end]
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 2b @ transport header + 4 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # icmpv6 id {33-55}
 __set%d test-ip6 7
 __set%d test-ip6 0
@@ -322,6 +404,16 @@ ip6 test-ip6 input
   [ cmp eq reg 1 0x0000003a ]
   [ payload load 2b @ transport header + 4 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# icmpv6 id != {33-55}
+__set%d test-ip6 7
+__set%d test-ip6 0
+	element 00000000  : 1 [end]	element 00002100  : 0 [end]	element 00003800  : 1 [end]
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 2b @ transport header + 4 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # icmpv6 sequence 2
 ip6 test-ip6 input
@@ -341,6 +433,17 @@ ip6 test-ip6 input
   [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
+# icmpv6 sequence != {3, 4, 5, 6, 7} accept
+__set%d test-ip6 3
+__set%d test-ip6 0
+	element 00000300  : 0 [end]	element 00000400  : 0 [end]	element 00000500  : 0 [end]	element 00000600  : 0 [end]	element 00000700  : 0 [end]
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 2b @ transport header + 6 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+  [ immediate reg 0 accept ]
+
 # icmpv6 sequence {2, 4}
 __set%d test-ip6 3
 __set%d test-ip6 0
@@ -350,6 +453,16 @@ ip6 test-ip6 input
   [ cmp eq reg 1 0x0000003a ]
   [ payload load 2b @ transport header + 6 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# icmpv6 sequence != {2, 4}
+__set%d test-ip6 3
+__set%d test-ip6 0
+	element 00000200  : 0 [end]	element 00000400  : 0 [end]
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 2b @ transport header + 6 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 
 # icmpv6 sequence 2-4
 ip6 test-ip6 input
@@ -376,6 +489,16 @@ ip6 test-ip6 input
   [ payload load 2b @ transport header + 6 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# icmpv6 sequence != { 2-4}
+__set%d test-ip6 7
+__set%d test-ip6 0
+	element 00000000  : 1 [end]	element 00000200  : 0 [end]	element 00000500  : 1 [end]
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 2b @ transport header + 6 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # icmpv6 max-delay 33-45
 ip6 test-ip6 input
   [ payload load 1b @ network header + 6 => reg 1 ]
@@ -401,6 +524,16 @@ ip6 test-ip6 input
   [ payload load 2b @ transport header + 4 => reg 1 ]
   [ lookup reg 1 set __set%d ]
 
+# icmpv6 max-delay != {33, 55, 67, 88}
+__set%d test-ip6 3
+__set%d test-ip6 0
+	element 00002100  : 0 [end]	element 00003700  : 0 [end]	element 00004300  : 0 [end]	element 00005800  : 0 [end]
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 2b @ transport header + 4 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
+
 # icmpv6 max-delay {33-55}
 __set%d test-ip6 7
 __set%d test-ip6 0
@@ -410,4 +543,14 @@ ip6 test-ip6 input
   [ cmp eq reg 1 0x0000003a ]
   [ payload load 2b @ transport header + 4 => reg 1 ]
   [ lookup reg 1 set __set%d ]
+
+# icmpv6 max-delay != {33-55}
+__set%d test-ip6 7
+__set%d test-ip6 0
+	element 00000000  : 1 [end]	element 00002100  : 0 [end]	element 00003800  : 1 [end]
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 2b @ transport header + 4 => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]
 

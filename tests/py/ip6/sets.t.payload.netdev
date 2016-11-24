@@ -6,3 +6,11 @@ netdev test-netdev ingress
   [ lookup reg 1 set set2 ]
   [ immediate reg 0 drop ]
 
+# ip6 saddr != @set2 drop
+netdev test-netdev ingress 
+  [ meta load protocol => reg 1 ]
+  [ cmp eq reg 1 0x0000dd86 ]
+  [ payload load 16b @ network header + 8 => reg 1 ]
+  [ lookup reg 1 set set2 0x1 ]
+  [ immediate reg 0 drop ]
+
