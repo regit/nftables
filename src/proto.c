@@ -616,6 +616,9 @@ const struct proto_desc proto_ip = {
 		.filter	= (1 << IPHDR_VERSION)  | (1 << IPHDR_HDRLENGTH) |
 			  (1 << IPHDR_FRAG_OFF),
 	},
+	.pseudohdr	= {
+		IPHDR_SADDR, IPHDR_DADDR, IPHDR_PROTOCOL, IPHDR_LENGTH,
+	},
 };
 
 /*
@@ -720,6 +723,9 @@ const struct proto_desc proto_ip6 = {
 			IP6HDR_LENGTH,
 		},
 		.filter	= (1 << IP6HDR_VERSION),
+	},
+	.pseudohdr	= {
+		IP6HDR_SADDR, IP6HDR_DADDR, IP6HDR_NEXTHDR, IP6HDR_LENGTH,
 	},
 };
 

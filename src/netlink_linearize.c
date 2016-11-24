@@ -761,6 +761,18 @@ static void netlink_gen_verdict_stmt(struct netlink_linearize_ctx *ctx,
 	return netlink_gen_expr(ctx, stmt->expr, NFT_REG_VERDICT);
 }
 
+static bool payload_needs_l4csum_update_pseudohdr(const struct expr *expr,
+						  const struct proto_desc *desc)
+{
+	int i;
+
+	for (i = 0; i < PROTO_HDRS_MAX; i++) {
+		if (payload_hdr_field(expr) == desc->pseudohdr[i])
+			return true;
+	}
+	return false;
+}
+
 static void netlink_gen_payload_stmt(struct netlink_linearize_ctx *ctx,
 				     const struct stmt *stmt)
 {
@@ -794,6 +806,11 @@ static void netlink_gen_payload_stmt(struct netlink_linearize_ctx *ctx,
 				   NFT_PAYLOAD_CSUM_INET);
 		nftnl_expr_set_u32(nle, NFTNL_EXPR_PAYLOAD_CSUM_OFFSET,
 				   csum_off / BITS_PER_BYTE);
+
+		if (expr->payload.base == PROTO_BASE_NETWORK_HDR &&
+		    payload_needs_l4csum_update_pseudohdr(expr, desc))
+			nftnl_expr_set_u32(nle, NFTNL_EXPR_PAYLOAD_FLAGS,
+					   NFT_PAYLOAD_L4CSUM_PSEUDOHDR);
 	}
 
 	nftnl_rule_add_expr(ctx->nlr, nle);

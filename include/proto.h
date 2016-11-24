@@ -73,6 +73,7 @@ struct proto_hdr_template {
  * @length:	total size of the header, in bits
  * @protocols:	link to upper layer protocol descriptions indexed by protocol value
  * @templates:	header templates
+ * @pseudohdr:  header fields that are part of upper layer checksum pseudoheader
  */
 struct proto_desc {
 	const char			*name;
@@ -89,6 +90,7 @@ struct proto_desc {
 		uint8_t				order[PROTO_HDRS_MAX];
 		uint32_t			filter;
 	}				format;
+	unsigned int			pseudohdr[PROTO_HDRS_MAX];
 
 };
 
