@@ -1188,7 +1188,7 @@ static int expr_evaluate_mapping(struct eval_ctx *ctx, struct expr **expr)
 	if (set == NULL)
 		return expr_error(ctx->msgs, mapping,
 				  "mapping outside of map context");
-	if (!(set->flags & NFT_SET_MAP))
+	if (!(set->flags & (NFT_SET_MAP | NFT_SET_OBJECT)))
 		return set_error(ctx, set, "set is not a map");
 
 	expr_set_context(&ctx->ectx, set->keytype, set->keylen);
@@ -2464,8 +2464,77 @@ static int stmt_evaluate_set(struct eval_ctx *ctx, struct stmt *stmt)
 	return 0;
 }
 
+static int stmt_evaluate_objref_map(struct eval_ctx *ctx, struct stmt *stmt)
+{
+	struct expr *map = stmt->objref.expr;
+	struct expr *mappings;
+
+	expr_set_context(&ctx->ectx, NULL, 0);
+	if (expr_evaluate(ctx, &map->map) < 0)
+		return -1;
+	if (expr_is_constant(map->map))
+		return expr_error(ctx->msgs, map->map,
+				  "Map expression can not be constant");
+
+	mappings = map->mappings;
+	mappings->set_flags |= NFT_SET_OBJECT;
+
+	switch (map->mappings->ops->type) {
+	case EXPR_SET:
+		mappings = implicit_set_declaration(ctx, "__objmap%d",
+						    ctx->ectx.dtype,
+						    ctx->ectx.len,
+						    mappings);
+		mappings->set->datatype = &string_type;
+		mappings->set->datalen  = NFT_OBJ_MAXNAMELEN * BITS_PER_BYTE;
+		mappings->set->objtype  = stmt->objref.type;
+
+		map->mappings = mappings;
+
+		ctx->set = mappings->set;
+		if (expr_evaluate(ctx, &map->mappings->set->init) < 0)
+			return -1;
+		ctx->set = NULL;
+
+		map->mappings->set->flags |=
+			map->mappings->set->init->set_flags;
+	case EXPR_SYMBOL:
+		if (expr_evaluate(ctx, &map->mappings) < 0)
+			return -1;
+		if (map->mappings->ops->type != EXPR_SET_REF ||
+		    !(map->mappings->set->flags & NFT_SET_OBJECT))
+			return expr_error(ctx->msgs, map->mappings,
+					  "Expression is not a map");
+		break;
+	default:
+		BUG("invalid mapping expression %s\n",
+		    map->mappings->ops->name);
+	}
+
+	if (!datatype_equal(map->map->dtype, map->mappings->set->keytype))
+		return expr_binary_error(ctx->msgs, map->mappings, map->map,
+					 "datatype mismatch, map expects %s, "
+					 "mapping expression has type %s",
+					 map->mappings->set->keytype->desc,
+					 map->map->dtype->desc);
+
+	map->dtype = map->mappings->set->datatype;
+	map->flags |= EXPR_F_CONSTANT;
+
+	/* Data for range lookups needs to be in big endian order */
+	if (map->mappings->set->flags & NFT_SET_INTERVAL &&
+	    byteorder_conversion(ctx, &map->map, BYTEORDER_BIG_ENDIAN) < 0)
+		return -1;
+
+	return 0;
+}
+
 static int stmt_evaluate_objref(struct eval_ctx *ctx, struct stmt *stmt)
 {
+	/* We need specific map evaluation for stateful objects. */
+	if (stmt->objref.expr->ops->type == EXPR_MAP)
+		return stmt_evaluate_objref_map(ctx, stmt);
+
 	if (stmt_evaluate_arg(ctx, stmt,
 			      &string_type, NFT_OBJ_MAXNAMELEN * BITS_PER_BYTE,
 			      &stmt->objref.expr) < 0)
@@ -2585,6 +2654,9 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 		if (set->datalen == 0 && set->datatype->type != TYPE_VERDICT)
 			return set_error(ctx, set, "unqualified mapping data "
 					 "type specified in map definition");
+	} else if (set->flags & NFT_SET_OBJECT) {
+		set->datatype = &string_type;
+		set->datalen  = NFT_OBJ_MAXNAMELEN * BITS_PER_BYTE;
 	}
 
 	ctx->set = set;

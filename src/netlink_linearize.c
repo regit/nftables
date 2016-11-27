@@ -692,14 +692,34 @@ static void netlink_gen_expr(struct netlink_linearize_ctx *ctx,
 static void netlink_gen_objref_stmt(struct netlink_linearize_ctx *ctx,
 				    const struct stmt *stmt)
 {
+	struct expr *expr = stmt->objref.expr;
 	struct nft_data_linearize nld;
 	struct nftnl_expr *nle;
+	uint32_t sreg_key;
 
 	nle = alloc_nft_expr("objref");
-	netlink_gen_data(stmt->objref.expr, &nld);
-	nftnl_expr_set(nle, NFTNL_EXPR_OBJREF_IMM_NAME, nld.value, nld.len);
-	nftnl_expr_set_u32(nle, NFTNL_EXPR_OBJREF_IMM_TYPE, stmt->objref.type);
+	switch (expr->ops->type) {
+	case EXPR_MAP:
+		sreg_key = get_register(ctx, expr->map);
+		netlink_gen_expr(ctx, expr->map, sreg_key);
+		release_register(ctx, expr->map);
 
+		nftnl_expr_set_u32(nle, NFTNL_EXPR_OBJREF_SET_SREG, sreg_key);
+		nftnl_expr_set_str(nle, NFTNL_EXPR_OBJREF_SET_NAME,
+				   expr->mappings->set->handle.set);
+		nftnl_expr_set_u32(nle, NFTNL_EXPR_OBJREF_SET_ID,
+				   expr->mappings->set->handle.set_id);
+		break;
+	case EXPR_VALUE:
+		netlink_gen_data(stmt->objref.expr, &nld);
+		nftnl_expr_set(nle, NFTNL_EXPR_OBJREF_IMM_NAME,
+			       nld.value, nld.len);
+		nftnl_expr_set_u32(nle, NFTNL_EXPR_OBJREF_IMM_TYPE,
+				   stmt->objref.type);
+		break;
+	default:
+		BUG("unsupported expression %u\n", expr->ops->type);
+	}
 	nftnl_rule_add_expr(ctx->nlr, nle);
 }
 

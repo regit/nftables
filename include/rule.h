@@ -212,6 +212,7 @@ extern struct rule *rule_lookup(const struct chain *chain, uint64_t handle);
  * @keylen:	key length
  * @datatype:	mapping data type
  * @datalen:	mapping data len
+ * @objtype:	mapping object type
  * @init:	initializer
  * @policy:	set mechanism policy
  * @desc:	set mechanism desc
@@ -228,6 +229,7 @@ struct set {
 	unsigned int		keylen;
 	const struct datatype	*datatype;
 	unsigned int		datalen;
+	uint32_t		objtype;
 	struct expr		*init;
 	uint32_t		policy;
 	struct {

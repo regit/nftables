@@ -1142,6 +1142,35 @@ static void netlink_parse_objref(struct netlink_parse_ctx *ctx,
 		expr = netlink_alloc_value(&netlink_location, &nld);
 		expr->dtype = &string_type;
 		expr->byteorder = BYTEORDER_HOST_ENDIAN;
+	} else if (nftnl_expr_is_set(nle, NFTNL_EXPR_OBJREF_SET_SREG)) {
+		struct expr *left, *right;
+		enum nft_registers sreg;
+		const char *name;
+		struct set *set;
+
+		name = nftnl_expr_get_str(nle, NFTNL_EXPR_OBJREF_SET_NAME);
+		set  = set_lookup(ctx->table, name);
+		if (set == NULL)
+			return netlink_error(ctx, loc,
+					     "Unknown set '%s' in objref expression",
+					     name);
+
+		sreg = netlink_parse_register(nle, NFTNL_EXPR_OBJREF_SET_SREG);
+		left = netlink_get_register(ctx, loc, sreg);
+		if (left == NULL)
+			return netlink_error(ctx, loc,
+					     "objref expression has no left hand side");
+
+		if (left->len < set->keylen) {
+			left = netlink_parse_concat_expr(ctx, loc, sreg, set->keylen);
+			if (left == NULL)
+				return;
+		}
+
+		right = set_ref_expr_alloc(loc, set);
+		expr = map_expr_alloc(loc, left, right);
+		expr_set_type(expr, &string_type, BYTEORDER_HOST_ENDIAN);
+		type = set->objtype;
 	} else {
 		netlink_error(ctx, loc, "unknown objref expression type %u",
 			      type);

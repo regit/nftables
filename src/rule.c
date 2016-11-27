@@ -273,7 +273,7 @@ static void set_print_declaration(const struct set *set,
 	const char *type;
 	uint32_t flags;
 
-	if (set->flags & NFT_SET_MAP)
+	if (set->flags & (NFT_SET_MAP | NFT_SET_OBJECT))
 		type = "map";
 	else if (set->flags & NFT_SET_EVAL)
 		type = "flow table";
@@ -293,6 +293,8 @@ static void set_print_declaration(const struct set *set,
 	printf("%s%stype %s", opts->tab, opts->tab, set->keytype->name);
 	if (set->flags & NFT_SET_MAP)
 		printf(" : %s", set->datatype->name);
+	else if (set->flags & NFT_SET_OBJECT)
+		printf(" : %s", obj_type_name(set->objtype));
 
 	printf("%s", opts->stmt_separator);
 
@@ -913,6 +915,7 @@ static int __do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	    set_to_intervals(ctx->msgs, set, expr, true) < 0)
 		return -1;
 
+	expr->set_flags |= set->flags;
 	if (netlink_add_setelems(ctx, h, expr, excl) < 0)
 		return -1;
 

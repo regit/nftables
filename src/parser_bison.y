@@ -1218,7 +1218,6 @@ set_flag		:	CONSTANT	{ $$ = NFT_SET_CONSTANT; }
 map_block_alloc		:	/* empty */
 			{
 				$$ = set_alloc(NULL);
-				$$->flags |= NFT_SET_MAP;
 			}
 			;
 
@@ -1231,6 +1230,25 @@ map_block		:	/* empty */	{ $$ = $<set>-1; }
 			{
 				$1->keytype  = $3;
 				$1->datatype = $5;
+				$1->flags |= NFT_SET_MAP;
+				$$ = $1;
+			}
+			|	map_block	TYPE
+						data_type	COLON	COUNTER
+						stmt_seperator
+			{
+				$1->keytype = $3;
+				$1->objtype = NFT_OBJECT_COUNTER;
+				$1->flags  |= NFT_SET_OBJECT;
+				$$ = $1;
+			}
+			|	map_block	TYPE
+						data_type	COLON	QUOTA
+						stmt_seperator
+			{
+				$1->keytype = $3;
+				$1->objtype = NFT_OBJECT_QUOTA;
+				$1->flags  |= NFT_SET_OBJECT;
 				$$ = $1;
 			}
 			|	map_block	FLAGS		set_flag_list	stmt_seperator
