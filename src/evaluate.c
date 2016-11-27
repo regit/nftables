@@ -2464,6 +2464,20 @@ static int stmt_evaluate_set(struct eval_ctx *ctx, struct stmt *stmt)
 	return 0;
 }
 
+static int stmt_evaluate_objref(struct eval_ctx *ctx, struct stmt *stmt)
+{
+	if (stmt_evaluate_arg(ctx, stmt,
+			      &string_type, NFT_OBJ_MAXNAMELEN * BITS_PER_BYTE,
+			      &stmt->objref.expr) < 0)
+		return -1;
+
+	if (!expr_is_constant(stmt->objref.expr))
+		return expr_error(ctx->msgs, stmt->objref.expr,
+				  "Counter expression must be constant");
+
+	return 0;
+}
+
 int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 {
 #ifdef DEBUG
@@ -2511,6 +2525,8 @@ int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 		return stmt_evaluate_fwd(ctx, stmt);
 	case STMT_SET:
 		return stmt_evaluate_set(ctx, stmt);
+	case STMT_OBJREF:
+		return stmt_evaluate_objref(ctx, stmt);
 	default:
 		BUG("unknown statement type %s\n", stmt->ops->name);
 	}

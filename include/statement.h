@@ -10,6 +10,13 @@ extern struct stmt *expr_stmt_alloc(const struct location *loc,
 extern struct stmt *verdict_stmt_alloc(const struct location *loc,
 				       struct expr *expr);
 
+struct objref_stmt {
+	uint32_t		type;
+	struct expr		*expr;
+};
+
+struct stmt *objref_stmt_alloc(const struct location *loc);
+
 struct counter_stmt {
 	uint64_t		packets;
 	uint64_t		bytes;
@@ -212,6 +219,7 @@ extern struct stmt *xt_stmt_alloc(const struct location *loc);
  * @STMT_XT:		XT statement
  * @STMT_QUOTA:		quota statement
  * @STMT_NOTRACK:	notrack statement
+ * @STMT_OBJREF:	stateful object reference statement
  */
 enum stmt_types {
 	STMT_INVALID,
@@ -235,6 +243,7 @@ enum stmt_types {
 	STMT_XT,
 	STMT_QUOTA,
 	STMT_NOTRACK,
+	STMT_OBJREF,
 };
 
 /**
@@ -292,6 +301,7 @@ struct stmt {
 		struct dup_stmt		dup;
 		struct fwd_stmt		fwd;
 		struct xt_stmt		xt;
+		struct objref_stmt	objref;
 	};
 };
 

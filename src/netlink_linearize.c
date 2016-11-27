@@ -689,6 +689,20 @@ static void netlink_gen_expr(struct netlink_linearize_ctx *ctx,
 	}
 }
 
+static void netlink_gen_objref_stmt(struct netlink_linearize_ctx *ctx,
+				    const struct stmt *stmt)
+{
+	struct nft_data_linearize nld;
+	struct nftnl_expr *nle;
+
+	nle = alloc_nft_expr("objref");
+	netlink_gen_data(stmt->objref.expr, &nld);
+	nftnl_expr_set(nle, NFTNL_EXPR_OBJREF_IMM_NAME, nld.value, nld.len);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_OBJREF_IMM_TYPE, stmt->objref.type);
+
+	nftnl_rule_add_expr(ctx->nlr, nle);
+}
+
 static struct nftnl_expr *
 netlink_gen_counter_stmt(struct netlink_linearize_ctx *ctx,
 			 const struct stmt *stmt)
@@ -1225,6 +1239,8 @@ static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 		break;
 	case STMT_NOTRACK:
 		return netlink_gen_notrack_stmt(ctx, stmt);
+	case STMT_OBJREF:
+		return netlink_gen_objref_stmt(ctx, stmt);
 	default:
 		BUG("unknown statement type %s\n", stmt->ops->name);
 	}

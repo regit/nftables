@@ -365,6 +365,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token LABEL			"label"
 
 %token COUNTER			"counter"
+%token NAME			"name"
 %token PACKETS			"packets"
 %token BYTES			"bytes"
 
@@ -1623,6 +1624,12 @@ counter_stmt_alloc	:	COUNTER
 			{
 				$$ = counter_stmt_alloc(&@$);
 			}
+			|	COUNTER		NAME	stmt_expr
+			{
+				$$ = objref_stmt_alloc(&@$);
+				$$->objref.type = NFT_OBJECT_COUNTER;
+				$$->objref.expr = $3;
+			}
 			;
 
 counter_args		:	counter_arg
@@ -1822,6 +1829,12 @@ quota_stmt		:	QUOTA	quota_mode NUM quota_unit quota_used
 				$$->quota.bytes	= $3 * rate;
 				$$->quota.used = $5;
 				$$->quota.flags	= $2;
+			}
+			|	QUOTA	NAME	stmt_expr
+			{
+				$$ = objref_stmt_alloc(&@$);
+				$$->objref.type = NFT_OBJECT_QUOTA;
+				$$->objref.expr = $3;
 			}
 			;
 

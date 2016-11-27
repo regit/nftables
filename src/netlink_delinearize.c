@@ -1125,6 +1125,35 @@ static void netlink_parse_dynset(struct netlink_parse_ctx *ctx,
 	ctx->stmt = stmt;
 }
 
+static void netlink_parse_objref(struct netlink_parse_ctx *ctx,
+				 const struct location *loc,
+				 const struct nftnl_expr *nle)
+{
+	uint32_t type = nftnl_expr_get_u32(nle, NFTNL_EXPR_OBJREF_IMM_TYPE);
+	struct expr *expr;
+	struct stmt *stmt;
+
+	if (nftnl_expr_is_set(nle, NFTNL_EXPR_OBJREF_IMM_NAME)) {
+		struct nft_data_delinearize nld;
+
+		type = nftnl_expr_get_u32(nle, NFTNL_EXPR_OBJREF_IMM_TYPE);
+		nld.value = nftnl_expr_get(nle, NFTNL_EXPR_OBJREF_IMM_NAME,
+					   &nld.len);
+		expr = netlink_alloc_value(&netlink_location, &nld);
+		expr->dtype = &string_type;
+		expr->byteorder = BYTEORDER_HOST_ENDIAN;
+	} else {
+		netlink_error(ctx, loc, "unknown objref expression type %u",
+			      type);
+		return;
+	}
+
+	stmt = objref_stmt_alloc(loc);
+	stmt->objref.type = type;
+	stmt->objref.expr = expr;
+	ctx->stmt = stmt;
+}
+
 static const struct {
 	const char	*name;
 	void		(*parse)(struct netlink_parse_ctx *ctx,
@@ -1156,6 +1185,7 @@ static const struct {
 	{ .name = "fwd",	.parse = netlink_parse_fwd },
 	{ .name = "target",	.parse = netlink_parse_target },
 	{ .name = "match",	.parse = netlink_parse_match },
+	{ .name = "objref",	.parse = netlink_parse_objref },
 	{ .name = "quota",	.parse = netlink_parse_quota },
 	{ .name = "numgen",	.parse = netlink_parse_numgen },
 	{ .name = "hash",	.parse = netlink_parse_hash },
@@ -2163,6 +2193,9 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 			break;
 		case STMT_XT:
 			stmt_xt_postprocess(&rctx, stmt, rule);
+			break;
+		case STMT_OBJREF:
+			expr_postprocess(&rctx, &stmt->objref.expr);
 			break;
 		default:
 			break;

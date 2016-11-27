@@ -161,6 +161,39 @@ struct stmt *counter_stmt_alloc(const struct location *loc)
 	return stmt;
 }
 
+static const char *objref_type[NFT_OBJECT_MAX + 1] = {
+	[NFT_OBJECT_COUNTER]	= "counter",
+	[NFT_OBJECT_QUOTA]	= "quota",
+};
+
+static const char *objref_type_name(uint32_t type)
+{
+	if (type > NFT_OBJECT_MAX)
+		return "unknown";
+
+	return objref_type[type];
+}
+
+static void objref_stmt_print(const struct stmt *stmt)
+{
+	printf("%s name ", objref_type_name(stmt->objref.type));
+	expr_print(stmt->objref.expr);
+}
+
+static const struct stmt_ops objref_stmt_ops = {
+	.type		= STMT_OBJREF,
+	.name		= "objref",
+	.print		= objref_stmt_print,
+};
+
+struct stmt *objref_stmt_alloc(const struct location *loc)
+{
+	struct stmt *stmt;
+
+	stmt = stmt_alloc(loc, &objref_stmt_ops);
+	return stmt;
+}
+
 static const char *syslog_level[LOG_DEBUG + 1] = {
 	[LOG_EMERG]	= "emerg",
 	[LOG_ALERT]	= "alert",
