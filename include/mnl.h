@@ -88,6 +88,11 @@ int mnl_nft_setelem_get(struct mnl_socket *nf_sock, struct nftnl_set *nls);
 
 struct nftnl_obj_list *mnl_nft_obj_dump(struct mnl_socket *nf_sock, int family,
 					const char *table);
+int mnl_nft_obj_batch_add(struct nftnl_obj *nln, unsigned int flags,
+			  uint32_t seqnum);
+int mnl_nft_obj_batch_del(struct nftnl_obj *nln, unsigned int flags,
+			  uint32_t seqnum);
+
 struct nftnl_ruleset *mnl_nft_ruleset_dump(struct mnl_socket *nf_sock,
 					 uint32_t family);
 int mnl_nft_event_listener(struct mnl_socket *nf_sock,

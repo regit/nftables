@@ -796,6 +796,36 @@ err:
 	return NULL;
 }
 
+int mnl_nft_obj_batch_add(struct nftnl_obj *nln, unsigned int flags,
+			  uint32_t seqnum)
+{
+	struct nlmsghdr *nlh;
+
+	nlh = nftnl_nlmsg_build_hdr(nftnl_batch_buffer(batch),
+			NFT_MSG_NEWOBJ,
+			nftnl_obj_get_u32(nln, NFTNL_OBJ_FAMILY),
+			NLM_F_CREATE | flags, seqnum);
+	nftnl_obj_nlmsg_build_payload(nlh, nln);
+	mnl_nft_batch_continue();
+
+	return 0;
+}
+
+int mnl_nft_obj_batch_del(struct nftnl_obj *nln, unsigned int flags,
+			  uint32_t seqnum)
+{
+	struct nlmsghdr *nlh;
+
+	nlh = nftnl_nlmsg_build_hdr(nftnl_batch_buffer(batch),
+			NFT_MSG_DELOBJ,
+			nftnl_obj_get_u32(nln, NFTNL_OBJ_FAMILY),
+			flags, seqnum);
+	nftnl_obj_nlmsg_build_payload(nlh, nln);
+	mnl_nft_batch_continue();
+
+	return 0;
+}
+
 static int obj_cb(const struct nlmsghdr *nlh, void *data)
 {
 	struct nftnl_obj_list *nln_list = data;

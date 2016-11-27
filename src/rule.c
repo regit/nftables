@@ -44,6 +44,8 @@ void handle_merge(struct handle *dst, const struct handle *src)
 		dst->chain = xstrdup(src->chain);
 	if (dst->set == NULL && src->set != NULL)
 		dst->set = xstrdup(src->set);
+	if (dst->obj == NULL && src->obj != NULL)
+		dst->obj = xstrdup(src->obj);
 	if (dst->handle.id == 0)
 		dst->handle = src->handle;
 	if (dst->position.id == 0)
@@ -875,6 +877,10 @@ void cmd_free(struct cmd *cmd)
 		case CMD_OBJ_EXPORT:
 			export_free(cmd->export);
 			break;
+		case CMD_OBJ_COUNTER:
+		case CMD_OBJ_QUOTA:
+			obj_free(cmd->object);
+			break;
 		default:
 			BUG("invalid command object type %u\n", cmd->obj);
 		}
@@ -940,6 +946,7 @@ static int do_add_table(struct netlink_ctx *ctx, const struct handle *h,
 			bool excl)
 {
 	struct chain *chain;
+	struct obj *obj;
 	struct set *set;
 
 	if (netlink_add_table(ctx, h, loc, table, excl) < 0)
@@ -949,6 +956,11 @@ static int do_add_table(struct netlink_ctx *ctx, const struct handle *h,
 			if (netlink_add_chain(ctx, &chain->handle,
 					      &chain->location, chain,
 					      excl) < 0)
+				return -1;
+		}
+		list_for_each_entry(obj, &table->objs, list) {
+			handle_merge(&obj->handle, &table->handle);
+			if (netlink_add_obj(ctx, &obj->handle, obj, excl) < 0)
 				return -1;
 		}
 		list_for_each_entry(set, &table->sets, list) {
@@ -980,6 +992,9 @@ static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd, bool excl)
 		return do_add_set(ctx, &cmd->handle, cmd->set, excl);
 	case CMD_OBJ_SETELEM:
 		return do_add_setelems(ctx, &cmd->handle, cmd->expr, excl);
+	case CMD_OBJ_COUNTER:
+	case CMD_OBJ_QUOTA:
+		return netlink_add_obj(ctx, &cmd->handle, cmd->object, excl);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
@@ -1043,6 +1058,12 @@ static int do_command_delete(struct netlink_ctx *ctx, struct cmd *cmd)
 		return netlink_delete_set(ctx, &cmd->handle, &cmd->location);
 	case CMD_OBJ_SETELEM:
 		return do_delete_setelems(ctx, &cmd->handle, cmd->expr);
+	case CMD_OBJ_COUNTER:
+		return netlink_delete_obj(ctx, &cmd->handle, &cmd->location,
+					  NFT_OBJECT_COUNTER);
+	case CMD_OBJ_QUOTA:
+		return netlink_delete_obj(ctx, &cmd->handle, &cmd->location,
+					  NFT_OBJECT_QUOTA);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}

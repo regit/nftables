@@ -21,6 +21,7 @@
 #include <libnftnl/trace.h>
 #include <libnftnl/chain.h>
 #include <libnftnl/expr.h>
+#include <libnftnl/object.h>
 #include <libnftnl/set.h>
 #include <libnftnl/udata.h>
 #include <libnftnl/common.h>
@@ -268,6 +269,51 @@ static struct nftnl_set_elem *alloc_nftnl_setelem(const struct expr *expr)
 				       NFT_SET_ELEM_INTERVAL_END);
 
 	return nlse;
+}
+
+static struct nftnl_obj *
+__alloc_nftnl_obj(const struct handle *h, uint32_t type)
+{
+	struct nftnl_obj *nlo;
+
+	nlo = nftnl_obj_alloc();
+	if (nlo == NULL)
+		memory_allocation_error();
+
+	nftnl_obj_set_u32(nlo, NFTNL_OBJ_FAMILY, h->family);
+	nftnl_obj_set_str(nlo, NFTNL_OBJ_TABLE, h->table);
+	if (h->obj != NULL)
+		nftnl_obj_set_str(nlo, NFTNL_OBJ_NAME, h->obj);
+
+	nftnl_obj_set_u32(nlo, NFTNL_OBJ_TYPE, type);
+
+	return nlo;
+}
+
+static struct nftnl_obj *
+alloc_nftnl_obj(const struct handle *h, struct obj *obj)
+{
+	struct nftnl_obj *nlo;
+
+	nlo = __alloc_nftnl_obj(h, obj->type);
+
+	switch (obj->type) {
+	case NFT_OBJECT_COUNTER:
+		nftnl_obj_set_u64(nlo, NFTNL_OBJ_CTR_PKTS,
+				  obj->counter.packets);
+		nftnl_obj_set_u64(nlo, NFTNL_OBJ_CTR_BYTES,
+				  obj->counter.bytes);
+		break;
+	case NFT_OBJECT_QUOTA:
+		nftnl_obj_set_u64(nlo, NFTNL_OBJ_QUOTA_BYTES,
+				  obj->quota.bytes);
+		nftnl_obj_set_u64(nlo, NFTNL_OBJ_QUOTA_CONSUMED,
+				  obj->quota.used);
+		nftnl_obj_set_u32(nlo, NFTNL_OBJ_QUOTA_FLAGS,
+				  obj->quota.flags);
+		break;
+	}
+	return nlo;
 }
 
 void netlink_gen_raw_data(const mpz_t value, enum byteorder byteorder,
@@ -1605,6 +1651,55 @@ out:
 	if (err < 0)
 		netlink_io_error(ctx, loc, "Could not receive set elements: %s",
 				 strerror(errno));
+	return err;
+}
+
+void netlink_dump_obj(struct nftnl_obj *nln)
+{
+#ifdef DEBUG
+	char buf[4096];
+
+	if (!(debug_level & DEBUG_NETLINK))
+		return;
+
+	nftnl_obj_snprintf(buf, sizeof(buf), nln, 0, 0);
+	fprintf(stdout, "%s\n", buf);
+#endif
+}
+
+int netlink_add_obj(struct netlink_ctx *ctx, const struct handle *h,
+		    struct obj *obj, bool excl)
+{
+	struct nftnl_obj *nlo;
+	int err;
+
+	nlo = alloc_nftnl_obj(h, obj);
+	netlink_dump_obj(nlo);
+
+	err = mnl_nft_obj_batch_add(nlo, excl ? NLM_F_EXCL : 0, ctx->seqnum);
+	if (err < 0)
+		netlink_io_error(ctx, &obj->location, "Could not add %s: %s",
+				 obj_type_name(obj->type), strerror(errno));
+	nftnl_obj_free(nlo);
+
+	return err;
+}
+
+int netlink_delete_obj(struct netlink_ctx *ctx, const struct handle *h,
+		       struct location *loc, uint32_t type)
+{
+	struct nftnl_obj *nlo;
+	int err;
+
+	nlo = __alloc_nftnl_obj(h, type);
+	netlink_dump_obj(nlo);
+
+	err = mnl_nft_obj_batch_del(nlo, 0, ctx->seqnum);
+	if (err < 0)
+		netlink_io_error(ctx, loc, "Could not delete %s: %s",
+				 obj_type_name(type), strerror(errno));
+	nftnl_obj_free(nlo);
+
 	return err;
 }
 

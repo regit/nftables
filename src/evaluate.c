@@ -2758,6 +2758,9 @@ static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 		return chain_evaluate(ctx, cmd->chain);
 	case CMD_OBJ_TABLE:
 		return table_evaluate(ctx, cmd->table);
+	case CMD_OBJ_COUNTER:
+	case CMD_OBJ_QUOTA:
+		return 0;
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
@@ -2778,6 +2781,8 @@ static int cmd_evaluate_delete(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_RULE:
 	case CMD_OBJ_CHAIN:
 	case CMD_OBJ_TABLE:
+	case CMD_OBJ_COUNTER:
+	case CMD_OBJ_QUOTA:
 		return 0;
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);

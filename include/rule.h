@@ -282,7 +282,7 @@ struct obj *obj_alloc(const struct location *loc);
 void obj_free(struct obj *obj);
 void obj_add_hash(struct obj *obj, struct table *table);
 void obj_print(const struct obj *n);
-const char *obj_type_name(enum stmt_types type);
+const char *obj_type_name(uint32_t type);
 
 /**
  * enum cmd_ops - command operations
@@ -415,6 +415,7 @@ struct cmd {
 		struct table	*table;
 		struct monitor	*monitor;
 		struct export	*export;
+		struct obj	*object;
 	};
 	const void		*arg;
 };

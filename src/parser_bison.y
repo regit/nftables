@@ -133,6 +133,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 	struct stmt		*stmt;
 	struct expr		*expr;
 	struct set		*set;
+	struct obj		*obj;
+	struct counter		*counter;
+	struct quota		*quota;
 	const struct datatype	*datatype;
 	struct handle_spec	handle_spec;
 	struct position_spec	position_spec;
@@ -444,8 +447,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %type <handle>			table_spec chain_spec chain_identifier ruleid_spec handle_spec position_spec rule_position ruleset_spec
 %destructor { handle_free(&$$); } table_spec chain_spec chain_identifier ruleid_spec handle_spec position_spec rule_position ruleset_spec
-%type <handle>			set_spec set_identifier obj_spec
-%destructor { handle_free(&$$); } set_spec set_identifier obj_spec
+%type <handle>			set_spec set_identifier obj_spec obj_identifier
+%destructor { handle_free(&$$); } set_spec set_identifier obj_spec obj_identifier
 %type <val>			family_spec family_spec_explicit chain_policy prio_spec
 
 %type <string>			dev_spec quota_unit
@@ -467,6 +470,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %type <set>			map_block_alloc map_block
 %destructor { set_free($$); }	map_block_alloc
+
+%type <obj>			obj_block_alloc counter_block quota_block
+%destructor { obj_free($$); }	obj_block_alloc
 
 %type <list>			stmt_list
 %destructor { stmt_list_free($$); xfree($$); } stmt_list
@@ -553,6 +559,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			and_rhs_expr exclusive_or_rhs_expr inclusive_or_rhs_expr
 %destructor { expr_free($$); }	and_rhs_expr exclusive_or_rhs_expr inclusive_or_rhs_expr
 
+%type <obj>			counter_obj quota_obj
+%destructor { obj_free($$); }	counter_obj quota_obj
 
 %type <expr>			relational_expr
 %destructor { expr_free($$); }	relational_expr
@@ -615,6 +623,11 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <string>			monitor_event
 %destructor { xfree($$); }	monitor_event
 %type <val>			monitor_object	monitor_format
+
+%type <counter>			counter_config
+%destructor { xfree($$); }	counter_config
+%type <quota>			quota_config
+%destructor { xfree($$); }	quota_config
 
 %%
 
@@ -768,6 +781,23 @@ add_cmd			:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_SETELEM, &$2, &@$, $3);
 			}
+			|	COUNTER		obj_spec
+			{
+				struct obj *obj;
+
+				obj = obj_alloc(&@$);
+				obj->type = NFT_OBJECT_COUNTER;
+				handle_merge(&obj->handle, &$2);
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_COUNTER, &$2, &@$, obj);
+			}
+			|	COUNTER		obj_spec	counter_obj
+			{
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_COUNTER, &$2, &@$, $3);
+			}
+			|	QUOTA		obj_spec	quota_obj
+			{
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_QUOTA, &$2, &@$, $3);
+			}
 			;
 
 replace_cmd		:	RULE		ruleid_spec	rule
@@ -817,6 +847,23 @@ create_cmd		:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_CREATE, CMD_OBJ_SETELEM, &$2, &@$, $3);
 			}
+			|	COUNTER		obj_spec
+			{
+				struct obj *obj;
+
+				obj = obj_alloc(&@$);
+				obj->type = NFT_OBJECT_COUNTER;
+				handle_merge(&obj->handle, &$2);
+				$$ = cmd_alloc(CMD_CREATE, CMD_OBJ_COUNTER, &$2, &@$, obj);
+			}
+			|	COUNTER		obj_spec	counter_obj
+			{
+				$$ = cmd_alloc(CMD_CREATE, CMD_OBJ_COUNTER, &$2, &@$, $3);
+			}
+			|	QUOTA		obj_spec	quota_obj
+			{
+				$$ = cmd_alloc(CMD_CREATE, CMD_OBJ_QUOTA, &$2, &@$, $3);
+			}
 			;
 
 insert_cmd		:	RULE		rule_position	rule
@@ -848,6 +895,14 @@ delete_cmd		:	TABLE		table_spec
 			|	ELEMENT		set_spec	set_block_expr
 			{
 				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_SETELEM, &$2, &@$, $3);
+			}
+			|	COUNTER		obj_spec
+			{
+				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_COUNTER, &$2, &@$, NULL);
+			}
+			|	QUOTA		obj_spec
+			{
+				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_QUOTA, &$2, &@$, NULL);
 			}
 			;
 
@@ -1043,6 +1098,28 @@ table_block		:	/* empty */	{ $$ = $<table>-1; }
 				list_add_tail(&$4->list, &$1->sets);
 				$$ = $1;
 			}
+			|	table_block	COUNTER		obj_identifier
+					obj_block_alloc	'{'	counter_block	'}'
+					stmt_seperator
+			{
+				$4->location = @3;
+				$4->type = NFT_OBJECT_COUNTER;
+				handle_merge(&$4->handle, &$3);
+				handle_free(&$3);
+				list_add_tail(&$4->list, &$1->objs);
+				$$ = $1;
+			}
+			|	table_block	QUOTA		obj_identifier
+					obj_block_alloc	'{'	quota_block	'}'
+					stmt_seperator
+			{
+				$4->location = @3;
+				$4->type = NFT_OBJECT_QUOTA;
+				handle_merge(&$4->handle, &$3);
+				handle_free(&$3);
+				list_add_tail(&$4->list, &$1->objs);
+				$$ = $1;
+			}
 			;
 
 chain_block_alloc	:	/* empty */
@@ -1193,6 +1270,32 @@ type_identifier_list	:	type_identifier
 			}
 			;
 
+obj_block_alloc		:       /* empty */
+			{
+				$$ = obj_alloc(NULL);
+			}
+			;
+
+counter_block		:	/* empty */	{ $$ = $<obj>-1; }
+			|       counter_block     common_block
+			|       counter_block     stmt_seperator
+			|       counter_block     counter_config
+			{
+				$1->counter = *$2;
+				$$ = $1;
+			}
+			;
+
+quota_block		:	/* empty */	{ $$ = $<obj>-1; }
+			|       quota_block     common_block
+			|       quota_block     stmt_seperator
+			|       quota_block     quota_config
+			{
+				$1->quota = *$2;
+				$$ = $1;
+			}
+			;
+
 type_identifier		:	STRING	{ $$ = $1; }
 			|	MARK	{ $$ = xstrdup("mark"); }
 			|	DSCP	{ $$ = xstrdup("dscp"); }
@@ -1322,6 +1425,13 @@ obj_spec		:	table_spec	identifier
 			{
 				$$		= $1;
 				$$.obj		= $2;
+			}
+			;
+
+obj_identifier		:	identifier
+			{
+				memset(&$$, 0, sizeof($$));
+				$$.obj		= $1;
 			}
 			;
 
@@ -2323,6 +2433,53 @@ set_rhs_expr		:	concat_rhs_expr
 
 initializer_expr	:	rhs_expr
 			|	list_rhs_expr
+			;
+
+counter_config		:	PACKETS		NUM	BYTES	NUM
+			{
+				struct counter *counter;
+
+				counter = xzalloc(sizeof(*counter));
+				counter->packets = $2;
+				counter->bytes = $4;
+				$$ = counter;
+			}
+			;
+
+counter_obj		:	counter_config
+			{
+				$$ = obj_alloc(&@$);
+				$$->type = NFT_OBJECT_COUNTER;
+				$$->counter = *$1;
+			}
+			;
+
+quota_config		:	quota_mode NUM quota_unit quota_used
+			{
+				struct error_record *erec;
+				struct quota *quota;
+				uint64_t rate;
+
+				erec = data_unit_parse(&@$, $3, &rate);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+
+				quota = xzalloc(sizeof(*quota));
+				quota->bytes	= $2 * rate;
+				quota->used	= $4;
+				quota->flags	= $1;
+				$$ = quota;
+			}
+			;
+
+quota_obj		:	quota_config
+			{
+				$$ = obj_alloc(&@$);
+				$$->type = NFT_OBJECT_QUOTA;
+				$$->quota = *$1;
+			}
 			;
 
 relational_expr		:	expr	/* implicit */	rhs_expr
