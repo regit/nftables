@@ -403,7 +403,7 @@ static int set_to_segtree(struct list_head *msgs, struct set *set,
 	 * Insert elements into tree
 	 */
 	for (n = 0; n < init->size; n++) {
-		if (init->set_flags & SET_F_MAP &&
+		if (init->set_flags & NFT_SET_MAP &&
 		    n < init->size - 1 &&
 		    interval_conflict(intervals[n], intervals[n+1]))
 			return expr_binary_error(msgs,
@@ -426,7 +426,7 @@ static bool segtree_needs_first_segment(const struct set *set,
 		 * 2) This set exists and it is empty.
 		 * 3) This set is created with a number of initial elements.
 		 */
-		if ((set->flags & SET_F_ANONYMOUS) ||
+		if ((set->flags & NFT_SET_ANONYMOUS) ||
 		    (set->init && set->init->size == 0) ||
 		    (set->init == init))
 			return true;

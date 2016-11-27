@@ -263,9 +263,9 @@ static void set_print_declaration(const struct set *set,
 	const char *type;
 	uint32_t flags;
 
-	if (set->flags & SET_F_MAP)
+	if (set->flags & NFT_SET_MAP)
 		type = "map";
-	else if (set->flags & SET_F_EVAL)
+	else if (set->flags & NFT_SET_EVAL)
 		type = "flow table";
 	else
 		type = "set";
@@ -281,12 +281,12 @@ static void set_print_declaration(const struct set *set,
 	printf(" %s {%s", set->handle.set, opts->nl);
 
 	printf("%s%stype %s", opts->tab, opts->tab, set->keytype->name);
-	if (set->flags & SET_F_MAP)
+	if (set->flags & NFT_SET_MAP)
 		printf(" : %s", set->datatype->name);
 
 	printf("%s", opts->stmt_separator);
 
-	if (!(set->flags & (SET_F_CONSTANT))) {
+	if (!(set->flags & (NFT_SET_CONSTANT))) {
 		if (set->policy != NFT_SET_POL_PERFORMANCE) {
 			printf("%s%spolicy %s%s", opts->tab, opts->tab,
 			       set_policy2str(set->policy),
@@ -302,19 +302,19 @@ static void set_print_declaration(const struct set *set,
 	flags = set->flags;
 	/* "timeout" flag is redundant if a default timeout exists */
 	if (set->timeout)
-		flags &= ~SET_F_TIMEOUT;
+		flags &= ~NFT_SET_TIMEOUT;
 
-	if (flags & (SET_F_CONSTANT | SET_F_INTERVAL | SET_F_TIMEOUT)) {
+	if (flags & (NFT_SET_CONSTANT | NFT_SET_INTERVAL | NFT_SET_TIMEOUT)) {
 		printf("%s%sflags ", opts->tab, opts->tab);
-		if (set->flags & SET_F_CONSTANT) {
+		if (set->flags & NFT_SET_CONSTANT) {
 			printf("%sconstant", delim);
 			delim = ",";
 		}
-		if (set->flags & SET_F_INTERVAL) {
+		if (set->flags & NFT_SET_INTERVAL) {
 			printf("%sinterval", delim);
 			delim = ",";
 		}
-		if (set->flags & SET_F_TIMEOUT) {
+		if (set->flags & NFT_SET_TIMEOUT) {
 			printf("%stimeout", delim);
 			delim = ",";
 		}
@@ -770,7 +770,7 @@ static void table_print(const struct table *table)
 	table_print_options(table, &delim);
 
 	list_for_each_entry(set, &table->sets, list) {
-		if (set->flags & SET_F_ANONYMOUS)
+		if (set->flags & NFT_SET_ANONYMOUS)
 			continue;
 		printf("%s", delim);
 		set_print(set);
@@ -888,7 +888,7 @@ static int do_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 static int __do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
 			     struct set *set, struct expr *expr, bool excl)
 {
-	if (set->flags & SET_F_INTERVAL &&
+	if (set->flags & NFT_SET_INTERVAL &&
 	    set_to_intervals(ctx->msgs, set, expr, true) < 0)
 		return -1;
 
@@ -1006,7 +1006,7 @@ static int do_delete_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	table = table_lookup(h);
 	set = set_lookup(table, h->set);
 
-	if (set->flags & SET_F_INTERVAL &&
+	if (set->flags & NFT_SET_INTERVAL &&
 	    set_to_intervals(ctx->msgs, set, expr, false) < 0)
 		return -1;
 
@@ -1080,14 +1080,14 @@ static int do_list_sets(struct netlink_ctx *ctx, struct cmd *cmd)
 
 		list_for_each_entry(set, &table->sets, list) {
 			if (cmd->obj == CMD_OBJ_SETS &&
-			    (set->flags & SET_F_ANONYMOUS ||
-			    set->flags & SET_F_MAP))
+			    (set->flags & NFT_SET_ANONYMOUS ||
+			    set->flags & NFT_SET_MAP))
 				continue;
 			if (cmd->obj == CMD_OBJ_FLOWTABLES &&
-			    !(set->flags & SET_F_EVAL))
+			    !(set->flags & NFT_SET_EVAL))
 				continue;
 			if (cmd->obj == CMD_OBJ_MAPS &&
-			    !(set->flags & SET_F_MAP))
+			    !(set->flags & NFT_SET_MAP))
 				continue;
 			set_print_declaration(set, &opts);
 			printf("%s}%s", opts.tab, opts.nl);

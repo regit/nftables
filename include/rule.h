@@ -195,21 +195,6 @@ extern void rule_print(const struct rule *rule);
 extern struct rule *rule_lookup(const struct chain *chain, uint64_t handle);
 
 /**
- * enum set_flags
- *
- * @SET_F_CONSTANT:		Set content is constant
- * @SET_F_INTERVAL:		set includes ranges and/or prefix expressions
- */
-enum set_flags {
-	SET_F_ANONYMOUS		= 0x1,
-	SET_F_CONSTANT		= 0x2,
-	SET_F_INTERVAL		= 0x4,
-	SET_F_MAP		= 0x8,
-	SET_F_TIMEOUT		= 0x10,
-	SET_F_EVAL		= 0x20,
-};
-
-/**
  * struct set - nftables set
  *
  * @list:	table set list node

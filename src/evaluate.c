@@ -70,7 +70,7 @@ static struct expr *implicit_set_declaration(struct eval_ctx *ctx,
 	struct handle h;
 
 	set = set_alloc(&expr->location);
-	set->flags	= SET_F_ANONYMOUS | expr->set_flags;
+	set->flags	= NFT_SET_ANONYMOUS | expr->set_flags;
 	set->handle.set = xstrdup(name),
 	set->keytype 	= keytype;
 	set->keylen	= keylen;
@@ -1060,7 +1060,7 @@ static int expr_evaluate_set_elem(struct eval_ctx *ctx, struct expr **expr)
 		return -1;
 
 	if (ctx->set &&
-	    !(ctx->set->flags & (SET_F_ANONYMOUS | SET_F_INTERVAL))) {
+	    !(ctx->set->flags & (NFT_SET_ANONYMOUS | NFT_SET_INTERVAL))) {
 		switch (elem->key->ops->type) {
 		case EXPR_PREFIX:
 			return expr_error(ctx->msgs, elem,
@@ -1106,10 +1106,10 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 			set->set_flags |= i->set_flags;
 			expr_free(i);
 		} else if (!expr_is_singleton(i))
-			set->set_flags |= SET_F_INTERVAL;
+			set->set_flags |= NFT_SET_INTERVAL;
 	}
 
-	set->set_flags |= SET_F_CONSTANT;
+	set->set_flags |= NFT_SET_CONSTANT;
 
 	set->dtype = ctx->ectx.dtype;
 	set->len   = ctx->ectx.len;
@@ -1130,7 +1130,7 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 				  "Map expression can not be constant");
 
 	mappings = map->mappings;
-	mappings->set_flags |= SET_F_MAP;
+	mappings->set_flags |= NFT_SET_MAP;
 
 	switch (map->mappings->ops->type) {
 	case EXPR_SET:
@@ -1173,7 +1173,7 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 	map->flags |= EXPR_F_CONSTANT;
 
 	/* Data for range lookups needs to be in big endian order */
-	if (map->mappings->set->flags & SET_F_INTERVAL &&
+	if (map->mappings->set->flags & NFT_SET_INTERVAL &&
 	    byteorder_conversion(ctx, &map->map, BYTEORDER_BIG_ENDIAN) < 0)
 		return -1;
 
@@ -1188,7 +1188,7 @@ static int expr_evaluate_mapping(struct eval_ctx *ctx, struct expr **expr)
 	if (set == NULL)
 		return expr_error(ctx->msgs, mapping,
 				  "mapping outside of map context");
-	if (!(set->flags & SET_F_MAP))
+	if (!(set->flags & NFT_SET_MAP))
 		return set_error(ctx, set, "set is not a map");
 
 	expr_set_context(&ctx->ectx, set->keytype, set->keylen);
@@ -1481,7 +1481,7 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 						 right->dtype->desc);
 
 		/* Data for range lookups needs to be in big endian order */
-		if (right->set->flags & SET_F_INTERVAL &&
+		if (right->set->flags & NFT_SET_INTERVAL &&
 		    byteorder_conversion(ctx, &rel->left,
 					 BYTEORDER_BIG_ENDIAN) < 0)
 			return -1;
@@ -1536,7 +1536,7 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 		case EXPR_SET_REF:
 			assert(rel->op == OP_NEQ);
 			/* Data for range lookups needs to be in big endian order */
-			if (right->set->flags & SET_F_INTERVAL &&
+			if (right->set->flags & NFT_SET_INTERVAL &&
 			    byteorder_conversion(ctx, &rel->left, BYTEORDER_BIG_ENDIAN) < 0)
 				return -1;
 			break;
@@ -1847,9 +1847,9 @@ static int stmt_evaluate_flow(struct eval_ctx *ctx, struct stmt *stmt)
 	/* Declare an empty set */
 	key = stmt->flow.key;
 	set = set_expr_alloc(&key->location);
-	set->set_flags |= SET_F_EVAL;
+	set->set_flags |= NFT_SET_EVAL;
 	if (key->timeout)
-		set->set_flags |= SET_F_TIMEOUT;
+		set->set_flags |= NFT_SET_TIMEOUT;
 
 	setref = implicit_set_declaration(ctx, stmt->flow.table ?: "__ft%d",
 					  key->dtype, key->len, set);
@@ -2549,7 +2549,7 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 		return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 				 ctx->cmd->handle.table);
 
-	type = set->flags & SET_F_MAP ? "map" : "set";
+	type = set->flags & NFT_SET_MAP ? "map" : "set";
 
 	if (set->keytype == NULL)
 		return set_error(ctx, set, "%s definition does not specify "
@@ -2560,7 +2560,7 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 		return set_error(ctx, set, "unqualified key data type "
 				 "specified in %s definition", type);
 
-	if (set->flags & SET_F_MAP) {
+	if (set->flags & NFT_SET_MAP) {
 		if (set->datatype == NULL)
 			return set_error(ctx, set, "map definition does not "
 					 "specify mapping data type");
@@ -2584,7 +2584,7 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 
 	/* Default timeout value implies timeout support */
 	if (set->timeout)
-		set->flags |= SET_F_TIMEOUT;
+		set->flags |= NFT_SET_TIMEOUT;
 
 	return 0;
 }
@@ -2810,7 +2810,7 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
 		set = set_lookup(table, cmd->handle.set);
-		if (set == NULL || set->flags & (SET_F_MAP | SET_F_EVAL))
+		if (set == NULL || set->flags & (NFT_SET_MAP | NFT_SET_EVAL))
 			return cmd_error(ctx, "Could not process rule: Set '%s' does not exist",
 					 cmd->handle.set);
 		return 0;
@@ -2820,7 +2820,7 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
 		set = set_lookup(table, cmd->handle.set);
-		if (set == NULL || !(set->flags & SET_F_EVAL))
+		if (set == NULL || !(set->flags & NFT_SET_EVAL))
 			return cmd_error(ctx, "Could not process rule: Flow table '%s' does not exist",
 					 cmd->handle.set);
 		return 0;
@@ -2830,7 +2830,7 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
 		set = set_lookup(table, cmd->handle.set);
-		if (set == NULL || !(set->flags & SET_F_MAP))
+		if (set == NULL || !(set->flags & NFT_SET_MAP))
 			return cmd_error(ctx, "Could not process rule: Map '%s' does not exist",
 					 cmd->handle.set);
 		return 0;

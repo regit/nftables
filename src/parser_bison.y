@@ -1092,9 +1092,9 @@ set_flag_list		:	set_flag_list	COMMA		set_flag
 			|	set_flag
 			;
 
-set_flag		:	CONSTANT	{ $$ = SET_F_CONSTANT; }
-			|	INTERVAL	{ $$ = SET_F_INTERVAL; }
-			|	TIMEOUT		{ $$ = SET_F_TIMEOUT; }
+set_flag		:	CONSTANT	{ $$ = NFT_SET_CONSTANT; }
+			|	INTERVAL	{ $$ = NFT_SET_INTERVAL; }
+			|	TIMEOUT		{ $$ = NFT_SET_TIMEOUT; }
 			;
 
 map_block_alloc		:	/* empty */

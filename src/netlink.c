@@ -1175,7 +1175,7 @@ static int netlink_add_set_batch(struct netlink_ctx *ctx,
 
 	nftnl_set_set_u32(nls, NFTNL_SET_ID, set->handle.set_id);
 
-	if (!(set->flags & (SET_F_CONSTANT))) {
+	if (!(set->flags & NFT_SET_CONSTANT)) {
 		if (set->policy != NFT_SET_POL_PERFORMANCE)
 			nftnl_set_set_u32(nls, NFTNL_SET_POLICY, set->policy);
 
@@ -1505,7 +1505,7 @@ static int netlink_delinearize_setelem(struct nftnl_set_elem *nlse,
 	if (set->keytype->subtypes)
 		key = netlink_parse_concat_elem(set->keytype, key);
 
-	if (!(set->flags & SET_F_INTERVAL) &&
+	if (!(set->flags & NFT_SET_INTERVAL) &&
 	    key->byteorder == BYTEORDER_HOST_ENDIAN)
 		mpz_switch_byteorder(key->value, key->len / BITS_PER_BYTE);
 
@@ -1858,7 +1858,7 @@ static int netlink_events_set_cb(const struct nlmsghdr *nlh, int type,
 
 	nls = netlink_set_alloc(nlh);
 	flags = nftnl_set_get_u32(nls, NFTNL_SET_FLAGS);
-	if (flags & SET_F_ANONYMOUS)
+	if (flags & NFT_SET_ANONYMOUS)
 		goto out;
 
 	switch (monh->format) {
@@ -1920,7 +1920,7 @@ static int netlink_events_setelem_cb(const struct nlmsghdr *nlh, int type,
 
 	switch (monh->format) {
 	case NFTNL_OUTPUT_DEFAULT:
-		if (set->flags & SET_F_ANONYMOUS)
+		if (set->flags & NFT_SET_ANONYMOUS)
 			goto out;
 
 		/* we want to 'delinearize' the set_elem, but don't
