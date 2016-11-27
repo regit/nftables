@@ -1755,7 +1755,29 @@ int netlink_list_objs(struct netlink_ctx *ctx, const struct handle *h,
 	struct nftnl_obj_list *obj_cache;
 	int err;
 
-	obj_cache = mnl_nft_obj_dump(nf_sock, h->family, h->table);
+	obj_cache = mnl_nft_obj_dump(nf_sock, h->family, h->table,
+				     NFT_OBJECT_UNSPEC, false);
+	if (obj_cache == NULL) {
+		if (errno == EINTR)
+			return -1;
+
+		return netlink_io_error(ctx, loc,
+					"Could not receive stateful objects from kernel: %s",
+					strerror(errno));
+	}
+
+	err = nftnl_obj_list_foreach(obj_cache, list_obj_cb, ctx);
+	nftnl_obj_list_free(obj_cache);
+	return err;
+}
+
+int netlink_reset_objs(struct netlink_ctx *ctx, const struct handle *h,
+		       const struct location *loc, uint32_t type)
+{
+	struct nftnl_obj_list *obj_cache;
+	int err;
+
+	obj_cache = mnl_nft_obj_dump(nf_sock, h->family, h->table, type, true);
 	if (obj_cache == NULL) {
 		if (errno == EINTR)
 			return -1;

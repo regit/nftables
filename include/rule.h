@@ -294,6 +294,7 @@ const char *obj_type_name(uint32_t type);
  * @CMD_INSERT:		insert object
  * @CMD_DELETE:		delete object
  * @CMD_LIST:		list container
+ * @CMD_RESET:		reset container
  * @CMD_FLUSH:		flush container
  * @CMD_RENAME:		rename object
  * @CMD_EXPORT:		export the ruleset in a given format
@@ -308,6 +309,7 @@ enum cmd_ops {
 	CMD_INSERT,
 	CMD_DELETE,
 	CMD_LIST,
+	CMD_RESET,
 	CMD_FLUSH,
 	CMD_RENAME,
 	CMD_EXPORT,

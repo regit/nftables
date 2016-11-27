@@ -95,11 +95,13 @@ static int cache_init_objects(struct netlink_ctx *ctx, enum cmd_ops cmd)
 			return -1;
 		list_splice_tail_init(&ctx->list, &table->chains);
 
-		/* Don't check for errors on listings, this would break nft with
-		 * old kernels with no stateful object support.
-		 */
-		netlink_list_objs(ctx, &table->handle, &internal_location);
-		list_splice_tail_init(&ctx->list, &table->objs);
+		if (cmd != CMD_RESET) {
+			/* Don't check for errors on listings, this would break
+			 * nft with old kernels with no stateful object support.
+			 */
+			netlink_list_objs(ctx, &table->handle, &internal_location);
+			list_splice_tail_init(&ctx->list, &table->objs);
+		}
 
 		/* Skip caching other objects to speed up things: We only need
 		 * a full cache when listing the existing ruleset.
@@ -1398,6 +1400,35 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	return 0;
 }
 
+static int do_command_reset(struct netlink_ctx *ctx, struct cmd *cmd)
+{
+	struct obj *obj, *next;
+	struct table *table;
+	uint32_t type;
+	int ret;
+
+	switch (cmd->obj) {
+	case CMD_OBJ_COUNTERS:
+		type = NFT_OBJECT_COUNTER;
+		break;
+	case CMD_OBJ_QUOTAS:
+		type = NFT_OBJECT_QUOTA;
+		break;
+	default:
+		BUG("invalid command object type %u\n", cmd->obj);
+	}
+
+	ret = netlink_reset_objs(ctx, &cmd->handle, &cmd->location, type);
+	list_for_each_entry_safe(obj, next, &ctx->list, list) {
+		table = table_lookup(&obj->handle);
+		list_move(&obj->list, &table->objs);
+	}
+	if (ret < 0)
+		return ret;
+
+	return do_list_obj(ctx, cmd, type);
+}
+
 static int do_command_flush(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	switch (cmd->obj) {
@@ -1518,6 +1549,8 @@ int do_command(struct netlink_ctx *ctx, struct cmd *cmd)
 		return do_command_delete(ctx, cmd);
 	case CMD_LIST:
 		return do_command_list(ctx, cmd);
+	case CMD_RESET:
+		return do_command_reset(ctx, cmd);
 	case CMD_FLUSH:
 		return do_command_flush(ctx, cmd);
 	case CMD_RENAME:

@@ -170,11 +170,13 @@ extern int netlink_flush_setelems(struct netlink_ctx *ctx, const struct handle *
 				  const struct location *loc);
 
 extern int netlink_list_objs(struct netlink_ctx *ctx, const struct handle *h,
-			       const struct location *loc);
+			     const struct location *loc);
+extern int netlink_reset_objs(struct netlink_ctx *ctx, const struct handle *h,
+			      const struct location *loc, uint32_t type);
 extern int netlink_add_obj(struct netlink_ctx *ctx, const struct handle *h,
 			   struct obj *obj, bool excl);
 extern int netlink_delete_obj(struct netlink_ctx *ctx, const struct handle *h,
-			      struct location *loc, enum stmt_types type);
+			      struct location *loc, uint32_t type);
 
 extern void netlink_dump_table(const struct nftnl_table *nlt);
 extern void netlink_dump_chain(const struct nftnl_chain *nlc);

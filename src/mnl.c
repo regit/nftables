@@ -851,22 +851,30 @@ err_free:
 
 
 struct nftnl_obj_list *
-mnl_nft_obj_dump(struct mnl_socket *nf_sock, int family, const char *table)
+mnl_nft_obj_dump(struct mnl_socket *nf_sock, int family, const char *table,
+		 uint32_t type, bool reset)
 {
 	struct nftnl_obj_list *nln_list;
 	char buf[MNL_SOCKET_BUFFER_SIZE];
 	struct nftnl_obj *n;
 	struct nlmsghdr *nlh;
-	int ret;
+	int msg_type, ret;
+
+	if (reset)
+		msg_type = NFT_MSG_GETOBJ_RESET;
+	else
+		msg_type = NFT_MSG_GETOBJ;
 
 	n = nftnl_obj_alloc();
 	if (n == NULL)
 		memory_allocation_error();
 
-	nlh = nftnl_nlmsg_build_hdr(buf, NFT_MSG_GETOBJ, family,
+	nlh = nftnl_nlmsg_build_hdr(buf, msg_type, family,
 				    NLM_F_DUMP | NLM_F_ACK, seq);
 	if (table != NULL)
 		nftnl_obj_set(n, NFTNL_OBJ_TABLE, table);
+	if (type != NFT_OBJECT_UNSPEC)
+		nftnl_obj_set_u32(n, NFTNL_OBJ_TYPE, type);
 	nftnl_obj_nlmsg_build_payload(nlh, n);
 	nftnl_obj_free(n);
 

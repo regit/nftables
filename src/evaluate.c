@@ -3052,6 +3052,7 @@ int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_DELETE:
 		return cmd_evaluate_delete(ctx, cmd);
 	case CMD_LIST:
+	case CMD_RESET:
 		return cmd_evaluate_list(ctx, cmd);
 	case CMD_FLUSH:
 		return cmd_evaluate_flush(ctx, cmd);
