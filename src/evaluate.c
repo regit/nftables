@@ -2845,6 +2845,8 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 		return 0;
 	case CMD_OBJ_CHAINS:
 	case CMD_OBJ_SETS:
+	case CMD_OBJ_COUNTERS:
+	case CMD_OBJ_QUOTAS:
 	case CMD_OBJ_RULESET:
 	case CMD_OBJ_FLOWTABLES:
 	case CMD_OBJ_MAPS:

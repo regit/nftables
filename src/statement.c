@@ -255,7 +255,7 @@ static const char *data_unit[] = {
 	NULL
 };
 
-static const char *get_rate(uint64_t byte_rate, uint64_t *rate)
+const char *get_rate(uint64_t byte_rate, uint64_t *rate)
 {
 	uint64_t res, prev, rest;
 	int i;

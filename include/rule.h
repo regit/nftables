@@ -34,6 +34,7 @@ struct position_spec {
  * @table:	table name
  * @chain:	chain name (chains and rules only)
  * @set:	set name (sets only)
+ * @obj:	stateful object name (stateful object only)
  * @handle:	rule handle (rules only)
  * @position:	rule position (rules only)
  * @set_id:	set ID (sets only)
@@ -43,6 +44,7 @@ struct handle {
 	const char		*table;
 	const char		*chain;
 	const char		*set;
+	const char		*obj;
 	struct handle_spec	handle;
 	struct position_spec	position;
 	uint32_t		set_id;
@@ -95,6 +97,7 @@ enum table_flags {
  * @location:	location the table was defined at
  * @chains:	chains contained in the table
  * @sets:	sets contained in the table
+ * @objs:	stateful objects contained in the table
  * @flags:	table flags
  * @refcnt:	table reference counter
  */
@@ -105,6 +108,7 @@ struct table {
 	struct scope		scope;
 	struct list_head	chains;
 	struct list_head	sets;
+	struct list_head	objs;
 	enum table_flags 	flags;
 	unsigned int		refcnt;
 };
@@ -241,6 +245,45 @@ extern struct set *set_lookup_global(uint32_t family, const char *table,
 extern void set_print(const struct set *set);
 extern void set_print_plain(const struct set *s);
 
+#include <statement.h>
+
+struct counter {
+	uint64_t	packets;
+	uint64_t	bytes;
+};
+
+struct quota {
+	uint64_t	bytes;
+	uint64_t	used;
+	uint32_t	flags;
+};
+
+/**
+ * struct obj - nftables stateful object statement
+ *
+ * @list:	table set list node
+ * @location:	location the stateful object was defined/declared at
+ * @handle:	counter handle
+ * @type:	type of stateful object
+ */
+struct obj {
+	struct list_head		list;
+	struct location			location;
+	struct handle			handle;
+	uint32_t			type;
+
+	union {
+		struct counter		counter;
+		struct quota		quota;
+	};
+};
+
+struct obj *obj_alloc(const struct location *loc);
+void obj_free(struct obj *obj);
+void obj_add_hash(struct obj *obj, struct table *table);
+void obj_print(const struct obj *n);
+const char *obj_type_name(enum stmt_types type);
+
 /**
  * enum cmd_ops - command operations
  *
@@ -287,6 +330,10 @@ enum cmd_ops {
  * @CMD_OBJ_EXPR:	expression
  * @CMD_OBJ_MONITOR:	monitor
  * @CMD_OBJ_EXPORT:	export
+ * @CMD_OBJ_COUNTER:	counter
+ * @CMD_OBJ_COUNTERS:	multiple counters
+ * @CMD_OBJ_QUOTA:	quota
+ * @CMD_OBJ_QUOTAS:	multiple quotas
  */
 enum cmd_obj {
 	CMD_OBJ_INVALID,
@@ -305,6 +352,10 @@ enum cmd_obj {
 	CMD_OBJ_FLOWTABLES,
 	CMD_OBJ_MAP,
 	CMD_OBJ_MAPS,
+	CMD_OBJ_COUNTER,
+	CMD_OBJ_COUNTERS,
+	CMD_OBJ_QUOTA,
+	CMD_OBJ_QUOTAS,
 };
 
 struct export {

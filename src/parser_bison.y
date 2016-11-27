@@ -364,6 +364,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token PACKETS			"packets"
 %token BYTES			"bytes"
 
+%token COUNTERS			"counters"
+%token QUOTAS			"quotas"
+
 %token LOG			"log"
 %token PREFIX			"prefix"
 %token GROUP			"group"
@@ -441,8 +444,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %type <handle>			table_spec chain_spec chain_identifier ruleid_spec handle_spec position_spec rule_position ruleset_spec
 %destructor { handle_free(&$$); } table_spec chain_spec chain_identifier ruleid_spec handle_spec position_spec rule_position ruleset_spec
-%type <handle>			set_spec set_identifier
-%destructor { handle_free(&$$); } set_spec set_identifier
+%type <handle>			set_spec set_identifier obj_spec
+%destructor { handle_free(&$$); } set_spec set_identifier obj_spec
 %type <val>			family_spec family_spec_explicit chain_policy prio_spec
 
 %type <string>			dev_spec quota_unit
@@ -872,6 +875,22 @@ list_cmd		:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_SET, &$2, &@$, NULL);
 			}
+			|	COUNTERS	ruleset_spec
+			{
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_COUNTERS, &$2, &@$, NULL);
+			}
+			|	COUNTER		obj_spec
+			{
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_COUNTER, &$2, &@$, NULL);
+			}
+			|	QUOTAS		ruleset_spec
+			{
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_QUOTAS, &$2, &@$, NULL);
+			}
+			|	QUOTA		obj_spec
+			{
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_QUOTA, &$2, &@$, NULL);
+			}
 			|	RULESET		ruleset_spec
 			{
 				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_RULESET, &$2, &@$, NULL);
@@ -1296,6 +1315,13 @@ set_identifier		:	identifier
 			{
 				memset(&$$, 0, sizeof($$));
 				$$.set		= $1;
+			}
+			;
+
+obj_spec		:	table_spec	identifier
+			{
+				$$		= $1;
+				$$.obj		= $2;
 			}
 			;
 

@@ -1608,6 +1608,73 @@ out:
 	return err;
 }
 
+static struct obj *netlink_delinearize_obj(struct netlink_ctx *ctx,
+					   struct nftnl_obj *nlo)
+{
+	struct obj *obj;
+	uint32_t type;
+
+	obj = obj_alloc(&netlink_location);
+	obj->handle.family = nftnl_obj_get_u32(nlo, NFTNL_OBJ_FAMILY);
+	obj->handle.table =
+		xstrdup(nftnl_obj_get_str(nlo, NFTNL_OBJ_TABLE));
+	obj->handle.obj =
+		xstrdup(nftnl_obj_get_str(nlo, NFTNL_OBJ_NAME));
+
+	type = nftnl_obj_get_u32(nlo, NFTNL_OBJ_TYPE);
+	switch (type) {
+	case NFT_OBJECT_COUNTER:
+		obj->counter.packets =
+			nftnl_obj_get_u64(nlo, NFTNL_OBJ_CTR_PKTS);
+		obj->counter.bytes =
+			nftnl_obj_get_u64(nlo, NFTNL_OBJ_CTR_BYTES);
+		break;
+	case NFT_OBJECT_QUOTA:
+		obj->quota.bytes =
+			nftnl_obj_get_u64(nlo, NFTNL_OBJ_QUOTA_BYTES);
+		obj->quota.used =
+			nftnl_obj_get_u64(nlo, NFTNL_OBJ_QUOTA_CONSUMED);
+		obj->quota.flags =
+			nftnl_obj_get_u32(nlo, NFTNL_OBJ_QUOTA_FLAGS);
+	}
+	obj->type = type;
+
+	return obj;
+}
+
+static int list_obj_cb(struct nftnl_obj *nls, void *arg)
+{
+	struct netlink_ctx *ctx = arg;
+	struct obj *obj;
+
+	obj = netlink_delinearize_obj(ctx, nls);
+	if (obj == NULL)
+		return -1;
+	list_add_tail(&obj->list, &ctx->list);
+	return 0;
+}
+
+int netlink_list_objs(struct netlink_ctx *ctx, const struct handle *h,
+		      const struct location *loc)
+{
+	struct nftnl_obj_list *obj_cache;
+	int err;
+
+	obj_cache = mnl_nft_obj_dump(nf_sock, h->family, h->table);
+	if (obj_cache == NULL) {
+		if (errno == EINTR)
+			return -1;
+
+		return netlink_io_error(ctx, loc,
+					"Could not receive stateful object from kernel: %s",
+					strerror(errno));
+	}
+
+	err = nftnl_obj_list_foreach(obj_cache, list_obj_cb, ctx);
+	nftnl_obj_list_free(obj_cache);
+	return err;
+}
+
 int netlink_batch_send(struct list_head *err_list)
 {
 	return mnl_batch_talk(nf_sock, err_list);

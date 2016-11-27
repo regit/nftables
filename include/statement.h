@@ -66,6 +66,7 @@ struct limit_stmt {
 };
 
 extern struct stmt *limit_stmt_alloc(const struct location *loc);
+extern void __limit_stmt_print(const struct limit_stmt *limit);
 
 struct reject_stmt {
 	struct expr		*expr;
@@ -300,5 +301,7 @@ int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt);
 extern void stmt_free(struct stmt *stmt);
 extern void stmt_list_free(struct list_head *list);
 extern void stmt_print(const struct stmt *stmt);
+
+const char *get_rate(uint64_t byte_rate, uint64_t *rate);
 
 #endif /* NFTABLES_STATEMENT_H */

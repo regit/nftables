@@ -293,6 +293,9 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "packets"		{ return PACKETS; }
 "bytes"			{ return BYTES; }
 
+"counters"		{ return COUNTERS; }
+"quotas"		{ return QUOTAS; }
+
 "log"			{ return LOG; }
 "prefix"		{ return PREFIX; }
 "group"			{ return GROUP; }

@@ -93,6 +93,12 @@ static int cache_init_objects(struct netlink_ctx *ctx, enum cmd_ops cmd)
 			return -1;
 		list_splice_tail_init(&ctx->list, &table->chains);
 
+		/* Don't check for errors on listings, this would break nft with
+		 * old kernels with no stateful object support.
+		 */
+		netlink_list_objs(ctx, &table->handle, &internal_location);
+		list_splice_tail_init(&ctx->list, &table->objs);
+
 		/* Skip caching other objects to speed up things: We only need
 		 * a full cache when listing the existing ruleset.
 		 */
@@ -688,6 +694,7 @@ struct table *table_alloc(void)
 	table = xzalloc(sizeof(*table));
 	init_list_head(&table->chains);
 	init_list_head(&table->sets);
+	init_list_head(&table->objs);
 	init_list_head(&table->scope.symbols);
 	table->refcnt = 1;
 
@@ -762,6 +769,7 @@ static void table_print_options(const struct table *table, const char **delim)
 static void table_print(const struct table *table)
 {
 	struct chain *chain;
+	struct obj *obj;
 	struct set *set;
 	const char *delim = "";
 	const char *family = family2str(table->handle.family);
@@ -769,6 +777,11 @@ static void table_print(const struct table *table)
 	printf("table %s %s {\n", family, table->handle.table);
 	table_print_options(table, &delim);
 
+	list_for_each_entry(obj, &table->objs, list) {
+		printf("%s", delim);
+		obj_print(obj);
+		delim = "\n";
+	}
 	list_for_each_entry(set, &table->sets, list) {
 		if (set->flags & NFT_SET_ANONYMOUS)
 			continue;
@@ -1098,6 +1111,129 @@ static int do_list_sets(struct netlink_ctx *ctx, struct cmd *cmd)
 	return 0;
 }
 
+struct obj *obj_alloc(const struct location *loc)
+{
+	struct obj *obj;
+
+	obj = xzalloc(sizeof(*obj));
+	if (loc != NULL)
+		obj->location = *loc;
+	return obj;
+}
+
+void obj_free(struct obj *obj)
+{
+	handle_free(&obj->handle);
+	xfree(obj);
+}
+
+void obj_add_hash(struct obj *obj, struct table *table)
+{
+	list_add_tail(&obj->list, &table->objs);
+}
+
+static void obj_print_data(const struct obj *obj,
+			   struct print_fmt_options *opts)
+{
+	switch (obj->type) {
+	case NFT_OBJECT_COUNTER:
+		printf(" %s {%s%s%s", obj->handle.obj,
+				      opts->nl, opts->tab, opts->tab);
+		printf("packets %"PRIu64" bytes %"PRIu64"",
+		       obj->counter.packets, obj->counter.bytes);
+		break;
+	case NFT_OBJECT_QUOTA: {
+		const char *data_unit;
+		uint64_t bytes;
+
+		printf(" %s {%s%s%s", obj->handle.obj,
+				      opts->nl, opts->tab, opts->tab);
+		data_unit = get_rate(obj->quota.bytes, &bytes);
+		printf("%s%"PRIu64" %s",
+		       obj->quota.flags & NFT_QUOTA_F_INV ? "over " : "",
+		       bytes, data_unit);
+		if (obj->quota.used) {
+			data_unit = get_rate(obj->quota.used, &bytes);
+			printf(" used %"PRIu64" %s", bytes, data_unit);
+		}
+		}
+		break;
+	default:
+		printf("unknown {%s", opts->nl);
+		break;
+	}
+}
+
+static const char *obj_type_name_array[] = {
+	[NFT_OBJECT_COUNTER]	= "counter",
+	[NFT_OBJECT_QUOTA]	= "quota",
+};
+
+const char *obj_type_name(enum stmt_types type)
+{
+	assert(type <= NFT_OBJECT_QUOTA && obj_type_name_array[type]);
+
+	return obj_type_name_array[type];
+}
+
+static void obj_print_declaration(const struct obj *obj,
+				  struct print_fmt_options *opts)
+{
+	printf("%s%s", opts->tab, obj_type_name(obj->type));
+
+	if (opts->family != NULL)
+		printf(" %s", opts->family);
+
+	if (opts->table != NULL)
+		printf(" %s", opts->table);
+
+	obj_print_data(obj, opts);
+
+	printf("%s%s}%s", opts->nl, opts->tab, opts->nl);
+}
+
+void obj_print(const struct obj *obj)
+{
+	struct print_fmt_options opts = {
+		.tab		= "\t",
+		.nl		= "\n",
+		.stmt_separator	= "\n",
+	};
+
+	obj_print_declaration(obj, &opts);
+}
+
+static int do_list_obj(struct netlink_ctx *ctx, struct cmd *cmd, uint32_t type)
+{
+	struct print_fmt_options opts = {
+		.tab		= "\t",
+		.nl		= "\n",
+		.stmt_separator	= "\n",
+	};
+	struct table *table;
+	struct obj *obj;
+
+	list_for_each_entry(table, &table_list, list) {
+		if (cmd->handle.family != NFPROTO_UNSPEC &&
+		    cmd->handle.family != table->handle.family)
+			continue;
+
+		printf("table %s %s {\n",
+		       family2str(table->handle.family),
+		       table->handle.table);
+
+		list_for_each_entry(obj, &table->objs, list) {
+			if (obj->type != type)
+				continue;
+
+			obj_print_declaration(obj, &opts);
+		}
+
+		printf("}\n");
+	}
+	return 0;
+}
+
 static int do_list_ruleset(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	unsigned int family = cmd->handle.family;
@@ -1230,6 +1366,10 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 		return do_list_sets(ctx, cmd);
 	case CMD_OBJ_MAP:
 		return do_list_set(ctx, cmd, table);
+	case CMD_OBJ_COUNTERS:
+		return do_list_obj(ctx, cmd, NFT_OBJECT_COUNTER);
+	case CMD_OBJ_QUOTAS:
+		return do_list_obj(ctx, cmd, NFT_OBJECT_QUOTA);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}

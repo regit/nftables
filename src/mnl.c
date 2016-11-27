@@ -16,6 +16,7 @@
 #include <libnftnl/rule.h>
 #include <libnftnl/expr.h>
 #include <libnftnl/set.h>
+#include <libnftnl/object.h>
 #include <libnftnl/batch.h>
 
 #include <linux/netfilter/nfnetlink.h>
@@ -792,6 +793,64 @@ mnl_nft_set_dump(struct mnl_socket *nf_sock, int family, const char *table)
 	return nls_list;
 err:
 	nftnl_set_list_free(nls_list);
+	return NULL;
+}
+
+static int obj_cb(const struct nlmsghdr *nlh, void *data)
+{
+	struct nftnl_obj_list *nln_list = data;
+	struct nftnl_obj *n;
+
+	if (check_genid(nlh) < 0)
+		return MNL_CB_ERROR;
+
+	n = nftnl_obj_alloc();
+	if (n == NULL)
+		memory_allocation_error();
+
+	if (nftnl_obj_nlmsg_parse(nlh, n) < 0)
+		goto err_free;
+
+	nftnl_obj_list_add_tail(n, nln_list);
+	return MNL_CB_OK;
+
+err_free:
+	nftnl_obj_free(n);
+	return MNL_CB_OK;
+}
+
+
+struct nftnl_obj_list *
+mnl_nft_obj_dump(struct mnl_socket *nf_sock, int family, const char *table)
+{
+	struct nftnl_obj_list *nln_list;
+	char buf[MNL_SOCKET_BUFFER_SIZE];
+	struct nftnl_obj *n;
+	struct nlmsghdr *nlh;
+	int ret;
+
+	n = nftnl_obj_alloc();
+	if (n == NULL)
+		memory_allocation_error();
+
+	nlh = nftnl_nlmsg_build_hdr(buf, NFT_MSG_GETOBJ, family,
+				    NLM_F_DUMP | NLM_F_ACK, seq);
+	if (table != NULL)
+		nftnl_obj_set(n, NFTNL_OBJ_TABLE, table);
+	nftnl_obj_nlmsg_build_payload(nlh, n);
+	nftnl_obj_free(n);
+
+	nln_list = nftnl_obj_list_alloc();
+	if (nln_list == NULL)
+		memory_allocation_error();
+
+	ret = nft_mnl_talk(nf_sock, nlh, nlh->nlmsg_len, obj_cb, nln_list);
+	if (ret < 0)
+		goto err;
+
+	return nln_list;
+err:
+	nftnl_obj_list_free(nln_list);
 	return NULL;
 }
 
