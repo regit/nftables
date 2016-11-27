@@ -352,11 +352,16 @@ static void quota_stmt_print(const struct stmt *stmt)
 {
 	bool inv = stmt->quota.flags & NFT_QUOTA_F_INV;
 	const char *data_unit;
-	uint64_t bytes;
+	uint64_t bytes, used;
 
 	data_unit = get_rate(stmt->quota.bytes, &bytes);
 	printf("quota %s%"PRIu64" %s",
 	       inv ? "over " : "", bytes, data_unit);
+
+	if (stmt->quota.used) {
+		data_unit = get_rate(stmt->quota.used, &used);
+		printf(" used %"PRIu64" %s", used, data_unit);
+	}
 }
 
 static const struct stmt_ops quota_stmt_ops = {

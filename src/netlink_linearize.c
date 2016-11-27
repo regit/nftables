@@ -734,6 +734,7 @@ netlink_gen_quota_stmt(struct netlink_linearize_ctx *ctx,
 
 	nle = alloc_nft_expr("quota");
 	nftnl_expr_set_u64(nle, NFTNL_EXPR_QUOTA_BYTES, stmt->quota.bytes);
+	nftnl_expr_set_u64(nle, NFTNL_EXPR_QUOTA_CONSUMED, stmt->quota.used);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_QUOTA_FLAGS, stmt->quota.flags);
 
 	return nle;

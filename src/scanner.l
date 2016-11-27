@@ -312,6 +312,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "over"			{ return OVER; }
 
 "quota"			{ return QUOTA; }
+"used"			{ return USED; }
 
 "nanosecond"		{ return NANOSECOND; }
 "microsecond"		{ return MICROSECOND; }

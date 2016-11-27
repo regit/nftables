@@ -777,6 +777,8 @@ static void netlink_parse_quota(struct netlink_parse_ctx *ctx,
 
 	stmt = quota_stmt_alloc(loc);
 	stmt->quota.bytes = nftnl_expr_get_u64(nle, NFTNL_EXPR_QUOTA_BYTES);
+	stmt->quota.used =
+		nftnl_expr_get_u64(nle, NFTNL_EXPR_QUOTA_CONSUMED);
 	stmt->quota.flags = nftnl_expr_get_u32(nle, NFTNL_EXPR_QUOTA_FLAGS);
 
 	ctx->stmt = stmt;

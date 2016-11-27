@@ -378,6 +378,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token UNTIL			"until"
 
 %token QUOTA			"quota"
+%token USED			"used"
 
 %token NANOSECOND		"nanosecond"
 %token MICROSECOND		"microsecond"
@@ -427,7 +428,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <string>			identifier type_identifier string comment_spec
 %destructor { xfree($$); }	identifier type_identifier string comment_spec
 
-%type <val>			time_spec
+%type <val>			time_spec quota_used
 
 %type <val>			type_identifier_list
 %type <datatype>		data_type
@@ -1636,7 +1637,22 @@ quota_unit		:	BYTES		{ $$ = xstrdup("bytes"); }
 			|	STRING		{ $$ = $1; }
 			;
 
-quota_stmt		:	QUOTA	quota_mode NUM quota_unit
+quota_used		:	/* empty */	{ $$ = 0; }
+			|	USED NUM quota_unit
+			{
+				struct error_record *erec;
+				uint64_t rate;
+
+				erec = data_unit_parse(&@$, $3, &rate);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+				$$ = $2 * rate;
+			}
+			;
+
+quota_stmt		:	QUOTA	quota_mode NUM quota_unit quota_used
 			{
 				struct error_record *erec;
 				uint64_t rate;
@@ -1648,6 +1664,7 @@ quota_stmt		:	QUOTA	quota_mode NUM quota_unit
 				}
 				$$ = quota_stmt_alloc(&@$);
 				$$->quota.bytes	= $3 * rate;
+				$$->quota.used = $5;
 				$$->quota.flags	= $2;
 			}
 			;

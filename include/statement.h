@@ -108,6 +108,7 @@ extern struct stmt *queue_stmt_alloc(const struct location *loc);
 
 struct quota_stmt {
 	uint64_t		bytes;
+	uint64_t		used;
 	uint32_t		flags;
 };
 
