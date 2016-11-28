@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# tests many defines in a single nft -f run
+
+HOWMANY=20000
+
+tmpfile=$(mktemp)
+if [ ! -w $tmpfile ] ; then
+	echo "Failed to create tmp file" >&2
+	exit 0
+fi
+
+trap "rm -rf $tmpfile" EXIT # cleanup if aborted
+
+generate1()
+{
+	for ((i=0; i<=HOWMANY; i++)) ; do
+		echo "define data_${i} = ${i}"
+	done
+}
+
+generate2()
+{
+	for ((i=0; i<=HOWMANY; i++)) ; do
+		echo "iifname \$data_${i}"
+	done
+}
+
+echo " $(generate1)
+table t {
+	chain c {
+		$(generate2)
+	}
+}" > $tmpfile
+
+set -e
+$NFT -f $tmpfile
