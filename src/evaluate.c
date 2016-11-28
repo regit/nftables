@@ -2550,9 +2550,6 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 		return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 				 ctx->cmd->handle.table);
 
-	if (set_lookup(table, set->handle.set) == NULL)
-		set_add_hash(set_get(set), table);
-
 	type = set->flags & SET_F_MAP ? "map" : "set";
 
 	if (set->keytype == NULL)
@@ -2582,6 +2579,9 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 			return -1;
 	}
 	ctx->set = NULL;
+
+	if (set_lookup(table, set->handle.set) == NULL)
+		set_add_hash(set_get(set), table);
 
 	/* Default timeout value implies timeout support */
 	if (set->timeout)
