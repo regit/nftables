@@ -1467,33 +1467,18 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 
 	switch (rel->op) {
 	case OP_LOOKUP:
-		switch (right->ops->type) {
-		case EXPR_SET:
-			/* A literal set expression implicitly declares
-			 * the set
-			 */
+		/* A literal set expression implicitly declares the set */
+		if (right->ops->type == EXPR_SET)
 			right = rel->right =
 				implicit_set_declaration(ctx, "__set%d",
 							 left->dtype,
 							 left->len, right);
-			break;
-		case EXPR_SET_REF:
-			if (right->dtype == NULL)
-				return expr_binary_error(ctx->msgs, right,
-							 left, "the referenced"
-							 " set does not "
-							 "exist");
-			if (!datatype_equal(left->dtype, right->dtype))
-				return expr_binary_error(ctx->msgs, right,
-							 left, "datatype "
-							 "mismatch, expected "
-							 "%s, set has type %s",
-							 left->dtype->desc,
-							 right->dtype->desc);
-			break;
-		default:
-			BUG("Unknown expression %s\n", right->ops->name);
-		}
+		else if (!datatype_equal(left->dtype, right->dtype))
+			return expr_binary_error(ctx->msgs, right, left,
+						 "datatype mismatch, expected %s, "
+						 "set has type %s",
+						 left->dtype->desc,
+						 right->dtype->desc);
 
 		/* Data for range lookups needs to be in big endian order */
 		if (right->set->flags & SET_F_INTERVAL &&
