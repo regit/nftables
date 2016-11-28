@@ -2302,6 +2302,10 @@ relational_expr		:	expr	/* implicit */	rhs_expr
 			{
 				$$ = relational_expr_alloc(&@2, $2, $1, $3);
 			}
+			|	expr	relational_op	'(' rhs_expr ')'
+			{
+				$$ = relational_expr_alloc(&@2, $2, $1, $4);
+			}
 			;
 
 list_rhs_expr		:	basic_rhs_expr		COMMA		basic_rhs_expr
