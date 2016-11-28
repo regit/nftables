@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# tests different spots, datatypes and usages for nft defines
+
+tmpfile=$(mktemp)
+if [ ! -w $tmpfile ] ; then
+	echo "Failed to create tmp file" >&2
+	exit 0
+fi
+
+trap "rm -rf $tmpfile" EXIT # cleanup if aborted
+
+echo "
+define d_iifname = whatever
+define d_oifname = \$d_iifname
+define d_iif = lo
+define d_oif = \$d_iif
+define d_mark = 123
+define d_state = new,established,related
+define d_ipv4 = 10.0.0.0
+define d_ipv4_2 = 10.0.0.2
+define d_ipv6 = fe0::1
+define d_ipv6_2 = fe0::2
+define d_ports = 100-222
+
+table inet t {
+	chain c {
+		iifname \$d_iifname oifname \$d_oifname iif \$d_iif oif \$d_oif
+		iifname { \$d_iifname , \$d_oifname } iif { \$d_iif , \$d_oif } meta mark \$d_mark
+		ct state \$d_state
+		ct state != \$d_state
+		ip saddr \$d_ipv4 ip daddr \$d_ipv4_2 ip saddr \$d_ipv4
+		ip6 daddr \$d_ipv6 ip6 saddr \$d_ipv6_2
+		ip saddr vmap { \$d_ipv4 : drop , \$d_ipv4_2 : accept }
+		ip6 daddr vmap { \$d_ipv6 : drop , \$d_ipv6_2 : accept }
+		ip6 saddr . ip6 nexthdr { \$d_ipv6 . udp, \$d_ipv6_2 . tcp }
+		ip daddr . meta iif vmap { \$d_ipv4 . \$d_iif : accept }
+		tcp dport \$d_ports
+		udp dport vmap { \$d_ports : accept }
+	}
+}" >> $tmpfile
+
+set -e
+$NFT -f $tmpfile
