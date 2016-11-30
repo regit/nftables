@@ -559,19 +559,7 @@ const struct datatype inet_protocol_type = {
 
 static void inet_service_type_print(const struct expr *expr)
 {
-	struct sockaddr_in sin = { .sin_family = AF_INET };
-	char buf[NI_MAXSERV];
-	int err;
-
-	sin.sin_port = mpz_get_be16(expr->value);
-	err = getnameinfo((struct sockaddr *)&sin, sizeof(sin), NULL, 0,
-			  buf, sizeof(buf),
-			  numeric_output < NUMERIC_PORT ? 0 : NI_NUMERICSERV);
-	if (err != 0) {
-		getnameinfo((struct sockaddr *)&sin, sizeof(sin), NULL,
-			    0, buf, sizeof(buf), NI_NUMERICSERV);
-	}
-	printf("%s", buf);
+	symbolic_constant_print(&inet_service_tbl, expr, false);
 }
 
 static struct error_record *inet_service_type_parse(const struct expr *sym,
@@ -615,6 +603,7 @@ const struct datatype inet_service_type = {
 	.basetype	= &integer_type,
 	.print		= inet_service_type_print,
 	.parse		= inet_service_type_parse,
+	.sym_tbl	= &inet_service_tbl,
 };
 
 #define RT_SYM_TAB_INITIAL_SIZE		16
