@@ -559,6 +559,10 @@ const struct datatype inet_protocol_type = {
 
 static void inet_service_type_print(const struct expr *expr)
 {
+	if (numeric_output >= NUMERIC_PORT) {
+		integer_type_print(expr);
+		return;
+	}
 	symbolic_constant_print(&inet_service_tbl, expr, false);
 }
 
