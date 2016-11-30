@@ -74,6 +74,7 @@ tcp flags { fin, syn, rst, psh, ack, urg, ecn, cwr} drop;ok
 tcp flags != { fin, urg, ecn, cwr} drop;ok
 tcp flags cwr;ok
 tcp flags != cwr;ok
+tcp 'flags & (syn|fin) == (syn|fin)';ok;tcp flags & (fin | syn) == fin | syn
 
 tcp window 22222;ok
 tcp window 22;ok
