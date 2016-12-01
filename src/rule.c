@@ -1158,6 +1158,19 @@ void obj_add_hash(struct obj *obj, struct table *table)
 	list_add_tail(&obj->list, &table->objs);
 }
 
+struct obj *obj_lookup(const struct table *table, const char *name,
+		       uint32_t type)
+{
+	struct obj *obj;
+
+	list_for_each_entry(obj, &table->objs, list) {
+		if (!strcmp(obj->handle.obj, name) &&
+		    obj->type == type)
+			return obj;
+	}
+	return NULL;
+}
+
 static void obj_print_data(const struct obj *obj,
 			   struct print_fmt_options *opts)
 {
@@ -1224,6 +1237,18 @@ void obj_print(const struct obj *obj)
 		.tab		= "\t",
 		.nl		= "\n",
 		.stmt_separator	= "\n",
+	};
+
+	obj_print_declaration(obj, &opts);
+}
+
+void obj_print_plain(const struct obj *obj)
+{
+	struct print_fmt_options opts = {
+		.tab		= "",
+		.nl		= " ",
+		.table		= obj->handle.table,
+		.family		= family2str(obj->handle.family),
 	};
 
 	obj_print_declaration(obj, &opts);

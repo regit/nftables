@@ -1923,6 +1923,19 @@ static struct nftnl_rule *netlink_rule_alloc(const struct nlmsghdr *nlh)
 	return nlr;
 }
 
+static struct nftnl_obj *netlink_obj_alloc(const struct nlmsghdr *nlh)
+{
+	struct nftnl_obj *nlo;
+
+	nlo = nftnl_obj_alloc();
+	if (nlo == NULL)
+		memory_allocation_error();
+	if (nftnl_obj_nlmsg_parse(nlh, nlo) < 0)
+		netlink_abi_error();
+
+	return nlo;
+}
+
 static uint32_t netlink_msg2nftnl_of(uint32_t msg)
 {
 	switch (msg) {
@@ -2184,6 +2197,51 @@ out:
 	return MNL_CB_OK;
 }
 
+static int netlink_events_obj_cb(const struct nlmsghdr *nlh, int type,
+				 struct netlink_mon_handler *monh)
+{
+	struct nftnl_obj *nlo;
+	uint32_t family;
+	struct obj *obj;
+
+	nlo = netlink_obj_alloc(nlh);
+
+	switch (monh->format) {
+	case NFTNL_OUTPUT_DEFAULT:
+		switch (type) {
+		case NFT_MSG_NEWOBJ:
+			printf("add ");
+			obj = netlink_delinearize_obj(monh->ctx, nlo);
+			if (obj == NULL) {
+				nftnl_obj_free(nlo);
+				return MNL_CB_ERROR;
+			}
+			obj_print_plain(obj);
+			obj_free(obj);
+			printf("\n");
+			break;
+		case NFT_MSG_DELOBJ:
+			family = nftnl_obj_get_u32(nlo, NFTNL_OBJ_FAMILY);
+			printf("delete %s %s %s %s\n",
+			       obj_type_name(nftnl_obj_get_u32(nlo, NFTNL_OBJ_TYPE)),
+			       family2str(family),
+			       nftnl_obj_get_str(nlo, NFTNL_OBJ_TABLE),
+			       nftnl_obj_get_str(nlo, NFTNL_OBJ_NAME));
+			break;
+		}
+		break;
+	case NFTNL_OUTPUT_XML:
+	case NFTNL_OUTPUT_JSON:
+		nftnl_obj_fprintf(stdout, nlo, monh->format,
+				  netlink_msg2nftnl_of(type));
+		fprintf(stdout, "\n");
+		break;
+	}
+
+	nftnl_obj_free(nlo);
+	return MNL_CB_OK;
+}
+
 static void rule_map_decompose_cb(struct set *s, void *data)
 {
 	if (s->flags & NFT_SET_INTERVAL)
@@ -2363,6 +2421,72 @@ static void netlink_events_cache_delsets(struct netlink_mon_handler *monh,
 	nftnl_rule_free(nlr);
 }
 
+static void netlink_events_cache_addobj(struct netlink_mon_handler *monh,
+					const struct nlmsghdr *nlh)
+{
+	struct netlink_ctx obj_tmpctx;
+	struct nftnl_obj *nlo;
+	struct table *t;
+	struct obj *obj;
+	LIST_HEAD(msgs);
+
+	memset(&obj_tmpctx, 0, sizeof(obj_tmpctx));
+	init_list_head(&obj_tmpctx.list);
+	init_list_head(&msgs);
+	obj_tmpctx.msgs = &msgs;
+
+	nlo = netlink_obj_alloc(nlh);
+	obj = netlink_delinearize_obj(&obj_tmpctx, nlo);
+	if (obj == NULL)
+		goto out;
+
+	t = table_lookup(&obj->handle);
+	if (t == NULL) {
+		fprintf(stderr, "W: Unable to cache object: table not found.\n");
+		obj_free(obj);
+		goto out;
+	}
+
+	obj_add_hash(obj, t);
+out:
+	nftnl_obj_free(nlo);
+}
+
+static void netlink_events_cache_delobj(struct netlink_mon_handler *monh,
+					const struct nlmsghdr *nlh)
+{
+	struct nftnl_obj *nlo;
+	const char *name;
+	struct obj *obj;
+	struct handle h;
+	struct table *t;
+	uint32_t type;
+
+	nlo      = netlink_obj_alloc(nlh);
+	h.family = nftnl_obj_get_u32(nlo, NFTNL_OBJ_FAMILY);
+	h.table  = nftnl_obj_get_str(nlo, NFTNL_OBJ_TABLE);
+
+	name     = nftnl_obj_get_str(nlo, NFTNL_OBJ_NAME);
+	type	 = nftnl_obj_get_u32(nlo, NFTNL_OBJ_TYPE);
+
+	t = table_lookup(&h);
+	if (t == NULL) {
+		fprintf(stderr, "W: Unable to cache object: table not found.\n");
+		goto out;
+	}
+
+	obj = obj_lookup(t, name, type);
+	if (obj == NULL) {
+		fprintf(stderr, "W: Unable to find object in cache\n");
+		goto out;
+	}
+
+	list_del(&obj->list);
+	obj_free(obj);
+out:
+	nftnl_obj_free(nlo);
+}
+
 static void netlink_events_cache_update(struct netlink_mon_handler *monh,
 					const struct nlmsghdr *nlh, int type)
 {
@@ -2385,6 +2509,12 @@ static void netlink_events_cache_update(struct netlink_mon_handler *monh,
 	case NFT_MSG_DELRULE:
 		/* there are no notification for anon-set deletion */
 		netlink_events_cache_delsets(monh, nlh);
+		break;
+	case NFT_MSG_NEWOBJ:
+		netlink_events_cache_addobj(monh, nlh);
+		break;
+	case NFT_MSG_DELOBJ:
+		netlink_events_cache_delobj(monh, nlh);
 		break;
 	}
 }
@@ -2696,6 +2826,10 @@ static int netlink_events_cb(const struct nlmsghdr *nlh, void *data)
 		break;
 	case NFT_MSG_TRACE:
 		ret = netlink_events_trace_cb(nlh, type, monh);
+		break;
+	case NFT_MSG_NEWOBJ:
+	case NFT_MSG_DELOBJ:
+		ret = netlink_events_obj_cb(nlh, type, monh);
 		break;
 	}
 	fflush(stdout);
