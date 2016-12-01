@@ -140,7 +140,7 @@ static struct table *table_lookup_global(struct eval_ctx *ctx)
 	struct table *table;
 
 	if (ctx->table != NULL)
-		return ctx->cmd->table;
+		return ctx->table;
 
 	table = table_lookup(&ctx->cmd->handle);
 	if (table == NULL)
