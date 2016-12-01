@@ -157,7 +157,7 @@ replay:
 	return 0;
 }
 
-void cache_release(void)
+void cache_flush(void)
 {
 	struct table *table, *next;
 
@@ -165,6 +165,11 @@ void cache_release(void)
 		list_del(&table->list);
 		table_free(table);
 	}
+}
+
+void cache_release(void)
+{
+	cache_flush();
 	cache_initialized = false;
 }
 
