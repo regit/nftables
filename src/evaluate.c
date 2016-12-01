@@ -2854,6 +2854,29 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 	}
 }
 
+static int cmd_evaluate_flush(struct eval_ctx *ctx, struct cmd *cmd)
+{
+	int ret;
+	ret = cache_update(cmd->op, ctx->msgs);
+	if (ret < 0)
+		return ret;
+	switch (cmd->obj) {
+	case CMD_OBJ_RULESET:
+		cache_flush();
+		break;
+	case CMD_OBJ_TABLE:
+		/* Flushing a table does not empty the sets in the table nor remove
+		 * any chains.
+		 */
+	case CMD_OBJ_CHAIN:
+		/* Chains don't hold sets */
+		break;
+	default:
+		BUG("invalid command object type %u\n", cmd->obj);
+	}
+	return 0;
+}
+
 static int cmd_evaluate_rename(struct eval_ctx *ctx, struct cmd *cmd)
 {
 	struct table *table;
@@ -3021,7 +3044,7 @@ int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_LIST:
 		return cmd_evaluate_list(ctx, cmd);
 	case CMD_FLUSH:
-		return 0;
+		return cmd_evaluate_flush(ctx, cmd);
 	case CMD_RENAME:
 		return cmd_evaluate_rename(ctx, cmd);
 	case CMD_EXPORT:
