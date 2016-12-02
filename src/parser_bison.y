@@ -1897,15 +1897,9 @@ reject_opts		:       /* empty */
 							  $4);
 				$<stmt>0->reject.expr->dtype = &icmpx_code_type;
 			}
-			|	WITH	TCP	STRING
+			|	WITH	TCP	RESET
 			{
-				if (strcmp($3, "reset") == 0) {
-					$<stmt>0->reject.type = NFT_REJECT_TCP_RST;
-				} else {
-					erec_queue(error(&@2, "unsupported reject type", $3),
-						   state->msgs);
-					YYERROR;
-				}
+				$<stmt>0->reject.type = NFT_REJECT_TCP_RST;
 			}
 			;
 
@@ -2720,6 +2714,12 @@ primary_rhs_expr	:	symbol_expr		{ $$ = $1; }
 				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
 						       current_scope(state),
 						       "ecn");
+			}
+			|	RESET
+			{
+				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
+						       current_scope(state),
+						       "reset");
 			}
 			;
 
