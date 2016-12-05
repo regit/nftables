@@ -165,6 +165,8 @@ extern int netlink_delete_setelems(struct netlink_ctx *ctx, const struct handle 
 				   const struct expr *expr);
 extern int netlink_get_setelems(struct netlink_ctx *ctx, const struct handle *h,
 				const struct location *loc, struct set *set);
+extern int netlink_flush_setelems(struct netlink_ctx *ctx, const struct handle *h,
+				  const struct location *loc);
 
 extern void netlink_dump_table(const struct nftnl_table *nlt);
 extern void netlink_dump_chain(const struct nftnl_chain *nlc);

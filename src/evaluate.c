@@ -2857,9 +2857,11 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 static int cmd_evaluate_flush(struct eval_ctx *ctx, struct cmd *cmd)
 {
 	int ret;
+
 	ret = cache_update(cmd->op, ctx->msgs);
 	if (ret < 0)
 		return ret;
+
 	switch (cmd->obj) {
 	case CMD_OBJ_RULESET:
 		cache_flush();
@@ -2870,6 +2872,7 @@ static int cmd_evaluate_flush(struct eval_ctx *ctx, struct cmd *cmd)
 		 */
 	case CMD_OBJ_CHAIN:
 		/* Chains don't hold sets */
+	case CMD_OBJ_SET:
 		break;
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);

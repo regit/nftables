@@ -1374,7 +1374,8 @@ static int netlink_del_setelems_batch(struct netlink_ctx *ctx,
 	int err;
 
 	nls = alloc_nftnl_set(h);
-	alloc_setelem_cache(expr, nls);
+	if (expr)
+		alloc_setelem_cache(expr, nls);
 	netlink_dump_set(nls);
 
 	err = mnl_nft_setelem_batch_del(nls, 0, ctx->seqnum);
@@ -1404,6 +1405,12 @@ static int netlink_del_setelems_compat(struct netlink_ctx *ctx,
 				 "Could not delete set elements: %s",
 				 strerror(errno));
 	return err;
+}
+
+int netlink_flush_setelems(struct netlink_ctx *ctx, const struct handle *h,
+			   const struct location *loc)
+{
+	return netlink_del_setelems_batch(ctx, h, NULL);
 }
 
 static struct expr *netlink_parse_concat_elem(const struct datatype *dtype,
