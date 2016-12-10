@@ -180,15 +180,33 @@ void symbolic_constant_print(const struct symbol_table *tbl,
 		printf("%s", s->identifier);
 }
 
+static void switch_byteorder(void *data, unsigned int len)
+{
+	mpz_t op;
+
+	mpz_init(op);
+	mpz_import_data(op, data, BYTEORDER_BIG_ENDIAN, len);
+	mpz_export_data(data, op, BYTEORDER_HOST_ENDIAN, len);
+	mpz_clear(op);
+}
+
 void symbol_table_print(const struct symbol_table *tbl,
-			const struct datatype *dtype)
+			const struct datatype *dtype,
+			enum byteorder byteorder)
 {
 	const struct symbolic_constant *s;
-	unsigned int size = 2 * dtype->size / BITS_PER_BYTE;
+	unsigned int len = dtype->size / BITS_PER_BYTE;
+	uint64_t value;
 
-	for (s = tbl->symbols; s->identifier != NULL; s++)
+	for (s = tbl->symbols; s->identifier != NULL; s++) {
+		value = s->value;
+
+		if (byteorder == BYTEORDER_BIG_ENDIAN)
+			switch_byteorder(&value, len);
+
 		printf("\t%-30s\t0x%.*" PRIx64 "\n",
-		       s->identifier, size, s->value);
+		       s->identifier, 2 * len, value);
+	}
 }
 
 static void invalid_type_print(const struct expr *expr)
