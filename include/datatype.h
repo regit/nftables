@@ -176,12 +176,24 @@ struct symbolic_constant {
 #define SYMBOL_LIST_END	(struct symbolic_constant) { }
 
 /**
+ * enum base - indicate how to display symbol table values
+ *
+ * @BASE_HEXADECIMAL:	hexadecimal
+ * @BASE_DECIMAL:	decimal
+ */
+enum base {
+	BASE_HEXADECIMAL,
+	BASE_DECIMAL,
+};
+
+/**
  * struct symbol_table - type construction from symbolic values
  *
+ * @base:	base of symbols representation
  * @symbols:	the symbols
  */
 struct symbol_table {
-	int				gcc_workaround;
+	enum base 			base;
 	struct symbolic_constant	symbols[];
 };
 

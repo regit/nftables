@@ -2,7 +2,8 @@
 #include <datatype.h>
 
 const struct symbol_table inet_service_tbl = {
-	.symbols =	{
+	.base		= BASE_DECIMAL,
+	.symbols	= {
 		SYMBOL("tcpmux",		__constant_htons(1)),
 		SYMBOL("echo",			__constant_htons(7)),
 		SYMBOL("discard",		__constant_htons(9)),
