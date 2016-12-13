@@ -336,6 +336,10 @@ static unsigned int expr_to_intervals(const struct expr *set,
 static bool interval_overlap(const struct elementary_interval *e1,
 			     const struct elementary_interval *e2)
 {
+	if (mpz_cmp(e1->left, e2->left) == 0 &&
+	    mpz_cmp(e1->right, e2->right) == 0)
+		return false;
+
 	return (mpz_cmp(e1->left, e2->left) >= 0 &&
 	        mpz_cmp(e1->left, e2->right) <= 0) ||
 	       (mpz_cmp(e1->right, e2->left) >= 0 &&
