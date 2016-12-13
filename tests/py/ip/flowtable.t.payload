@@ -1,0 +1,7 @@
+# flow table xyz { ip saddr timeout 30s counter packets 0 bytes 0}
+xyz test-ip 31
+xyz test-ip 0
+ip test-ip input 
+  [ payload load 4b @ network header + 12 => reg 1 ]
+  [ dynset update reg_key 1 set xyz timeout 30000ms expr [ counter pkts 0 bytes 0 ] ]
+

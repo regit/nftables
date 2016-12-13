@@ -825,19 +825,21 @@ int mnl_nft_setelem_add(struct mnl_socket *nf_sock, struct nftnl_set *nls,
 	char buf[NFT_NLMSG_MAXSIZE];
 	struct nlmsghdr *nlh;
 	struct nftnl_set_elems_iter *iter;
-	int ret, err;
+	int ret, err = 0;
 
 	iter = nftnl_set_elems_iter_create(nls);
 	if (iter == NULL)
 		memory_allocation_error();
 
-	do {
+	while (nftnl_set_elems_iter_cur(iter)) {
 		nlh = nftnl_set_elem_nlmsg_build_hdr(buf, NFT_MSG_NEWSETELEM,
 				nftnl_set_get_u32(nls, NFTNL_SET_FAMILY),
 				NLM_F_CREATE | NLM_F_ACK | flags, seq);
 		ret = nftnl_set_elems_nlmsg_build_payload_iter(nlh, iter);
 		err = nft_mnl_talk(nf_sock, nlh, nlh->nlmsg_len, NULL, NULL);
-	} while (ret > 0 && err >= 0);
+		if (ret <= 0 || err < 0)
+			break;
+	}
 
 	nftnl_set_elems_iter_destroy(iter);
 
@@ -879,13 +881,15 @@ static int mnl_nft_setelem_batch(struct nftnl_set *nls,
 	if (iter == NULL)
 		memory_allocation_error();
 
-	do {
+	while (nftnl_set_elems_iter_cur(iter)) {
 		nlh = nftnl_set_elem_nlmsg_build_hdr(nftnl_batch_buffer(batch),
 				cmd, nftnl_set_get_u32(nls, NFTNL_SET_FAMILY),
 				NLM_F_CREATE | flags, seqnum);
 		ret = nftnl_set_elems_nlmsg_build_payload_iter(nlh, iter);
 		mnl_nft_batch_continue();
-	} while (ret > 0);
+		if (ret <= 0)
+			break;
+	}
 
 	nftnl_set_elems_iter_destroy(iter);
 
