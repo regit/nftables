@@ -528,21 +528,21 @@ ip test-ip4 input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
   [ immediate reg 1 0x0100007f ]
-  [ payload write reg 1 => 4b @ network header + 16 csum_type 1 csum_off 10 ]
+  [ payload write reg 1 => 4b @ network header + 16 csum_type 1 csum_off 10 csum_flags 0x1 ]
 
 # iif "lo" ip checksum set 0
 ip test-ip4 input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
   [ immediate reg 1 0x00000000 ]
-  [ payload write reg 1 => 2b @ network header + 10 csum_type 1 csum_off 10 ]
+  [ payload write reg 1 => 2b @ network header + 10 csum_type 1 csum_off 10 csum_flags 0x0 ]
 
 # iif "lo" ip id set 0
 ip test-ip4 input
   [ meta load iif => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
   [ immediate reg 1 0x00000000 ]
-  [ payload write reg 1 => 2b @ network header + 4 csum_type 1 csum_off 10 ]
+  [ payload write reg 1 => 2b @ network header + 4 csum_type 1 csum_off 10 csum_flags 0x0 ]
 
 # iif "lo" ip ecn set 1
 ip test-ip4 input
@@ -550,7 +550,7 @@ ip test-ip4 input
   [ cmp eq reg 1 0x00000001 ]
   [ payload load 2b @ network header + 0 => reg 1 ]
   [ bitwise reg 1 = (reg=1 & 0x0000fcff ) ^ 0x00000100 ]
-  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 ]
+  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 csum_flags 0x0 ]
 
 # iif "lo" ip ecn set ce
 ip test-ip4 input
@@ -558,7 +558,7 @@ ip test-ip4 input
   [ cmp eq reg 1 0x00000001 ]
   [ payload load 2b @ network header + 0 => reg 1 ]
   [ bitwise reg 1 = (reg=1 & 0x0000fcff ) ^ 0x00000300 ]
-  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 ]
+  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 csum_flags 0x0 ]
 
 # iif "lo" ip dscp set af23
 ip test-ip4 input
@@ -566,7 +566,7 @@ ip test-ip4 input
   [ cmp eq reg 1 0x00000001 ]
   [ payload load 2b @ network header + 0 => reg 1 ]
   [ bitwise reg 1 = (reg=1 & 0x000003ff ) ^ 0x00005800 ]
-  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 ]
+  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 csum_flags 0x0 ]
 
 # iif "lo" ip dscp set cs0
 ip test-ip4 input
@@ -574,5 +574,5 @@ ip test-ip4 input
   [ cmp eq reg 1 0x00000001 ]
   [ payload load 2b @ network header + 0 => reg 1 ]
   [ bitwise reg 1 = (reg=1 & 0x000003ff ) ^ 0x00000000 ]
-  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 ]
+  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 csum_flags 0x0 ]
 

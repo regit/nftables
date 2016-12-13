@@ -690,7 +690,7 @@ inet test-inet input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x00000002 ]
   [ immediate reg 1 0x0100007f ]
-  [ payload write reg 1 => 4b @ network header + 16 csum_type 1 csum_off 10 ]
+  [ payload write reg 1 => 4b @ network header + 16 csum_type 1 csum_off 10 csum_flags 0x1 ]
 
 # iif "lo" ip checksum set 0
 inet test-inet input
@@ -699,7 +699,7 @@ inet test-inet input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x00000002 ]
   [ immediate reg 1 0x00000000 ]
-  [ payload write reg 1 => 2b @ network header + 10 csum_type 1 csum_off 10 ]
+  [ payload write reg 1 => 2b @ network header + 10 csum_type 1 csum_off 10 csum_flags 0x0 ]
 
 # iif "lo" ip id set 0
 inet test-inet input
@@ -708,7 +708,7 @@ inet test-inet input
   [ meta load nfproto => reg 1 ]
   [ cmp eq reg 1 0x00000002 ]
   [ immediate reg 1 0x00000000 ]
-  [ payload write reg 1 => 2b @ network header + 4 csum_type 1 csum_off 10 ]
+  [ payload write reg 1 => 2b @ network header + 4 csum_type 1 csum_off 10 csum_flags 0x0 ]
 
 # iif "lo" ip ecn set 1
 inet test-inet input
@@ -718,7 +718,7 @@ inet test-inet input
   [ cmp eq reg 1 0x00000002 ]
   [ payload load 2b @ network header + 0 => reg 1 ]
   [ bitwise reg 1 = (reg=1 & 0x0000fcff ) ^ 0x00000100 ]
-  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 ]
+  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 csum_flags 0x0 ]
 
 # iif "lo" ip ecn set ce
 inet test-netdev ingress
@@ -728,7 +728,7 @@ inet test-netdev ingress
   [ cmp eq reg 1 0x00000002 ]
   [ payload load 2b @ network header + 0 => reg 1 ]
   [ bitwise reg 1 = (reg=1 & 0x0000fcff ) ^ 0x00000300 ]
-  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 ]
+  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 csum_flags 0x0 ]
 
 # iif "lo" ip dscp set af23
 inet test-inet input
@@ -738,7 +738,7 @@ inet test-inet input
   [ cmp eq reg 1 0x00000002 ]
   [ payload load 2b @ network header + 0 => reg 1 ]
   [ bitwise reg 1 = (reg=1 & 0x000003ff ) ^ 0x00005800 ]
-  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 ]
+  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 csum_flags 0x0 ]
 
 # iif "lo" ip dscp set cs0
 inet test-inet input
@@ -748,5 +748,5 @@ inet test-inet input
   [ cmp eq reg 1 0x00000002 ]
   [ payload load 2b @ network header + 0 => reg 1 ]
   [ bitwise reg 1 = (reg=1 & 0x000003ff ) ^ 0x00000000 ]
-  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 ]
+  [ payload write reg 1 => 2b @ network header + 0 csum_type 1 csum_off 10 csum_flags 0x0 ]
 
