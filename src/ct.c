@@ -33,6 +33,7 @@
 #define CONNLABEL_CONF	DEFAULT_INCLUDE_PATH "/connlabel.conf"
 
 static const struct symbol_table ct_state_tbl = {
+	.base		= BASE_HEXADECIMAL,
 	.symbols	= {
 		SYMBOL("invalid",	NF_CT_STATE_INVALID_BIT),
 		SYMBOL("new",		NF_CT_STATE_BIT(IP_CT_NEW)),
@@ -54,6 +55,7 @@ static const struct datatype ct_state_type = {
 };
 
 static const struct symbol_table ct_dir_tbl = {
+	.base		= BASE_DECIMAL,
 	.symbols	= {
 		SYMBOL("original",	IP_CT_DIR_ORIGINAL),
 		SYMBOL("reply",		IP_CT_DIR_REPLY),
@@ -75,6 +77,7 @@ static const struct symbol_table ct_status_tbl = {
 	/*
 	 * There are more, but most of them don't make sense for filtering.
 	 */
+	.base		= BASE_HEXADECIMAL,
 	.symbols	= {
 		SYMBOL("expected",	IPS_EXPECTED),
 		SYMBOL("seen-reply",	IPS_SEEN_REPLY),

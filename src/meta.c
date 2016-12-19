@@ -198,6 +198,7 @@ const struct datatype ifindex_type = {
 };
 
 static const struct symbol_table arphrd_tbl = {
+	.base		= BASE_HEXADECIMAL,
 	.symbols	= {
 		SYMBOL("ether",		ARPHRD_ETHER),
 		SYMBOL("ppp",		ARPHRD_PPP),
@@ -326,6 +327,7 @@ static const struct datatype gid_type = {
 };
 
 static const struct symbol_table pkttype_type_tbl = {
+	.base		= BASE_DECIMAL,
 	.symbols	= {
 		SYMBOL("host", PACKET_HOST),
 		SYMBOL("unicast", PACKET_HOST), /* backwards compat */

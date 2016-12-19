@@ -114,7 +114,11 @@ void expr_describe(const struct expr *expr)
 	printf("\n");
 
 	if (expr->dtype->sym_tbl != NULL) {
-		printf("\npre-defined symbolic constants:\n");
+		printf("\npre-defined symbolic constants ");
+		if (expr->dtype->sym_tbl->base == BASE_DECIMAL)
+			printf("(in decimal):\n");
+		else
+			printf("(in hexadecimal):\n");
 		symbol_table_print(expr->dtype->sym_tbl, expr->dtype,
 				   expr->byteorder);
 	}

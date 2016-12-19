@@ -303,6 +303,7 @@ const struct proto_desc proto_comp = {
 #include <netinet/ip_icmp.h>
 
 static const struct symbol_table icmp_type_tbl = {
+	.base		= BASE_DECIMAL,
 	.symbols	= {
 		SYMBOL("echo-reply",			ICMP_ECHOREPLY),
 		SYMBOL("destination-unreachable",	ICMP_DEST_UNREACH),
@@ -391,6 +392,7 @@ const struct proto_desc proto_udplite = {
 #include <netinet/tcp.h>
 
 static const struct symbol_table tcp_flag_tbl = {
+	.base		= BASE_HEXADECIMAL,
 	.symbols	= {
 		SYMBOL("fin",	TCP_FLAG_FIN),
 		SYMBOL("syn",	TCP_FLAG_SYN),
@@ -449,6 +451,7 @@ const struct proto_desc proto_tcp = {
  */
 
 static const struct symbol_table dccp_pkttype_tbl = {
+	.base		= BASE_HEXADECIMAL,
 	.symbols	= {
 		SYMBOL("request",	DCCP_PKT_REQUEST),
 		SYMBOL("response",	DCCP_PKT_RESPONSE),
@@ -514,6 +517,7 @@ const struct proto_desc proto_sctp = {
 #include <netinet/ip.h>
 
 static const struct symbol_table dscp_type_tbl = {
+	.base		= BASE_HEXADECIMAL,
 	.symbols	= {
 		SYMBOL("cs0",	0x00),
 		SYMBOL("cs1",	0x08),
@@ -553,6 +557,7 @@ static const struct datatype dscp_type = {
 };
 
 static const struct symbol_table ecn_type_tbl = {
+	.base		= BASE_HEXADECIMAL,
 	.symbols	= {
 		SYMBOL("not-ect",	0x00),
 		SYMBOL("ect1",		0x01),
@@ -628,6 +633,7 @@ const struct proto_desc proto_ip = {
 #include <netinet/icmp6.h>
 
 static const struct symbol_table icmp6_type_tbl = {
+	.base		= BASE_DECIMAL,
 	.symbols	= {
 		SYMBOL("destination-unreachable",	ICMP6_DST_UNREACH),
 		SYMBOL("packet-too-big",		ICMP6_PACKET_TOO_BIG),
@@ -778,6 +784,7 @@ const struct proto_desc proto_inet_service = {
 #include <net/if_arp.h>
 
 static const struct symbol_table arpop_tbl = {
+	.base		= BASE_HEXADECIMAL,
 	.symbols	= {
 		SYMBOL("request",	__constant_htons(ARPOP_REQUEST)),
 		SYMBOL("reply",		__constant_htons(ARPOP_REPLY)),
@@ -866,6 +873,7 @@ const struct datatype etheraddr_type = {
 };
 
 static const struct symbol_table ethertype_tbl = {
+	.base		= BASE_HEXADECIMAL,
 	.symbols	= {
 		SYMBOL("ip",		__constant_htons(ETH_P_IP)),
 		SYMBOL("arp",		__constant_htons(ETH_P_ARP)),

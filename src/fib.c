@@ -27,6 +27,7 @@ static const char *fib_result[NFT_FIB_RESULT_MAX + 1] = {
 };
 
 static const struct symbol_table addrtype_tbl = {
+	.base		= BASE_DECIMAL,
 	.symbols	= {
 		SYMBOL("unspec",	RTN_UNSPEC),
 		SYMBOL("unicast",	RTN_UNICAST),

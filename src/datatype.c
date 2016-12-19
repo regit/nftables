@@ -267,6 +267,7 @@ const struct datatype verdict_type = {
 };
 
 static const struct symbol_table nfproto_tbl = {
+	.base		= BASE_DECIMAL,
 	.symbols	= {
 		SYMBOL("ipv4",		NFPROTO_IPV4),
 		SYMBOL("ipv6",		NFPROTO_IPV6),
@@ -726,6 +727,7 @@ const struct datatype mark_type = {
 };
 
 static const struct symbol_table icmp_code_tbl = {
+	.base		= BASE_DECIMAL,
 	.symbols	= {
 		SYMBOL("net-unreachable",	ICMP_NET_UNREACH),
 		SYMBOL("host-unreachable",	ICMP_HOST_UNREACH),
@@ -749,6 +751,7 @@ const struct datatype icmp_code_type = {
 };
 
 static const struct symbol_table icmpv6_code_tbl = {
+	.base		= BASE_DECIMAL,
 	.symbols	= {
 		SYMBOL("no-route",		ICMPV6_NOROUTE),
 		SYMBOL("admin-prohibited",	ICMPV6_ADM_PROHIBITED),
@@ -771,6 +774,7 @@ const struct datatype icmpv6_code_type = {
 };
 
 static const struct symbol_table icmpx_code_tbl = {
+	.base		= BASE_DECIMAL,
 	.symbols	= {
 		SYMBOL("port-unreachable",	NFT_REJECT_ICMPX_PORT_UNREACH),
 		SYMBOL("admin-prohibited",	NFT_REJECT_ICMPX_ADMIN_PROHIBITED),
