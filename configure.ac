@@ -3,9 +3,9 @@
 
 AC_PREREQ(2.61)
 
-AC_COPYRIGHT([Copyright (c) 2008 Patrick McHardy <kaber@trash.net>])
-AC_INIT([nftables], [0.6], [netfilter-devel@vger.kernel.org])
-AC_DEFINE([RELEASE_NAME], ["Support Edward Snowden"], [Release name])
+AC_COPYRIGHT([Copyright (c) 2008 Patrick McHardy <kaber@trash.net>, (c) 2013-2016 Pablo Neira Ayuso <pablo@netfilter.org>])
+AC_INIT([nftables], [0.7], [netfilter-devel@vger.kernel.org])
+AC_DEFINE([RELEASE_NAME], ["Scrooge McDuck"], [Release name])
 
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CANONICAL_HOST
@@ -77,7 +77,7 @@ AM_COND_IF([BUILD_PDF], [
 
 # Checks for libraries.
 PKG_CHECK_MODULES([LIBMNL], [libmnl >= 1.0.3])
-PKG_CHECK_MODULES([LIBNFTNL], [libnftnl >= 1.0.5])
+PKG_CHECK_MODULES([LIBNFTNL], [libnftnl >= 1.0.7])
 
 AC_ARG_WITH([mini-gmp], [AS_HELP_STRING([--with-mini-gmp],
             [Use builtin mini-gmp (for embedded builds)])], [],
