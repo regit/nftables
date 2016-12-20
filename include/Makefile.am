@@ -3,6 +3,8 @@ SUBDIRS = linux
 noinst_HEADERS = 	cli.h		\
 			datatype.h	\
 			expression.h	\
+			fib.h		\
+			hash.h		\
 			mini-gmp.h	\
 			gmputil.h	\
 			iface.h		\
@@ -22,4 +24,6 @@ noinst_HEADERS = 	cli.h		\
 			parser.h	\
 			proto.h		\
 			rule.h		\
-			utils.h
+			rt.h		\
+			utils.h		\
+			xt.h
