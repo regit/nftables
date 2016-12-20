@@ -201,19 +201,19 @@ void netlink_parse_match(struct netlink_parse_ctx *ctx,
 
 	xtables_set_nfproto(ctx->table->handle.family);
 
-	name = nftnl_expr_get_str(nle, NFT_EXPR_MT_NAME);
+	name = nftnl_expr_get_str(nle, NFTNL_EXPR_MT_NAME);
 
 	mt = xtables_find_match(name, XTF_TRY_LOAD, NULL);
 	if (!mt)
 		BUG("XT match %s not found\n", name);
 
-	mtinfo = nftnl_expr_get(nle, NFT_EXPR_MT_INFO, &mt_len);
+	mtinfo = nftnl_expr_get(nle, NFTNL_EXPR_MT_INFO, &mt_len);
 
 	m = xzalloc(sizeof(struct xt_entry_match) + mt_len);
 	memcpy(&m->data, mtinfo, mt_len);
 
 	m->u.match_size = mt_len + XT_ALIGN(sizeof(struct xt_entry_match));
-	m->u.user.revision = nftnl_expr_get_u32(nle, NFT_EXPR_MT_REV);
+	m->u.user.revision = nftnl_expr_get_u32(nle, NFTNL_EXPR_MT_REV);
 
 	stmt = xt_stmt_alloc(loc);
 	stmt->xt.name = strdup(name);
@@ -238,18 +238,18 @@ void netlink_parse_target(struct netlink_parse_ctx *ctx,
 
 	xtables_set_nfproto(ctx->table->handle.family);
 
-	name = nftnl_expr_get_str(nle, NFT_EXPR_TG_NAME);
+	name = nftnl_expr_get_str(nle, NFTNL_EXPR_TG_NAME);
 	tg = xtables_find_target(name, XTF_TRY_LOAD);
 	if (!tg)
 		BUG("XT target %s not found\n", name);
 
-	tginfo = nftnl_expr_get(nle, NFT_EXPR_TG_INFO, &tg_len);
+	tginfo = nftnl_expr_get(nle, NFTNL_EXPR_TG_INFO, &tg_len);
 
 	size = XT_ALIGN(sizeof(struct xt_entry_target)) + tg_len;
 	t = xzalloc(size);
 	memcpy(&t->data, tginfo, tg_len);
 	t->u.target_size = size;
-	t->u.user.revision = nftnl_expr_get_u32(nle, NFT_EXPR_TG_REV);
+	t->u.user.revision = nftnl_expr_get_u32(nle, NFTNL_EXPR_TG_REV);
 	strcpy(t->u.user.name, tg->name);
 
 	stmt = xt_stmt_alloc(loc);
