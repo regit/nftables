@@ -1410,7 +1410,19 @@ static int netlink_del_setelems_compat(struct netlink_ctx *ctx,
 int netlink_flush_setelems(struct netlink_ctx *ctx, const struct handle *h,
 			   const struct location *loc)
 {
-	return netlink_del_setelems_batch(ctx, h, NULL);
+	struct nftnl_set *nls;
+	int err;
+
+	nls = alloc_nftnl_set(h);
+	netlink_dump_set(nls);
+
+	err = mnl_nft_setelem_batch_flush(nls, 0, ctx->seqnum);
+	nftnl_set_free(nls);
+	if (err < 0)
+		netlink_io_error(ctx, loc,
+				 "Could not flush set elements: %s",
+				 strerror(errno));
+	return err;
 }
 
 static struct expr *netlink_parse_concat_elem(const struct datatype *dtype,

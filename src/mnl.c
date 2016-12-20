@@ -902,6 +902,21 @@ int mnl_nft_setelem_batch_add(struct nftnl_set *nls, unsigned int flags,
 	return mnl_nft_setelem_batch(nls, NFT_MSG_NEWSETELEM, flags, seqnum);
 }
 
+int mnl_nft_setelem_batch_flush(struct nftnl_set *nls, unsigned int flags,
+				uint32_t seqnum)
+{
+	struct nlmsghdr *nlh;
+
+	nlh = nftnl_set_elem_nlmsg_build_hdr(nftnl_batch_buffer(batch),
+			NFT_MSG_DELSETELEM,
+			nftnl_set_get_u32(nls, NFTNL_SET_FAMILY),
+			NLM_F_CREATE | flags, seqnum);
+	nftnl_set_elems_nlmsg_build_payload(nlh, nls);
+	mnl_nft_batch_continue();
+
+	return 0;
+}
+
 int mnl_nft_setelem_batch_del(struct nftnl_set *nls, unsigned int flags,
 			      uint32_t seqnum)
 {

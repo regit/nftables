@@ -82,6 +82,8 @@ int mnl_nft_setelem_delete(struct mnl_socket *nf_sock, struct nftnl_set *nls,
 			   unsigned int flags);
 int mnl_nft_setelem_batch_del(struct nftnl_set *nls,
 			      unsigned int flags, uint32_t seq);
+int mnl_nft_setelem_batch_flush(struct nftnl_set *nls, unsigned int flags,
+				uint32_t seqnum);
 int mnl_nft_setelem_get(struct mnl_socket *nf_sock, struct nftnl_set *nls);
 
 struct nftnl_ruleset *mnl_nft_ruleset_dump(struct mnl_socket *nf_sock,
