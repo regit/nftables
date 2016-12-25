@@ -361,6 +361,18 @@ ip test-ip4 output
   [ byteorder reg 1 = hton(reg 1, 8, 8) ]
   [ cmp gt reg 1 0x00000000 0xa0860100 ]
 
+# ct avgpkt \> 200
+ip test-ip4 output
+  [ ct load avgpkt => reg 1 ]
+  [ byteorder reg 1 = hton(reg 1, 8, 8) ]
+  [ cmp gt reg 1 0x00000000 0xc8000000 ]
+
+# ct original avgpkt \< 500
+ip test-ip4 output
+  [ ct load avgpkt => reg 1 , dir original ]
+  [ byteorder reg 1 = hton(reg 1, 8, 8) ]
+  [ cmp lt reg 1 0x00000000 0xf4010000 ]
+
 # ct status expected,seen-reply,assured,confirmed,snat,dnat,dying
 ip test-ip4 output
   [ ct load status => reg 1 ]

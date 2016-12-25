@@ -2112,9 +2112,9 @@ inet filter meta nfproto ipv6 output rt nexthop fd00::1
 			</para>
 			<para>
 				There are three types of conntrack expressions. Some conntrack expressions require the flow
-				direction before the conntrack key, others must be used directly because they are
-				direction agnostic.  The <command>packets<command> and </command>bytes</command> keywords can be used
-				with or without a direction.  If the direction is omitted, the sum of the original and the reply
+				direction before the conntrack key, others must be used directly because they are direction agnostic.
+				The <command>packets</command>, <command>bytes</command> and <command>avgpkt</command> keywords can be
+				used with or without a direction. If the direction is omitted, the sum of the original and the reply
 				direction is returned.
 			</para>
 			<para>
@@ -2132,6 +2132,7 @@ inet filter meta nfproto ipv6 output rt nexthop fd00::1
 						<arg>protocol</arg>
 						<arg>bytes</arg>
 						<arg>packets</arg>
+						<arg>avgpkt</arg>
 					</group>
 				</cmdsynopsis>
 				<cmdsynopsis>
@@ -2149,6 +2150,7 @@ inet filter meta nfproto ipv6 output rt nexthop fd00::1
 						<arg>proto-dst</arg>
 						<arg>bytes</arg>
 						<arg>packets</arg>
+						<arg>avgpkt</arg>
 					</group>
 				</cmdsynopsis>
 			</para>
@@ -2240,6 +2242,11 @@ inet filter meta nfproto ipv6 output rt nexthop fd00::1
 							<row>
 								<entry>bytes</entry>
 								<entry>bytecount seen, see description for <command>packets</command> keyword</entry>
+								<entry>integer (64 bit)</entry>
+							</row>
+							<row>
+								<entry>avgpkt</entry>
+								<entry>average bytes per packet, see description for <command>packets</command> keyword</entry>
 								<entry>integer (64 bit)</entry>
 							</row>
 						</tbody>

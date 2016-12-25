@@ -232,6 +232,8 @@ static const struct ct_template ct_templates[] = {
 					      BYTEORDER_HOST_ENDIAN, 64),
 	[NFT_CT_PKTS]		= CT_TEMPLATE("packets", &integer_type,
 					      BYTEORDER_HOST_ENDIAN, 64),
+	[NFT_CT_AVGPKT]		= CT_TEMPLATE("avgpkt", &integer_type,
+					      BYTEORDER_HOST_ENDIAN, 64),
 };
 
 static void ct_expr_print(const struct expr *expr)

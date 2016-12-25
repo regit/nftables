@@ -294,6 +294,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "name"			{ return NAME; }
 "packets"		{ return PACKETS; }
 "bytes"			{ return BYTES; }
+"avgpkt"		{ return AVGPKT; }
 
 "counters"		{ return COUNTERS; }
 "quotas"		{ return QUOTAS; }

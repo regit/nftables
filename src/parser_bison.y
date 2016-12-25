@@ -362,6 +362,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token NAME			"name"
 %token PACKETS			"packets"
 %token BYTES			"bytes"
+%token AVGPKT			"avgpkt"
 
 %token COUNTERS			"counters"
 %token QUOTAS			"quotas"
@@ -2945,6 +2946,7 @@ ct_key_dir		:	SADDR		{ $$ = NFT_CT_SRC; }
 
 ct_key_counters		:	BYTES		{ $$ = NFT_CT_BYTES; }
 			|	PACKETS		{ $$ = NFT_CT_PKTS; }
+			|	AVGPKT		{ $$ = NFT_CT_AVGPKT; }
 			;
 
 ct_stmt			:	CT	ct_key		SET	expr

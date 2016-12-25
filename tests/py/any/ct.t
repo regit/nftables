@@ -80,6 +80,9 @@ ct original bytes \> 100000;ok;ct original bytes > 100000
 ct reply packets \< 100;ok;ct reply packets < 100
 ct bytes \> 100000;ok;ct bytes > 100000
 
+ct avgpkt \> 200;ok;ct avgpkt > 200
+ct original avgpkt \< 500;ok;ct original avgpkt < 500
+
 # bogus direction
 ct both bytes gt 1;fail
 # nonsensical
