@@ -470,7 +470,7 @@ static int expr_evaluate_exthdr(struct eval_ctx *ctx, struct expr **exprp)
 
 /* dependency supersede.
  *
- * 'inet' is a 'phony' l2 dependeny used by NFPROTO_INET to fulfill network
+ * 'inet' is a 'phony' l2 dependency used by NFPROTO_INET to fulfill network
  * header dependency, i.e. ensure that 'ip saddr 1.2.3.4' only sees ip headers.
  *
  * If a match expression that depends on a particular L2 header, e.g. ethernet,
