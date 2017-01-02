@@ -608,11 +608,17 @@ static int expr_value_cmp(const void *p1, const void *p2)
 
 void interval_map_decompose(struct expr *set)
 {
-	struct expr *elements[set->size], *ranges[set->size * 2];
+	struct expr **elements, **ranges;
 	struct expr *i, *next, *low = NULL, *end;
 	unsigned int n, m, size;
 	mpz_t range, p;
 	bool interval;
+
+	if (set->size == 0)
+		return;
+
+	elements = xmalloc_array(set->size, sizeof(struct expr *));
+	ranges = xmalloc_array(set->size * 2, sizeof(struct expr *));
 
 	mpz_init(range);
 	mpz_init(p);
@@ -728,4 +734,7 @@ void interval_map_decompose(struct expr *set)
 
 		compound_expr_add(set, i);
 	}
+
+	xfree(ranges);
+	xfree(elements);
 }
