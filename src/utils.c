@@ -39,6 +39,17 @@ void *xmalloc(size_t size)
 	return ptr;
 }
 
+void *xmalloc_array(size_t nmemb, size_t size)
+{
+	assert(size != 0);
+	assert(nmemb != 0);
+
+	if (nmemb > SIZE_MAX / size)
+		memory_allocation_error();
+
+	return xmalloc(nmemb * size);
+}
+
 void *xrealloc(void *ptr, size_t size)
 {
 	ptr = realloc(ptr, size);
