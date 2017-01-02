@@ -635,8 +635,8 @@ err:
 
 static bool search_in_include_path(const char *filename)
 {
-	return (strncmp(filename, "./", strlen("./") != 0) &&
-		strncmp(filename, "../", strlen("../") != 0) &&
+	return (strncmp(filename, "./", strlen("./")) != 0 &&
+		strncmp(filename, "../", strlen("../")) != 0 &&
 		filename[0] != '/');
 }
 
