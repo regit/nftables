@@ -205,7 +205,7 @@ void symbol_table_print(const struct symbol_table *tbl,
 			switch_byteorder(&value, len);
 
 		if (tbl->base == BASE_DECIMAL)
-			printf("\t%-30s\t%20lu\n", s->identifier, value);
+			printf("\t%-30s\t%20"PRIu64"\n", s->identifier, value);
 		else
 			printf("\t%-30s\t0x%.*" PRIx64 "\n",
 			       s->identifier, 2 * len, value);
