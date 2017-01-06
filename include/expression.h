@@ -396,6 +396,7 @@ extern struct expr *range_expr_alloc(const struct location *loc,
 
 extern void compound_expr_add(struct expr *compound, struct expr *expr);
 extern void compound_expr_remove(struct expr *compound, struct expr *expr);
+extern void list_expr_sort(struct list_head *head);
 
 extern struct expr *concat_expr_alloc(const struct location *loc);
 
