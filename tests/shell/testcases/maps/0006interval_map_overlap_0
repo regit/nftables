@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# test adding elements to an interval map
+# shows how disjoint intervals are seen as overlaps
+# NOTE this is only an issue with two separate nft calls
+
+tmpfile=$(mktemp)
+if [ ! -w $tmpfile ] ; then
+	echo "Failed to create tmp file" >&2
+	exit 0
+fi
+
+trap "rm -rf $tmpfile" EXIT # cleanup if aborted
+
+n=1
+echo "add table x
+add map x y { type ipv4_addr : ipv4_addr; flags interval; }
+add element x y { 10.0.${n}.0/24 : 10.0.0.${n} }" > $tmpfile
+
+set -e
+$NFT -f $tmpfile
+
+n=2
+echo "add element x y { 10.0.${n}.0/24 : 10.0.0.${n} }" > $tmpfile
+
+$NFT -f $tmpfile
+
+EXPECTED="table ip x {
+	map y {
+		type ipv4_addr : ipv4_addr
+		flags interval
+		elements = { 10.0.1.0/24 : 10.0.0.1, 10.0.2.0/24 : 10.0.0.2}
+	}
+}"
+GET=$($NFT list ruleset)
+if [ "$EXPECTED" != "$GET" ] ; then
+	DIFF="$(which diff)"
+	[ -x $DIFF ] && $DIFF -u <(echo "$EXPECTED") <(echo "$GET")
+	exit 1
+fi
+
