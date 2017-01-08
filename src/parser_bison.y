@@ -354,15 +354,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token NEXTHOP			"nexthop"
 
 %token CT			"ct"
-%token DIRECTION		"direction"
-%token STATE			"state"
-%token STATUS			"status"
-%token EXPIRATION		"expiration"
-%token HELPER			"helper"
 %token L3PROTOCOL		"l3proto"
 %token PROTO_SRC		"proto-src"
 %token PROTO_DST		"proto-dst"
-%token LABEL			"label"
 
 %token COUNTER			"counter"
 %token NAME			"name"
