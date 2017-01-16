@@ -1798,7 +1798,7 @@ static int stmt_evaluate_payload(struct eval_ctx *ctx, struct stmt *stmt)
 	mpz_clear(ff);
 
 	assert(sizeof(data) * BITS_PER_BYTE >= masklen);
-	mpz_export_data(data, bitmask, BYTEORDER_HOST_ENDIAN, masklen);
+	mpz_export_data(data, bitmask, BYTEORDER_HOST_ENDIAN, sizeof(data));
 	mask = constant_expr_alloc(&payload->location, expr_basetype(payload),
 				   BYTEORDER_HOST_ENDIAN, masklen, data);
 
