@@ -35,6 +35,7 @@ unsigned int handle_output;
 #ifdef DEBUG
 unsigned int debug_level;
 #endif
+bool stateless_output;
 
 const char *include_paths[INCLUDE_PATHS_MAX] = { DEFAULT_INCLUDE_PATH };
 static unsigned int num_include_paths = 1;
@@ -46,13 +47,14 @@ enum opt_vals {
 	OPT_INTERACTIVE		= 'i',
 	OPT_INCLUDEPATH		= 'I',
 	OPT_NUMERIC		= 'n',
+	OPT_STATELESS		= 's',
 	OPT_IP2NAME		= 'N',
 	OPT_DEBUG		= 'd',
 	OPT_HANDLE_OUTPUT	= 'a',
 	OPT_INVALID		= '?',
 };
 
-#define OPTSTRING	"hvf:iI:vnNa"
+#define OPTSTRING	"hvf:iI:vnsNa"
 
 static const struct option options[] = {
 	{
@@ -75,6 +77,10 @@ static const struct option options[] = {
 	{
 		.name		= "numeric",
 		.val		= OPT_NUMERIC,
+	},
+	{
+		.name		= "stateless",
+		.val		= OPT_STATELESS,
 	},
 	{
 		.name		= "reversedns",
@@ -116,6 +122,7 @@ static void show_help(const char *name)
 "  -n, --numeric			When specified once, show network addresses numerically (default behaviour).\n"
 "  				Specify twice to also show Internet services (port numbers) numerically.\n"
 "				Specify three times to also show protocols, user IDs, and group IDs numerically.\n"
+"  -s, --stateless		Omit stateful information of ruleset.\n"
 "  -N				Translate IP addresses to names.\n"
 "  -a, --handle			Output rule handle.\n"
 "  -I, --includepath <directory>	Add <directory> to the paths searched for include files.\n"
@@ -282,6 +289,9 @@ int main(int argc, char * const *argv)
 			break;
 		case OPT_NUMERIC:
 			numeric_output++;
+			break;
+		case OPT_STATELESS:
+			stateless_output = true;
 			break;
 		case OPT_IP2NAME:
 			ip2name_output++;

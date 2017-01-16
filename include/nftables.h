@@ -29,6 +29,7 @@ extern unsigned int numeric_output;
 extern unsigned int ip2name_output;
 extern unsigned int handle_output;
 extern unsigned int debug_level;
+extern bool stateless_output;
 extern const char *include_paths[INCLUDE_PATHS_MAX];
 
 enum nftables_exit_codes {

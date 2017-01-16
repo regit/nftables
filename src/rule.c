@@ -1178,6 +1178,10 @@ static void obj_print_data(const struct obj *obj,
 	case NFT_OBJECT_COUNTER:
 		printf(" %s {%s%s%s", obj->handle.obj,
 				      opts->nl, opts->tab, opts->tab);
+		if (stateless_output) {
+			printf("packets 0 bytes 0");
+			break;
+		}
 		printf("packets %"PRIu64" bytes %"PRIu64"",
 		       obj->counter.packets, obj->counter.bytes);
 		break;
@@ -1191,7 +1195,7 @@ static void obj_print_data(const struct obj *obj,
 		printf("%s%"PRIu64" %s",
 		       obj->quota.flags & NFT_QUOTA_F_INV ? "over " : "",
 		       bytes, data_unit);
-		if (obj->quota.used) {
+		if (!stateless_output && obj->quota.used) {
 			data_unit = get_rate(obj->quota.used, &bytes);
 			printf(" used %"PRIu64" %s", bytes, data_unit);
 		}

@@ -142,7 +142,12 @@ struct stmt *flow_stmt_alloc(const struct location *loc)
 
 static void counter_stmt_print(const struct stmt *stmt)
 {
-	printf("counter packets %" PRIu64 " bytes %" PRIu64,
+	printf("counter");
+
+	if (stateless_output)
+		return;
+
+	printf(" packets %" PRIu64 " bytes %" PRIu64,
 	       stmt->counter.packets, stmt->counter.bytes);
 }
 
@@ -391,7 +396,7 @@ static void quota_stmt_print(const struct stmt *stmt)
 	printf("quota %s%"PRIu64" %s",
 	       inv ? "over " : "", bytes, data_unit);
 
-	if (stmt->quota.used) {
+	if (!stateless_output && stmt->quota.used) {
 		data_unit = get_rate(stmt->quota.used, &used);
 		printf(" used %"PRIu64" %s", used, data_unit);
 	}
