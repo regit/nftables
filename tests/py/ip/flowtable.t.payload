@@ -1,4 +1,4 @@
-# flow table xyz { ip saddr timeout 30s counter packets 0 bytes 0}
+# flow table xyz { ip saddr timeout 30s counter}
 xyz test-ip 31
 xyz test-ip 0
 ip test-ip input 

@@ -625,7 +625,7 @@ def rule_add(rule, filename, lineno, force_all_family_option, filename_path):
                                   gotf.name, 1)
 
                 # Check output of nft
-                process = subprocess.Popen([NFT_BIN, '-nnn', 'list', 'table',
+                process = subprocess.Popen([NFT_BIN, '-nnns', 'list', 'table',
                                             table.family, table.name],
                                            shell=False,
                                            stdout=subprocess.PIPE,

@@ -10,7 +10,7 @@ ip6 test-ip6 output
   [ cmp eq reg 1 0x0000ba03 ]
   [ redir ]
 
-# ip6 saddr fe00::cafe counter packets 0 bytes 0 redirect
+# ip6 saddr fe00::cafe counter redirect
 ip6 test-ip6 output
   [ payload load 16b @ network header + 8 => reg 1 ]
   [ cmp eq reg 1 0x000000fe 0x00000000 0x00000000 0xfeca0000 ]
@@ -163,7 +163,7 @@ ip6 test-ip6 output
   [ lookup reg 1 set __set%d ]
   [ redir ]
 
-# ip6 daddr fe00::1-fe00::200 udp dport 53 counter packets 0 bytes 0 redirect
+# ip6 daddr fe00::1-fe00::200 udp dport 53 counter redirect
 ip6 test-ip6 output
   [ payload load 16b @ network header + 24 => reg 1 ]
   [ cmp gte reg 1 0x000000fe 0x00000000 0x00000000 0x01000000 ]

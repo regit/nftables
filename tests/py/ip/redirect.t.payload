@@ -179,7 +179,7 @@ ip test-ip4 output
   [ lookup reg 1 set __set%d ]
   [ redir ]
 
-# ip daddr 10.0.0.0-10.2.3.4 udp dport 53 counter packets 0 bytes 0 redirect
+# ip daddr 10.0.0.0-10.2.3.4 udp dport 53 counter redirect
 ip test-ip4 output
   [ payload load 4b @ network header + 16 => reg 1 ]
   [ cmp gte reg 1 0x0000000a ]

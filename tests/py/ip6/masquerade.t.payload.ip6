@@ -97,7 +97,7 @@ ip6 test-ip6 postrouting
   [ lookup reg 1 set __set%d ]
   [ masq ]
 
-# ip6 daddr fe00::1-fe00::200 udp dport 53 counter packets 0 bytes 0 masquerade
+# ip6 daddr fe00::1-fe00::200 udp dport 53 counter masquerade
 ip6 test-ip6 postrouting
   [ payload load 16b @ network header + 24 => reg 1 ]
   [ cmp gte reg 1 0x000000fe 0x00000000 0x00000000 0x01000000 ]

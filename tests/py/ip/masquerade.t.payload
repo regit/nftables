@@ -97,7 +97,7 @@ ip test-ip4 postrouting
   [ lookup reg 1 set __set%d ]
   [ masq ]
 
-# ip daddr 10.0.0.0-10.2.3.4 udp dport 53 counter packets 0 bytes 0 masquerade
+# ip daddr 10.0.0.0-10.2.3.4 udp dport 53 counter masquerade
 ip test-ip4 postrouting
   [ payload load 4b @ network header + 16 => reg 1 ]
   [ cmp gte reg 1 0x0000000a ]

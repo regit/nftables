@@ -5,7 +5,7 @@
 # with no arguments
 redirect;ok
 udp dport 954 redirect;ok
-ip6 saddr fe00::cafe counter packets 0 bytes 0 redirect;ok
+ip6 saddr fe00::cafe counter redirect;ok
 
 # nf_nat flags combination
 udp dport 53 redirect random;ok
@@ -42,7 +42,7 @@ ip6 saddr ::1 redirect drop;fail
 
 # redirect with sets
 tcp dport { 1, 2, 3, 4, 5, 6, 7, 8, 101, 202, 303, 1001, 2002, 3003} redirect;ok
-ip6 daddr fe00::1-fe00::200 udp dport 53 counter packets 0 bytes 0 redirect;ok
+ip6 daddr fe00::1-fe00::200 udp dport 53 counter redirect;ok
 iifname eth0 ct state new,established tcp dport vmap {22 : drop, 222 : drop } redirect;ok
 
 # redirect with maps

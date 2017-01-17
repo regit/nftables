@@ -2,4 +2,4 @@
 
 *ip;test-ip;input
 
-flow table xyz { ip saddr timeout 30s counter packets 0 bytes 0};ok
+flow table xyz { ip saddr timeout 30s counter};ok
