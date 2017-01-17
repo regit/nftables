@@ -49,6 +49,9 @@ vi:ts=4 sw=4
 				<option>-n | --numeric</option>
 			</arg>
 			<arg choice="opt">
+				<option>-s | --stateless</option>
+			</arg>
+			<arg choice="opt">
 				<option>[-I | --includepath]</option>
 				<replaceable>directory</replaceable>
 			</arg>
@@ -115,6 +118,14 @@ vi:ts=4 sw=4
 						lookup of addresses to symbolic names. Use twice to also show Internet
 						services (port numbers) numerically. Use three times to also show
 						protocols and UIDs/GIDs numerically.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-s, --stateless</option></term>
+				<listitem>
+					<para>
+						Omit stateful information of rules and stateful objects.
 					</para>
 				</listitem>
 			</varlistentry>
