@@ -30,12 +30,12 @@
 
 unsigned int max_errors = 10;
 unsigned int numeric_output;
+unsigned int stateless_output;
 unsigned int ip2name_output;
 unsigned int handle_output;
 #ifdef DEBUG
 unsigned int debug_level;
 #endif
-bool stateless_output;
 
 const char *include_paths[INCLUDE_PATHS_MAX] = { DEFAULT_INCLUDE_PATH };
 static unsigned int num_include_paths = 1;
@@ -291,7 +291,7 @@ int main(int argc, char * const *argv)
 			numeric_output++;
 			break;
 		case OPT_STATELESS:
-			stateless_output = true;
+			stateless_output++;
 			break;
 		case OPT_IP2NAME:
 			ip2name_output++;

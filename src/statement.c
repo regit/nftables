@@ -117,8 +117,13 @@ static void flow_stmt_print(const struct stmt *stmt)
 	printf("{ ");
 	expr_print(stmt->flow.key);
 	printf(" ");
+
+	stateless_output++;
 	stmt_print(stmt->flow.stmt);
+	stateless_output--;
+
 	printf("} ");
+
 }
 
 static void flow_stmt_destroy(struct stmt *stmt)
