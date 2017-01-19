@@ -551,9 +551,7 @@ static int netlink_list_rules(struct netlink_ctx *ctx, const struct handle *h,
 		if (errno == EINTR)
 			return -1;
 
-		return netlink_io_error(ctx, loc,
-					"Could not receive rules from kernel: %s",
-					strerror(errno));
+		return 0;
 	}
 
 	ctx->data = h;
@@ -827,9 +825,7 @@ int netlink_list_chains(struct netlink_ctx *ctx, const struct handle *h,
 		if (errno == EINTR)
 			return -1;
 
-		return netlink_io_error(ctx, loc,
-					"Could not receive chains from kernel: %s",
-					strerror(errno));
+		return 0;
 	}
 
 	ctx->data = h;
@@ -1029,9 +1025,7 @@ int netlink_list_tables(struct netlink_ctx *ctx, const struct handle *h,
 		if (errno == EINTR)
 			return -1;
 
-		return netlink_io_error(ctx, loc,
-					"Could not receive tables from kernel: %s",
-					strerror(errno));
+		return 0;
 	}
 
 	nftnl_table_list_foreach(table_cache, list_table_cb, ctx);
@@ -1331,9 +1325,7 @@ int netlink_list_sets(struct netlink_ctx *ctx, const struct handle *h,
 		if (errno == EINTR)
 			return -1;
 
-		return netlink_io_error(ctx, loc,
-					"Could not receive sets from kernel: %s",
-					strerror(errno));
+		return 0;
 	}
 
 	err = nftnl_set_list_foreach(set_cache, list_set_cb, ctx);
@@ -1789,9 +1781,7 @@ int netlink_list_objs(struct netlink_ctx *ctx, const struct handle *h,
 		if (errno == EINTR)
 			return -1;
 
-		return netlink_io_error(ctx, loc,
-					"Could not receive stateful objects from kernel: %s",
-					strerror(errno));
+		return 0;
 	}
 
 	err = nftnl_obj_list_foreach(obj_cache, list_obj_cb, ctx);
