@@ -96,10 +96,9 @@ static int cache_init_objects(struct netlink_ctx *ctx, enum cmd_ops cmd)
 		list_splice_tail_init(&ctx->list, &table->chains);
 
 		if (cmd != CMD_RESET) {
-			/* Don't check for errors on listings, this would break
-			 * nft with old kernels with no stateful object support.
-			 */
-			netlink_list_objs(ctx, &table->handle, &internal_location);
+			ret = netlink_list_objs(ctx, &table->handle, &internal_location);
+			if (ret < 0)
+				return -1;
 			list_splice_tail_init(&ctx->list, &table->objs);
 		}
 
