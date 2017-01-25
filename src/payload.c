@@ -223,6 +223,34 @@ static int payload_add_dependency(struct eval_ctx *ctx,
 	return 0;
 }
 
+static const struct proto_desc *
+payload_gen_special_dependency(struct eval_ctx *ctx, const struct expr *expr)
+{
+	switch (expr->payload.base) {
+	case PROTO_BASE_LL_HDR:
+		switch (ctx->pctx.family) {
+		case NFPROTO_INET:
+			return &proto_inet;
+		case NFPROTO_BRIDGE:
+			return &proto_eth;
+		case NFPROTO_NETDEV:
+			return &proto_netdev;
+		default:
+			break;
+		}
+		break;
+	case PROTO_BASE_TRANSPORT_HDR:
+		if (expr->payload.desc == &proto_icmp)
+			return &proto_ip;
+		if (expr->payload.desc == &proto_icmp6)
+			return &proto_ip6;
+		return &proto_inet_service;
+	default:
+		break;
+	}
+	return NULL;
+}
+
 /**
  * payload_gen_dependency - generate match expression on payload dependency
  *
@@ -276,46 +304,8 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 
 	desc = ctx->pctx.protocol[expr->payload.base - 1].desc;
 	/* Special case for mixed IPv4/IPv6 and bridge tables */
-	if (desc == NULL) {
-		switch (ctx->pctx.family) {
-		case NFPROTO_INET:
-			switch (expr->payload.base) {
-			case PROTO_BASE_LL_HDR:
-				desc = &proto_inet;
-				break;
-			case PROTO_BASE_TRANSPORT_HDR:
-				desc = &proto_inet_service;
-				break;
-			default:
-				break;
-			}
-			break;
-		case NFPROTO_BRIDGE:
-			switch (expr->payload.base) {
-			case PROTO_BASE_LL_HDR:
-				desc = &proto_eth;
-				break;
-			case PROTO_BASE_TRANSPORT_HDR:
-				desc = &proto_inet_service;
-				break;
-			default:
-				break;
-			}
-			break;
-		case NFPROTO_NETDEV:
-			switch (expr->payload.base) {
-			case PROTO_BASE_LL_HDR:
-				desc = &proto_netdev;
-				break;
-			case PROTO_BASE_TRANSPORT_HDR:
-				desc = &proto_inet_service;
-				break;
-			default:
-				break;
-			}
-			break;
-		}
-	}
+	if (desc == NULL)
+		desc = payload_gen_special_dependency(ctx, expr);
 
 	if (desc == NULL)
 		return expr_error(ctx->msgs, expr,
