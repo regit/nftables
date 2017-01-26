@@ -1775,8 +1775,8 @@ int netlink_list_objs(struct netlink_ctx *ctx, const struct handle *h,
 	struct nftnl_obj_list *obj_cache;
 	int err;
 
-	obj_cache = mnl_nft_obj_dump(nf_sock, h->family, h->table,
-				     NFT_OBJECT_UNSPEC, false);
+	obj_cache = mnl_nft_obj_dump(nf_sock, h->family, h->table, NULL,
+				     0, true, false);
 	if (obj_cache == NULL) {
 		if (errno == EINTR)
 			return -1;
@@ -1790,12 +1790,13 @@ int netlink_list_objs(struct netlink_ctx *ctx, const struct handle *h,
 }
 
 int netlink_reset_objs(struct netlink_ctx *ctx, const struct handle *h,
-		       const struct location *loc, uint32_t type)
+		       const struct location *loc, uint32_t type, bool dump)
 {
 	struct nftnl_obj_list *obj_cache;
 	int err;
 
-	obj_cache = mnl_nft_obj_dump(nf_sock, h->family, h->table, type, true);
+	obj_cache = mnl_nft_obj_dump(nf_sock, h->family, h->table, h->obj,
+				     type, dump, true);
 	if (obj_cache == NULL) {
 		if (errno == EINTR)
 			return -1;

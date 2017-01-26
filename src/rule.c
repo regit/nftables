@@ -1435,21 +1435,26 @@ static int do_command_reset(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	struct obj *obj, *next;
 	struct table *table;
+	bool dump = false;
 	uint32_t type;
 	int ret;
 
 	switch (cmd->obj) {
 	case CMD_OBJ_COUNTERS:
+		dump = true;
+	case CMD_OBJ_COUNTER:
 		type = NFT_OBJECT_COUNTER;
 		break;
 	case CMD_OBJ_QUOTAS:
+		dump = true;
+	case CMD_OBJ_QUOTA:
 		type = NFT_OBJECT_QUOTA;
 		break;
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
 
-	ret = netlink_reset_objs(ctx, &cmd->handle, &cmd->location, type);
+	ret = netlink_reset_objs(ctx, &cmd->handle, &cmd->location, type, dump);
 	list_for_each_entry_safe(obj, next, &ctx->list, list) {
 		table = table_lookup(&obj->handle);
 		list_move(&obj->list, &table->objs);

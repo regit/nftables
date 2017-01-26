@@ -172,7 +172,8 @@ extern int netlink_flush_setelems(struct netlink_ctx *ctx, const struct handle *
 extern int netlink_list_objs(struct netlink_ctx *ctx, const struct handle *h,
 			     const struct location *loc);
 extern int netlink_reset_objs(struct netlink_ctx *ctx, const struct handle *h,
-			      const struct location *loc, uint32_t type);
+			      const struct location *loc, uint32_t type,
+			      bool dump);
 extern int netlink_add_obj(struct netlink_ctx *ctx, const struct handle *h,
 			   struct obj *obj, bool excl);
 extern int netlink_delete_obj(struct netlink_ctx *ctx, const struct handle *h,

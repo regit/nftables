@@ -974,6 +974,10 @@ reset_cmd		:	COUNTERS	ruleset_spec
 			{
 				$$ = cmd_alloc(CMD_RESET, CMD_OBJ_COUNTERS, &$3, &@$, NULL);
 			}
+			|       COUNTER         obj_spec
+			{
+				$$ = cmd_alloc(CMD_RESET, CMD_OBJ_COUNTER, &$2,&@$, NULL);
+			}
 			|	QUOTAS		ruleset_spec
 			{
 				$$ = cmd_alloc(CMD_RESET, CMD_OBJ_QUOTAS, &$2, &@$, NULL);
@@ -981,6 +985,10 @@ reset_cmd		:	COUNTERS	ruleset_spec
 			|	QUOTAS		TABLE	table_spec
 			{
 				$$ = cmd_alloc(CMD_RESET, CMD_OBJ_QUOTAS, &$3, &@$, NULL);
+			}
+			|       QUOTA           obj_spec
+			{
+				$$ = cmd_alloc(CMD_RESET, CMD_OBJ_QUOTA, &$2, &@$, NULL);
 			}
 			;
 
