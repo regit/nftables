@@ -1276,8 +1276,16 @@ static int do_list_obj(struct netlink_ctx *ctx, struct cmd *cmd, uint32_t type)
 		       family2str(table->handle.family),
 		       table->handle.table);
 
+		if (cmd->handle.table != NULL &&
+		    strcmp(cmd->handle.table, table->handle.table)) {
+			printf("}\n");
+			continue;
+		}
+
 		list_for_each_entry(obj, &table->objs, list) {
-			if (obj->type != type)
+			if (obj->type != type ||
+			    (cmd->handle.obj != NULL &&
+			     strcmp(cmd->handle.obj, obj->handle.obj)))
 				continue;
 
 			obj_print_declaration(obj, &opts);
@@ -1420,8 +1428,10 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 		return do_list_sets(ctx, cmd);
 	case CMD_OBJ_MAP:
 		return do_list_set(ctx, cmd, table);
+	case CMD_OBJ_COUNTER:
 	case CMD_OBJ_COUNTERS:
 		return do_list_obj(ctx, cmd, NFT_OBJECT_COUNTER);
+	case CMD_OBJ_QUOTA:
 	case CMD_OBJ_QUOTAS:
 		return do_list_obj(ctx, cmd, NFT_OBJECT_QUOTA);
 	default:
