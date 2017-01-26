@@ -2974,12 +2974,13 @@ static int cmd_evaluate_reset(struct eval_ctx *ctx, struct cmd *cmd)
 	switch (cmd->obj) {
 	case CMD_OBJ_COUNTER:
 	case CMD_OBJ_QUOTA:
+	case CMD_OBJ_COUNTERS:
+	case CMD_OBJ_QUOTAS:
+		if (cmd->handle.table == NULL)
+			return 0;
 		if (table_lookup(&cmd->handle) == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
-		return 0;
-	case CMD_OBJ_COUNTERS:
-	case CMD_OBJ_QUOTAS:
 		return 0;
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
