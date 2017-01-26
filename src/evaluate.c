@@ -2950,10 +2950,16 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 			return cmd_error(ctx, "Could not process rule: Object '%s' does not exist",
 					 cmd->handle.obj);
 		return 0;
-	case CMD_OBJ_CHAINS:
-	case CMD_OBJ_SETS:
 	case CMD_OBJ_COUNTERS:
 	case CMD_OBJ_QUOTAS:
+		if (cmd->handle.table == NULL)
+			return 0;
+		if (table_lookup(&cmd->handle) == NULL)
+			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
+					 cmd->handle.table);
+		return 0;
+	case CMD_OBJ_CHAINS:
+	case CMD_OBJ_SETS:
 	case CMD_OBJ_RULESET:
 	case CMD_OBJ_FLOWTABLES:
 	case CMD_OBJ_MAPS:
