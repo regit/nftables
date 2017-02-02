@@ -288,7 +288,12 @@ int main(int argc, char * const *argv)
 			include_paths[num_include_paths++] = optarg;
 			break;
 		case OPT_NUMERIC:
-			numeric_output++;
+			if (++numeric_output > NUMERIC_ALL) {
+				fprintf(stderr, "Too many numeric options "
+						"used, max. %u\n",
+					NUMERIC_ALL);
+				exit(NFT_EXIT_FAILURE);
+			}
 			break;
 		case OPT_STATELESS:
 			stateless_output++;
