@@ -597,9 +597,11 @@ struct expr *relational_expr_alloc(const struct location *loc, enum ops op,
 
 static void range_expr_print(const struct expr *expr)
 {
+	numeric_output += NUMERIC_ALL + 1;
 	expr_print(expr->left);
 	printf("-");
 	expr_print(expr->right);
+	numeric_output -= NUMERIC_ALL + 1;
 }
 
 static void range_expr_clone(struct expr *new, const struct expr *expr)

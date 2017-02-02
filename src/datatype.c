@@ -175,9 +175,15 @@ void symbolic_constant_print(const struct symbol_table *tbl,
 		return expr_basetype(expr)->print(expr);
 
 	if (quotes)
-		printf("\"%s\"", s->identifier);
+		printf("\"");
+
+	if (numeric_output > NUMERIC_ALL)
+		printf("%lu", val);
 	else
 		printf("%s", s->identifier);
+
+	if (quotes)
+		printf("\"");
 }
 
 static void switch_byteorder(void *data, unsigned int len)
