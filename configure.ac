@@ -102,7 +102,7 @@ AC_ARG_WITH([xtables], [AS_HELP_STRING([--with-xtables],
             [Use libxtables for iptables interaction)])],
 	    [with_libxtables=yes], [with_libxtables=no])
 AS_IF([test "x$with_libxtables" != xno], [
-PKG_CHECK_MODULES([XTABLES], [xtables >= 1.6.0])
+PKG_CHECK_MODULES([XTABLES], [xtables >= 1.6.1])
 AC_DEFINE([HAVE_LIBXTABLES], [1], [0])
 ])
 AC_SUBST(with_libxtables)
