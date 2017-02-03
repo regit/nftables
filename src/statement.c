@@ -508,6 +508,8 @@ static void nat_stmt_print(const struct stmt *stmt)
 				printf("]-[");
 				expr_print(stmt->nat.addr->right);
 				printf("]");
+			} else {
+				expr_print(stmt->nat.addr);
 			}
 		} else {
 			expr_print(stmt->nat.addr);
