@@ -597,10 +597,9 @@ static void inet_service_type_print(const struct expr *expr)
 static struct error_record *inet_service_type_parse(const struct expr *sym,
 						    struct expr **res)
 {
-	struct addrinfo *ai;
+	const struct symbolic_constant *s;
 	uint16_t port;
 	uintmax_t i;
-	int err;
 	char *end;
 
 	errno = 0;
@@ -611,13 +610,16 @@ static struct error_record *inet_service_type_parse(const struct expr *sym,
 
 		port = htons(i);
 	} else {
-		err = getaddrinfo(NULL, sym->identifier, NULL, &ai);
-		if (err != 0)
-			return error(&sym->location, "Could not resolve service: %s",
-				     gai_strerror(err));
+		for (s = inet_service_tbl.symbols; s->identifier != NULL; s++) {
+			if (!strcmp(sym->identifier, s->identifier))
+				break;
+		}
 
-		port = ((struct sockaddr_in *)ai->ai_addr)->sin_port;
-		freeaddrinfo(ai);
+		if (s->identifier == NULL)
+			return error(&sym->location, "Could not resolve service: "
+				     "Servname not found in nft services list");
+
+		port = s->value;
 	}
 
 	*res = constant_expr_alloc(&sym->location, &inet_service_type,
