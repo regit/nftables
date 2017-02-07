@@ -1841,7 +1841,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 		expr_postprocess(ctx, &expr->key);
 		break;
 	case EXPR_EXTHDR:
-		__payload_dependency_kill(&ctx->pdctx, PROTO_BASE_NETWORK_HDR);
+		exthdr_dependency_kill(&ctx->pdctx, expr);
 		break;
 	case EXPR_SET_REF:
 	case EXPR_META:

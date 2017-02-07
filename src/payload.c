@@ -410,6 +410,20 @@ void payload_dependency_kill(struct payload_dep_ctx *ctx, struct expr *expr)
 	__payload_dependency_kill(ctx, expr->payload.base);
 }
 
+void exthdr_dependency_kill(struct payload_dep_ctx *ctx, struct expr *expr)
+{
+	switch (expr->exthdr.op) {
+	case NFT_EXTHDR_OP_TCPOPT:
+		__payload_dependency_kill(ctx, PROTO_BASE_TRANSPORT_HDR);
+		break;
+	case NFT_EXTHDR_OP_IPV6:
+		__payload_dependency_kill(ctx, PROTO_BASE_NETWORK_HDR);
+		break;
+	default:
+		break;
+	}
+}
+
 /**
  * payload_expr_complete - fill in type information of a raw payload expr
  *
