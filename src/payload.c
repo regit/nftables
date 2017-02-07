@@ -323,12 +323,26 @@ int exthdr_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 	const struct proto_desc *desc;
 
 	desc = ctx->pctx.protocol[pb].desc;
-	if (desc == NULL)
+	if (desc == NULL) {
+		if (expr->exthdr.op == NFT_EXTHDR_OP_TCPOPT) {
+			switch (ctx->pctx.family) {
+			case NFPROTO_NETDEV:
+			case NFPROTO_BRIDGE:
+			case NFPROTO_INET:
+				desc = &proto_inet_service;
+				goto found;
+			default:
+				break;
+			}
+		}
+
 		return expr_error(ctx->msgs, expr,
 				  "Cannot generate dependency: "
 				  "no %s protocol specified",
 				  proto_base_names[pb]);
+	}
 
+ found:
 	return payload_add_dependency(ctx, desc, dependency, expr, res);
 }
 
