@@ -79,7 +79,8 @@ static const struct exthdr_desc *exthdr_protocols[IPPROTO_MAX] = {
 };
 
 void exthdr_init_raw(struct expr *expr, uint8_t type,
-		     unsigned int offset, unsigned int len)
+		     unsigned int offset, unsigned int len,
+		     enum nft_exthdr_op op)
 {
 	const struct proto_hdr_template *tmpl;
 	unsigned int i;
@@ -123,7 +124,7 @@ bool exthdr_find_template(struct expr *expr, const struct expr *mask, unsigned i
 	off += round_up(mask->len, BITS_PER_BYTE) - mask_len;
 
 	exthdr_init_raw(expr, expr->exthdr.desc->type,
-			off, mask_len - mask_offset);
+			off, mask_len - mask_offset, NFT_EXTHDR_OP_IPV6);
 
 	/* still failed to find a template... Bug. */
 	if (expr->exthdr.tmpl == &exthdr_unknown_template)
