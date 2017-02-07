@@ -24,13 +24,29 @@
 
 static void exthdr_expr_print(const struct expr *expr)
 {
-	printf("%s %s", expr->exthdr.desc->name, expr->exthdr.tmpl->token);
+	if (expr->exthdr.op == NFT_EXTHDR_OP_TCPOPT) {
+		/* Offset calcualtion is a bit hacky at this point.
+		 * There might be an tcp option one day with another
+		 * multiplicator
+		 */
+		unsigned int offset = expr->exthdr.offset / 64;
+		char buf[3] = {0};
+
+		if (offset)
+			snprintf(buf, sizeof buf, " %d", offset);
+		printf("tcp option %s%s %s", expr->exthdr.desc->name, buf,
+					     expr->exthdr.tmpl->token);
+	}
+	else
+		printf("%s %s", expr->exthdr.desc->name,
+				expr->exthdr.tmpl->token);
 }
 
 static bool exthdr_expr_cmp(const struct expr *e1, const struct expr *e2)
 {
 	return e1->exthdr.desc == e2->exthdr.desc &&
-	       e1->exthdr.tmpl == e2->exthdr.tmpl;
+	       e1->exthdr.tmpl == e2->exthdr.tmpl &&
+	       e1->exthdr.op == e2->exthdr.op;
 }
 
 static void exthdr_expr_clone(struct expr *new, const struct expr *expr)
@@ -38,9 +54,10 @@ static void exthdr_expr_clone(struct expr *new, const struct expr *expr)
 	new->exthdr.desc = expr->exthdr.desc;
 	new->exthdr.tmpl = expr->exthdr.tmpl;
 	new->exthdr.offset = expr->exthdr.offset;
+	new->exthdr.op = expr->exthdr.op;
 }
 
-static const struct expr_ops exthdr_expr_ops = {
+const struct expr_ops exthdr_expr_ops = {
 	.type		= EXPR_EXTHDR,
 	.name		= "exthdr",
 	.print		= exthdr_expr_print,
@@ -86,6 +103,8 @@ void exthdr_init_raw(struct expr *expr, uint8_t type,
 	unsigned int i;
 
 	assert(expr->ops->type == EXPR_EXTHDR);
+	if (op == NFT_EXTHDR_OP_TCPOPT)
+		return tcpopt_init_raw(expr, type, offset, len);
 
 	expr->len = len;
 	expr->exthdr.offset = offset;
@@ -116,6 +135,12 @@ bool exthdr_find_template(struct expr *expr, const struct expr *mask, unsigned i
 
 	if (expr->exthdr.tmpl != &exthdr_unknown_template)
 		return false;
+
+	/* In case we are handling tcp options instead of the default ipv6
+	 * extension headers.
+	 */
+	if (expr->exthdr.op == NFT_EXTHDR_OP_TCPOPT)
+		return tcpopt_find_template(expr, mask, shift);
 
 	mask_offset = mpz_scan1(mask->value, 0);
 	mask_len = mask_length(mask);

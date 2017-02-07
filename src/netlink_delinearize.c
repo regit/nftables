@@ -507,7 +507,7 @@ static void netlink_parse_exthdr(struct netlink_parse_ctx *ctx,
 	type   = nftnl_expr_get_u8(nle, NFTNL_EXPR_EXTHDR_TYPE);
 	offset = nftnl_expr_get_u32(nle, NFTNL_EXPR_EXTHDR_OFFSET) * BITS_PER_BYTE;
 	len    = nftnl_expr_get_u32(nle, NFTNL_EXPR_EXTHDR_LEN) * BITS_PER_BYTE;
-	op     = NFT_EXTHDR_OP_IPV6;
+	op     = nftnl_expr_get_u32(nle, NFTNL_EXPR_EXTHDR_OP);
 
 	expr = exthdr_expr_alloc(loc, NULL, 0);
 	exthdr_init_raw(expr, type, offset, len, op);
@@ -1221,6 +1221,7 @@ static const struct {
 	{ .name = "numgen",	.parse = netlink_parse_numgen },
 	{ .name = "hash",	.parse = netlink_parse_hash },
 	{ .name = "fib",	.parse = netlink_parse_fib },
+	{ .name = "tcpopt",	.parse = netlink_parse_exthdr },
 };
 
 static int netlink_parse_expr(const struct nftnl_expr *nle,

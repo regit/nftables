@@ -411,6 +411,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "doff"			{ return DOFF; }
 "window"		{ return WINDOW; }
 "urgptr"		{ return URGPTR; }
+"option"		{ return OPTION; }
 
 "dccp"			{ return DCCP; }
 

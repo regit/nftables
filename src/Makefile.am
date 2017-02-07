@@ -55,6 +55,7 @@ nft_SOURCES =	main.c				\
 		services.c			\
 		mergesort.c			\
 		scanner.l			\
+		tcpopt.c			\
 		parser_bison.y
 
 if BUILD_CLI

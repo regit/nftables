@@ -438,6 +438,26 @@ static int __expr_evaluate_exthdr(struct eval_ctx *ctx, struct expr **exprp)
 	    expr->len % BITS_PER_BYTE != 0)
 		expr_evaluate_bits(ctx, exprp);
 
+	switch (expr->exthdr.op) {
+	case NFT_EXTHDR_OP_TCPOPT: {
+		static const uint8_t tcphdrlen = 20 * BITS_PER_BYTE;
+		static const unsigned int max_tcpoptlen = 15 * 4 * BITS_PER_BYTE - tcphdrlen;
+		unsigned int totlen = 0;
+
+		totlen += expr->exthdr.tmpl->offset;
+		totlen += expr->exthdr.tmpl->len;
+		totlen += expr->exthdr.offset;
+
+		if (totlen > max_tcpoptlen)
+			return expr_error(ctx->msgs, expr,
+					  "offset and size %u exceeds max tcp headerlen (%u)",
+					  totlen, max_tcpoptlen);
+		break;
+	}
+	default:
+		break;
+	}
+
 	return 0;
 }
 
@@ -448,10 +468,23 @@ static int __expr_evaluate_exthdr(struct eval_ctx *ctx, struct expr **exprp)
  */
 static int expr_evaluate_exthdr(struct eval_ctx *ctx, struct expr **exprp)
 {
-	const struct proto_desc *base, *dependency = &proto_ip6;
+	const struct proto_desc *base, *dependency = NULL;
 	enum proto_bases pb = PROTO_BASE_NETWORK_HDR;
 	struct expr *expr = *exprp;
 	struct stmt *nstmt;
+
+	switch (expr->exthdr.op) {
+	case NFT_EXTHDR_OP_TCPOPT:
+		dependency = &proto_tcp;
+		pb = PROTO_BASE_TRANSPORT_HDR;
+		break;
+	case NFT_EXTHDR_OP_IPV6:
+	default:
+		dependency = &proto_ip6;
+		break;
+	}
+
+	assert(dependency);
 
 	base = ctx->pctx.protocol[pb].desc;
 	if (base == dependency)

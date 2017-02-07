@@ -308,6 +308,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token DOFF			"doff"
 %token WINDOW			"window"
 %token URGPTR			"urgptr"
+%token OPTION			"option"
 
 %token DCCP			"dccp"
 
@@ -428,8 +429,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %token NOTRACK			"notrack"
 
-%type <string>			identifier type_identifier string comment_spec
-%destructor { xfree($$); }	identifier type_identifier string comment_spec
+%type <string>			identifier type_identifier string comment_spec tcp_option_name tcp_option_field
+%destructor { xfree($$); }	identifier type_identifier string comment_spec tcp_option_name tcp_option_field
 
 %type <val>			time_spec quota_used
 
@@ -581,9 +582,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			auth_hdr_expr	esp_hdr_expr		comp_hdr_expr
 %destructor { expr_free($$); }	auth_hdr_expr	esp_hdr_expr		comp_hdr_expr
 %type <val>			auth_hdr_field	esp_hdr_field		comp_hdr_field
-%type <expr>			udp_hdr_expr	udplite_hdr_expr	tcp_hdr_expr
-%destructor { expr_free($$); }	udp_hdr_expr	udplite_hdr_expr	tcp_hdr_expr
-%type <val>			udp_hdr_field	udplite_hdr_field	tcp_hdr_field
+%type <expr>			udp_hdr_expr	udplite_hdr_expr
+%destructor { expr_free($$); }	udp_hdr_expr	udplite_hdr_expr
+%type <val>			udp_hdr_field	udplite_hdr_field
 %type <expr>			dccp_hdr_expr	sctp_hdr_expr
 %destructor { expr_free($$); }	dccp_hdr_expr	sctp_hdr_expr
 %type <val>			dccp_hdr_field	sctp_hdr_field
@@ -599,6 +600,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			mh_hdr_expr
 %destructor { expr_free($$); }	mh_hdr_expr
 %type <val>			mh_hdr_field
+
+%type <expr>			tcp_hdr_optexpr
+%destructor { expr_free($$); }	tcp_hdr_optexpr
 
 %type <expr>			meta_expr
 %destructor { expr_free($$); }	meta_expr
@@ -625,6 +629,10 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { xfree($$); }	counter_config
 %type <quota>			quota_config
 %destructor { xfree($$); }	quota_config
+
+%type <expr>			tcp_hdr_expr
+%destructor { expr_free($$); }	tcp_hdr_expr
+%type <val>			tcp_hdr_field
 
 %%
 
@@ -3232,6 +3240,7 @@ exthdr_expr		:	hbh_hdr_expr
 			|	frag_hdr_expr
 			|	dst_hdr_expr
 			|	mh_hdr_expr
+			|	tcp_hdr_optexpr
 			;
 
 hbh_hdr_expr		:	HBH	hbh_hdr_field
@@ -3314,4 +3323,31 @@ mh_hdr_field		:	NEXTHDR		{ $$ = MHHDR_NEXTHDR; }
 			|	CHECKSUM	{ $$ = MHHDR_CHECKSUM; }
 			;
 
+tcp_option_name		:	STRING		{ $$ = $1; }
+			|	WINDOW		{ $$ = xstrdup("window"); }
+			;
+
+tcp_option_field	:	STRING		{ $$ = $1; }
+			|	LENGTH		{ $$ = xstrdup("length"); }
+			|	SIZE		{ $$ = xstrdup("size"); }
+			;
+
+tcp_hdr_optexpr		:	TCP	OPTION	tcp_option_name		tcp_option_field
+			{
+				$$ = tcpopt_expr_alloc(&@$, $3, 0, $4);
+			}
+			|	TCP	OPTION	STRING	NUM	tcp_option_field
+			{
+				if (strcmp($3, "sack")) {
+					erec_queue(error(&@2, "tcp: number (%d) can only be used with sack option", $4), state->msgs);
+					YYERROR;
+				}
+
+				if ($4 > 3) {
+					erec_queue(error(&@2, "tcp: option block (%d) too large (0-3)", $4), state->msgs);
+					YYERROR;
+				}
+				$$ = tcpopt_expr_alloc(&@$, $3, $4, $5);
+			}
+			;
 %%

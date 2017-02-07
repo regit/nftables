@@ -2,6 +2,7 @@
 #define NFTABLES_EXTHDR_H
 
 #include <proto.h>
+#include <tcpopt.h>
 
 /**
  * struct exthdr_desc - extension header description
@@ -78,6 +79,7 @@ enum mh_hdr_fields {
 	MHHDR_CHECKSUM,
 };
 
+extern const struct expr_ops exthdr_expr_ops;
 extern const struct exthdr_desc exthdr_hbh;
 extern const struct exthdr_desc exthdr_rt;
 extern const struct exthdr_desc exthdr_rt0;

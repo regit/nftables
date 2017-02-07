@@ -2363,14 +2363,182 @@ inet filter meta nfproto ipv6 output rt nexthop fd00::1
 				</table>
 			</para>
 		</refsect2>
-	</refsect1>
 
-	<refsect1>
-		<title>bla</title>
 		<refsect2>
-			<title>IPv6 extension header expressions</title>
+			<title>Extension header expressions</title>
 			<para>
-				IPv6 extension header expressions refer to data from an IPv6 packet's extension headers.
+				Extension header expressions refer to data from variable-sized protocol headers, such as IPv6 extension headers and
+				TCPs options.
+			</para>
+			<para>
+				nftables currently supports matching (finding) a given ipv6 extension header or TCP option.
+			</para>
+			<cmdsynopsis>
+				<command>hbh</command>
+				<group choice="req">
+					<arg>nexthdr</arg>
+					<arg>hdrlength</arg>
+				</group>
+			</cmdsynopsis>
+			<cmdsynopsis>
+				<command>frag</command>
+				<group choice="req">
+					<arg>nexthdr</arg>
+					<arg>frag-off</arg>
+					<arg>more-fragments</arg>
+					<arg>id</arg>
+				</group>
+			</cmdsynopsis>
+
+			<cmdsynopsis>
+				<command>rt</command>
+				<group choice="req">
+					<arg>nexthdr</arg>
+					<arg>hdrlength</arg>
+					<arg>type</arg>
+					<arg>seg-left</arg>
+				</group>
+			</cmdsynopsis>
+			<cmdsynopsis>
+				<command>dst</command>
+				<group choice="req">
+					<arg>nexthdr</arg>
+					<arg>hdrlength</arg>
+				</group>
+			</cmdsynopsis>
+			<cmdsynopsis>
+				<command>mh</command>
+				<group choice="req">
+					<arg>nexthdr</arg>
+					<arg>hdrlength</arg>
+					<arg>checksum</arg>
+					<arg>type</arg>
+				</group>
+			</cmdsynopsis>
+			<cmdsynopsis>
+				<command>tcp option</command>
+				<group choice="req">
+					<arg>eol</arg>
+					<arg>noop</arg>
+					<arg>maxseg</arg>
+					<arg>window</arg>
+					<arg>sack_permitted</arg>
+					<arg>sack</arg>
+					<arg>timestamp</arg>
+				</group>
+                <arg><replaceable>offset</replaceable></arg>
+				<arg choice="none"><replaceable>tcp_option_field</replaceable></arg>
+			</cmdsynopsis>
+			<para>
+				<table frame="all">
+					<title>IPv6 extension headers</title>
+					<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+						<colspec colname='c1'/>
+						<colspec colname='c2'/>
+						<thead>
+							<row>
+								<entry>Keyword</entry>
+								<entry>Description</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry>hbh</entry>
+								<entry>Hop by Hop</entry>
+							</row>
+							<row>
+								<entry>rt</entry>
+								<entry>Routing Header</entry>
+							</row>
+							<row>
+								<entry>frag</entry>
+								<entry>Fragmentation header</entry>
+							</row>
+							<row>
+								<entry>dst</entry>
+								<entry>dst options</entry>
+							</row>
+							<row>
+								<entry>mh</entry>
+								<entry>Mobility Header</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</table>
+
+				<table frame="all">
+					<title>TCP Options</title>
+					<tgroup cols='3' align='left' colsep='1' rowsep='1'>
+						<colspec colname='c1'/>
+						<colspec colname='c2'/>
+						<colspec colname='c3'/>
+						<thead>
+							<row>
+								<entry>Keyword</entry>
+								<entry>Description</entry>
+								<entry>TCP option fields</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry>eol</entry>
+								<entry>End of option list</entry>
+								<entry>kind</entry>
+							</row>
+							<row>
+								<entry>noop</entry>
+								<entry>1 Byte TCP No-op options</entry>
+								<entry>kind</entry>
+							</row>
+							<row>
+								<entry>maxseg</entry>
+								<entry>TCP Maximum Segment Size</entry>
+								<entry>kind, length, size</entry>
+							</row>
+							<row>
+								<entry>window</entry>
+								<entry>TCP Window Scaling</entry>
+								<entry>kind, length, count</entry>
+							</row>
+							<row>
+								<entry>sack_permitted</entry>
+								<entry>TCP SACK permitted</entry>
+								<entry>kind, length</entry>
+							</row>
+							<row>
+								<entry>sack</entry>
+								<entry>TCP Selective Acknowledgement</entry>
+								<entry>kind, length, left, right</entry>
+							</row>
+							<row>
+								<entry>timestamp</entry>
+								<entry>TCP Timestamps</entry>
+								<entry>kind, length, tsval, tsecr</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</table>
+			</para>
+
+			<para>
+				The <replaceable>offset</replaceable> is only used for the SACK TCP option fields <command>left</command> and <command>right</command>.
+				For all non-SACK TCP options it is always zero.
+				<replaceable>Offsets</replaceable> which equals to zero can be omitted.
+			</para>
+
+			<para>
+				<example>
+					<title>finding TCP options</title>
+					<programlisting>
+filter input tcp option sack_permitted kind 1 counter
+					</programlisting>
+				</example>
+				<example>
+				<title>matching IPv6 exthdr</title>
+					<programlisting>
+ip6 filter input frag more-fragments 1 counter
+					</programlisting>
+				</example>
 			</para>
 		</refsect2>
 
