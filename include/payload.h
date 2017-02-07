@@ -16,7 +16,8 @@ struct stmt;
 extern int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 				  struct stmt **res);
 extern int exthdr_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
-				  struct stmt **res);
+				 const struct proto_desc *dependency,
+				 enum proto_bases pb, struct stmt **res);
 
 /**
  * struct payload_dep_ctx - payload protocol dependency tracking

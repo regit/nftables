@@ -317,18 +317,19 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 }
 
 int exthdr_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
-			  struct stmt **res)
+			  const struct proto_desc *dependency,
+			  enum proto_bases pb, struct stmt **res)
 {
 	const struct proto_desc *desc;
 
-	desc = ctx->pctx.protocol[PROTO_BASE_LL_HDR].desc;
+	desc = ctx->pctx.protocol[pb].desc;
 	if (desc == NULL)
 		return expr_error(ctx->msgs, expr,
 				  "Cannot generate dependency: "
 				  "no %s protocol specified",
-				  proto_base_names[PROTO_BASE_LL_HDR]);
+				  proto_base_names[pb]);
 
-	return payload_add_dependency(ctx, desc, &proto_ip6, expr, res);
+	return payload_add_dependency(ctx, desc, dependency, expr, res);
 }
 
 /**

@@ -448,19 +448,20 @@ static int __expr_evaluate_exthdr(struct eval_ctx *ctx, struct expr **exprp)
  */
 static int expr_evaluate_exthdr(struct eval_ctx *ctx, struct expr **exprp)
 {
-	const struct proto_desc *base;
+	const struct proto_desc *base, *dependency = &proto_ip6;
+	enum proto_bases pb = PROTO_BASE_NETWORK_HDR;
 	struct expr *expr = *exprp;
 	struct stmt *nstmt;
 
-	base = ctx->pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
-	if (base == &proto_ip6)
+	base = ctx->pctx.protocol[pb].desc;
+	if (base == dependency)
 		return __expr_evaluate_exthdr(ctx, exprp);
 
 	if (base)
 		return expr_error(ctx->msgs, expr,
 				  "cannot use exthdr with %s", base->name);
 
-	if (exthdr_gen_dependency(ctx, expr, &nstmt) < 0)
+	if (exthdr_gen_dependency(ctx, expr, dependency, pb - 1, &nstmt) < 0)
 		return -1;
 
 	list_add(&nstmt->list, &ctx->rule->stmts);
