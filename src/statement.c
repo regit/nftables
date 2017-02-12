@@ -300,20 +300,15 @@ static const char *data_unit[] = {
 
 const char *get_rate(uint64_t byte_rate, uint64_t *rate)
 {
-	uint64_t res, prev, rest;
 	int i;
 
-	res = prev = byte_rate;
-	for (i = 0;; i++) {
-		rest = res % 1024;
-		res /= 1024;
-		if (res <= 1 && rest != 0)
+	for (i = 0; data_unit[i + 1] != NULL; i++) {
+		if (byte_rate % 1024)
 			break;
-		if (data_unit[i + 1] == NULL)
-			break;
-		prev = res;
+		byte_rate /= 1024;
 	}
-	*rate = prev;
+
+	*rate = byte_rate;
 	return data_unit[i];
 }
 
