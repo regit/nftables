@@ -784,7 +784,110 @@ filter input iif $int_ifs accept
 					<row>
 						<entry>policy</entry>
 						<entry>set policy</entry>
-						<entry>string: performance, memory</entry>
+						<entry>string: performance [default], memory</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</table>
+	</refsect1>
+
+	<refsect1>
+		<title>Maps</title>
+		<para>
+			<cmdsynopsis>
+				<arg choice="req">add</arg>
+				<command> map</command>
+				<arg choice="opt"><replaceable>family</replaceable></arg>
+				<arg choice="req"><replaceable>table</replaceable></arg>
+				<arg choice="req"><replaceable>map</replaceable></arg>
+				{
+				<arg choice="req"><replaceable>type</replaceable></arg>
+				<arg choice="opt"><replaceable>flags</replaceable></arg>
+				<arg choice="opt"><replaceable>elements</replaceable></arg>
+				<arg choice="opt"><replaceable>size</replaceable></arg>
+				<arg choice="opt"><replaceable>policy</replaceable></arg>
+				}
+			</cmdsynopsis>
+			<cmdsynopsis>
+				<group choice="req">
+					<arg>delete</arg>
+					<arg>list</arg>
+				</group>
+				<command> map</command>
+				<arg choice="opt"><replaceable>family</replaceable></arg>
+				<arg choice="req"><replaceable>table</replaceable></arg>
+				<arg choice="req"><replaceable>map</replaceable></arg>
+			</cmdsynopsis>
+		</para>
+		<para>
+			Maps store data based on some specific key used as input, they are uniquely identified by an user-defined name and attached to tables.
+		</para>
+
+		<variablelist>
+			<varlistentry>
+				<term><option>add</option></term>
+				<listitem>
+					<para>
+						Add a new map in the specified table.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>delete</option></term>
+				<listitem>
+					<para>
+						Delete the specified map.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>list</option></term>
+				<listitem>
+					<para>
+						Display the elements in the specified map.
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+
+		<table frame="all">
+			<title>Map specifications</title>
+			<tgroup cols='3' align='left' colsep='1' rowsep='1'>
+				<colspec colname='c1'/>
+				<colspec colname='c2'/>
+				<colspec colname='c3'/>
+				<thead>
+					<row>
+						<entry>Keyword</entry>
+						<entry>Description</entry>
+						<entry>Type</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry>type</entry>
+						<entry>data type of map elements</entry>
+						<entry>string ':' string:  ipv4_addr, ipv6_addr, ether_addr, inet_proto, inet_service, mark, counter, quota. Counter and quota can't be used as keys</entry>
+					</row>
+					<row>
+						<entry>flags</entry>
+						<entry>map flags</entry>
+						<entry>string: constant, interval</entry>
+					</row>
+					<row>
+						<entry>elements</entry>
+						<entry>elements contained by the map</entry>
+						<entry>map data type</entry>
+					</row>
+					<row>
+						<entry>size</entry>
+						<entry>maximun number of elements in the map</entry>
+						<entry>unsigned integer (64 bit)</entry>
+					</row>
+					<row>
+						<entry>policy</entry>
+						<entry>map policy</entry>
+						<entry>string: performance [default], memory</entry>
 					</row>
 				</tbody>
 			</tgroup>
