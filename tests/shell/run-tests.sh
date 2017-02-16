@@ -65,7 +65,7 @@ kernel_cleanup() {
 	nft_quota nft_queue nft_numgen \
 	nft_meta nft_meta_bridge nft_counter nft_log nft_limit \
 	nft_hash nft_ct nft_compat nft_rt \
-	nft_set_hash nft_set_rbtree \
+	nft_set_hash nft_set_rbtree nft_set_bitmap \
 	nft_chain_nat_ipv4 nft_chain_nat_ipv6 \
 	nf_tables_inet nf_tables_bridge nf_tables_arp \
 	nf_tables_ipv4 nf_tables_ipv6 nf_tables
