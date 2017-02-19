@@ -317,6 +317,9 @@ alloc_nftnl_obj(const struct handle *h, struct obj *obj)
 		nftnl_obj_set_u32(nlo, NFTNL_OBJ_QUOTA_FLAGS,
 				  obj->quota.flags);
 		break;
+	default:
+		BUG("Unknown type %d\n", obj->type);
+		break;
 	}
 	return nlo;
 }
