@@ -885,6 +885,7 @@ void cmd_free(struct cmd *cmd)
 			break;
 		case CMD_OBJ_COUNTER:
 		case CMD_OBJ_QUOTA:
+		case CMD_OBJ_CT_HELPER:
 			obj_free(cmd->object);
 			break;
 		default:
@@ -1001,6 +1002,7 @@ static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd, bool excl)
 		return do_add_setelems(ctx, &cmd->handle, cmd->expr, excl);
 	case CMD_OBJ_COUNTER:
 	case CMD_OBJ_QUOTA:
+	case CMD_OBJ_CT_HELPER:
 		return netlink_add_obj(ctx, &cmd->handle, cmd->object, excl);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
@@ -1071,6 +1073,9 @@ static int do_command_delete(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_QUOTA:
 		return netlink_delete_obj(ctx, &cmd->handle, &cmd->location,
 					  NFT_OBJECT_QUOTA);
+	case CMD_OBJ_CT_HELPER:
+		return netlink_delete_obj(ctx, &cmd->handle, &cmd->location,
+					  NFT_OBJECT_CT_HELPER);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
@@ -1455,6 +1460,7 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_QUOTA:
 	case CMD_OBJ_QUOTAS:
 		return do_list_obj(ctx, cmd, NFT_OBJECT_QUOTA);
+	case CMD_OBJ_CT_HELPER:
 	case CMD_OBJ_CT_HELPERS:
 		return do_list_obj(ctx, cmd, NFT_OBJECT_CT_HELPER);
 	default:
@@ -1601,6 +1607,22 @@ static int do_command_describe(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	expr_describe(cmd->expr);
 	return 0;
+}
+
+struct cmd *cmd_alloc_obj_ct(enum cmd_ops op, int type, const struct handle *h,
+			     const struct location *loc, void *data)
+{
+	enum cmd_obj cmd_obj;
+
+	switch (type) {
+	case NFT_OBJECT_CT_HELPER:
+		cmd_obj = CMD_OBJ_CT_HELPER;
+		break;
+	default:
+		BUG("missing type mapping");
+	}
+
+	return cmd_alloc(op, cmd_obj, h, loc, data);
 }
 
 int do_command(struct netlink_ctx *ctx, struct cmd *cmd)

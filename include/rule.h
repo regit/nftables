@@ -370,6 +370,7 @@ enum cmd_obj {
 	CMD_OBJ_COUNTERS,
 	CMD_OBJ_QUOTA,
 	CMD_OBJ_QUOTAS,
+	CMD_OBJ_CT_HELPER,
 	CMD_OBJ_CT_HELPERS,
 };
 
@@ -438,6 +439,9 @@ struct cmd {
 extern struct cmd *cmd_alloc(enum cmd_ops op, enum cmd_obj obj,
 			     const struct handle *h, const struct location *loc,
 			     void *data);
+extern struct cmd *cmd_alloc_obj_ct(enum cmd_ops op, int type,
+				    const struct handle *h,
+				    const struct location *loc, void *data);
 extern void cmd_free(struct cmd *cmd);
 
 #include <payload.h>

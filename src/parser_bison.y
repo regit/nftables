@@ -583,8 +583,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			and_rhs_expr exclusive_or_rhs_expr inclusive_or_rhs_expr
 %destructor { expr_free($$); }	and_rhs_expr exclusive_or_rhs_expr inclusive_or_rhs_expr
 
-%type <obj>			counter_obj quota_obj
-%destructor { obj_free($$); }	counter_obj quota_obj
+%type <obj>			counter_obj quota_obj ct_obj_alloc
+%destructor { obj_free($$); }	counter_obj quota_obj ct_obj_alloc
 
 %type <expr>			relational_expr
 %destructor { expr_free($$); }	relational_expr
@@ -840,6 +840,19 @@ add_cmd			:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_QUOTA, &$2, &@$, $3);
 			}
+			|	CT	STRING	obj_spec	ct_obj_alloc	'{' ct_block '}'	stmt_seperator
+			{
+				struct error_record *erec;
+				int type;
+
+				erec = ct_objtype_parse(&@$, $2, &type);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+
+				$$ = cmd_alloc_obj_ct(CMD_ADD, type, &$3, &@$, $4);
+			}
 			;
 
 replace_cmd		:	RULE		ruleid_spec	rule
@@ -906,6 +919,19 @@ create_cmd		:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_CREATE, CMD_OBJ_QUOTA, &$2, &@$, $3);
 			}
+			|	CT	STRING	obj_spec	ct_obj_alloc	'{' ct_block '}'	stmt_seperator
+			{
+				struct error_record *erec;
+				int type;
+
+				erec = ct_objtype_parse(&@$, $2, &type);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+
+				$$ = cmd_alloc_obj_ct(CMD_CREATE, type, &$3, &@$, $4);
+			}
 			;
 
 insert_cmd		:	RULE		rule_position	rule
@@ -945,6 +971,19 @@ delete_cmd		:	TABLE		table_spec
 			|	QUOTA		obj_spec
 			{
 				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_QUOTA, &$2, &@$, NULL);
+			}
+			|	CT	STRING	obj_spec	ct_obj_alloc
+			{
+				struct error_record *erec;
+				int type;
+
+				erec = ct_objtype_parse(&@$, $2, &type);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+
+				$$ = cmd_alloc_obj_ct(CMD_DELETE, type, &$3, &@$, $4);
 			}
 			;
 
@@ -1015,6 +1054,19 @@ list_cmd		:	TABLE		table_spec
 			|	MAP		set_spec
 			{
 				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_MAP, &$2, &@$, NULL);
+			}
+			|	CT		STRING	obj_spec
+			{
+				struct error_record *erec;
+				int type;
+
+				erec = ct_objtype_parse(&@$, $2, &type);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+
+				$$ = cmd_alloc_obj_ct(CMD_LIST, type, &$3, &@$, NULL);
 			}
 			|       CT              STRING  TABLE   table_spec
 			{
@@ -2655,6 +2707,13 @@ ct_config		:	TYPE	QUOTED_STRING	PROTOCOL	ct_l4protoname	stmt_seperator
 			|	L3PROTOCOL	family_spec_explicit	stmt_seperator
 			{
 				$<obj>0->ct.l3proto = $2;
+			}
+			;
+
+ct_obj_alloc		:
+			{
+				$$ = obj_alloc(&@$);
+				$$->type = NFT_OBJECT_CT_HELPER;
 			}
 			;
 
