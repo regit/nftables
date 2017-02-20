@@ -370,6 +370,7 @@ enum cmd_obj {
 	CMD_OBJ_COUNTERS,
 	CMD_OBJ_QUOTA,
 	CMD_OBJ_QUOTAS,
+	CMD_OBJ_CT_HELPERS,
 };
 
 struct export {

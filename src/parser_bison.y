@@ -1016,6 +1016,25 @@ list_cmd		:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_MAP, &$2, &@$, NULL);
 			}
+			|       CT              STRING  TABLE   table_spec
+			{
+				int cmd;
+
+				if (strcmp($2, "helpers") == 0) {
+					cmd = CMD_OBJ_CT_HELPERS;
+				} else {
+					struct error_record *erec;
+
+					erec = error(&@$, "unknown ct class '%s', want 'helpers'", $2);
+
+					if (erec != NULL) {
+						erec_queue(erec, state->msgs);
+						YYERROR;
+					}
+				}
+
+				$$ = cmd_alloc(CMD_LIST, cmd, &$4, &@$, NULL);
+			}
 			;
 
 reset_cmd		:	COUNTERS	ruleset_spec

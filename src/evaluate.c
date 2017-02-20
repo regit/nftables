@@ -3023,6 +3023,7 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 		return cmd_evaluate_list_obj(ctx, cmd, NFT_OBJECT_COUNTER);
 	case CMD_OBJ_COUNTERS:
 	case CMD_OBJ_QUOTAS:
+	case CMD_OBJ_CT_HELPERS:
 		if (cmd->handle.table == NULL)
 			return 0;
 		if (table_lookup(&cmd->handle) == NULL)

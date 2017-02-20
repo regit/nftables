@@ -1455,6 +1455,8 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_QUOTA:
 	case CMD_OBJ_QUOTAS:
 		return do_list_obj(ctx, cmd, NFT_OBJECT_QUOTA);
+	case CMD_OBJ_CT_HELPERS:
+		return do_list_obj(ctx, cmd, NFT_OBJECT_CT_HELPER);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
