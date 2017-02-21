@@ -136,6 +136,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 	struct obj		*obj;
 	struct counter		*counter;
 	struct quota		*quota;
+	struct ct		*ct;
 	const struct datatype	*datatype;
 	struct handle_spec	handle_spec;
 	struct position_spec	position_spec;
@@ -494,7 +495,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <set>			map_block_alloc map_block
 %destructor { set_free($$); }	map_block_alloc
 
-%type <obj>			obj_block_alloc counter_block quota_block
+%type <obj>			obj_block_alloc counter_block quota_block ct_block
 %destructor { obj_free($$); }	obj_block_alloc
 
 %type <list>			stmt_list
@@ -664,6 +665,10 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			exthdr_exists_expr
 %destructor { expr_free($$); }	exthdr_exists_expr
 %type <val>			exthdr_key
+
+%type <val>			ct_l4protoname
+%type <string>			ct_obj_kind
+%destructor { xfree($$); }     	ct_obj_kind
 
 %%
 
@@ -1191,6 +1196,24 @@ table_block		:	/* empty */	{ $$ = $<table>-1; }
 				list_add_tail(&$4->list, &$1->objs);
 				$$ = $1;
 			}
+			|	table_block	CT	ct_obj_kind	obj_identifier  obj_block_alloc '{'     ct_block     '}' stmt_seperator
+			{
+				struct error_record *erec;
+				int type;
+
+				erec = ct_objtype_parse(&@$, $3, &type);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+
+				$5->location = @4;
+				$5->type = type;
+				handle_merge(&$5->handle, &$4);
+				handle_free(&$4);
+				list_add_tail(&$5->list, &$1->objs);
+				$$ = $1;
+			}
 			;
 
 chain_block_alloc	:	/* empty */
@@ -1384,6 +1407,16 @@ quota_block		:	/* empty */	{ $$ = $<obj>-1; }
 				$$ = $1;
 			}
 			;
+
+ct_block		:	/* empty */	{ $$ = $<obj>-1; }
+			|       ct_block     common_block
+			|       ct_block     stmt_seperator
+			|       ct_block     ct_config
+			{
+				$$ = $1;
+			}
+			;
+
 
 type_identifier		:	STRING	{ $$ = $1; }
 			|	MARK	{ $$ = xstrdup("mark"); }
@@ -2578,6 +2611,34 @@ quota_obj		:	quota_config
 			}
 			;
 
+ct_obj_kind		:	STRING		{ $$ = $1; }
+			;
+
+ct_l4protoname		:	TCP	{ $$ = IPPROTO_TCP; }
+			|	UDP	{ $$ = IPPROTO_UDP; }
+			;
+
+ct_config		:	TYPE	QUOTED_STRING	PROTOCOL	ct_l4protoname	stmt_seperator
+			{
+				struct ct *ct;
+				int ret;
+
+				ct = &$<obj>0->ct;
+
+				ret = snprintf(ct->helper_name, sizeof(ct->helper_name), "%s", $2);
+				if (ret <= 0 || ret >= (int)sizeof(ct->helper_name)) {
+					erec_queue(error(&@2, "invalid name '%s', max length is %u\n", $2, (int)sizeof(ct->helper_name)), state->msgs);
+					YYERROR;
+				}
+
+				ct->l4proto = $4;
+			}
+			|	L3PROTOCOL	family_spec_explicit	stmt_seperator
+			{
+				$<obj>0->ct.l3proto = $2;
+			}
+			;
+
 relational_expr		:	expr	/* implicit */	rhs_expr
 			{
 				$$ = relational_expr_alloc(&@$, OP_IMPLICIT, $1, $2);
@@ -3037,7 +3098,16 @@ ct_stmt			:	CT	ct_key		SET	expr
 					YYERROR;
 				}
 
-				$$ = ct_stmt_alloc(&@$, key, -1, $4);
+				switch (key) {
+				case NFT_CT_HELPER:
+					$$ = objref_stmt_alloc(&@$);
+					$$->objref.type = NFT_OBJECT_CT_HELPER;
+					$$->objref.expr = $4;
+					break;
+				default:
+					$$ = ct_stmt_alloc(&@$, key, -1, $4);
+					break;
+				}
 			}
 			|	CT	STRING	ct_key_dir_optional SET	expr
 			{

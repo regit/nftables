@@ -174,6 +174,7 @@ struct stmt *counter_stmt_alloc(const struct location *loc)
 static const char *objref_type[NFT_OBJECT_MAX + 1] = {
 	[NFT_OBJECT_COUNTER]	= "counter",
 	[NFT_OBJECT_QUOTA]	= "quota",
+	[NFT_OBJECT_CT_HELPER]	= "cthelper",
 };
 
 static const char *objref_type_name(uint32_t type)
@@ -186,7 +187,14 @@ static const char *objref_type_name(uint32_t type)
 
 static void objref_stmt_print(const struct stmt *stmt)
 {
-	printf("%s name ", objref_type_name(stmt->objref.type));
+	switch (stmt->objref.type) {
+	case NFT_OBJECT_CT_HELPER:
+		printf("ct helper set ");
+		break;
+	default:
+		printf("%s name ", objref_type_name(stmt->objref.type));
+		break;
+	}
 	expr_print(stmt->objref.expr);
 }
 

@@ -19,6 +19,7 @@
 #include <statement.h>
 #include <rule.h>
 #include <utils.h>
+#include <netdb.h>
 #include <netlink.h>
 
 #include <libnftnl/common.h>
@@ -1172,6 +1173,16 @@ struct obj *obj_lookup(const struct table *table, const char *name,
 	return NULL;
 }
 
+static void print_proto_name_proto(uint8_t l4)
+{
+	const struct protoent *p = getprotobynumber(l4);
+
+	if (p)
+		printf("%s\n", p->p_name);
+	else
+		printf("%d\n", l4);
+}
+
 static void obj_print_data(const struct obj *obj,
 			   struct print_fmt_options *opts)
 {
@@ -1202,6 +1213,13 @@ static void obj_print_data(const struct obj *obj,
 		}
 		}
 		break;
+	case NFT_OBJECT_CT_HELPER: {
+		printf("ct helper %s {\n", obj->handle.obj);
+		printf("\t\ttype \"%s\" protocol ", obj->ct.helper_name);
+		print_proto_name_proto(obj->ct.l4proto);
+		printf("\t\tl3proto %s", family2str(obj->ct.l3proto));
+		break;
+		}
 	default:
 		printf("unknown {%s", opts->nl);
 		break;
@@ -1211,11 +1229,12 @@ static void obj_print_data(const struct obj *obj,
 static const char *obj_type_name_array[] = {
 	[NFT_OBJECT_COUNTER]	= "counter",
 	[NFT_OBJECT_QUOTA]	= "quota",
+	[NFT_OBJECT_CT_HELPER]	= "",
 };
 
 const char *obj_type_name(enum stmt_types type)
 {
-	assert(type <= NFT_OBJECT_QUOTA && obj_type_name_array[type]);
+	assert(type <= NFT_OBJECT_CT_HELPER && obj_type_name_array[type]);
 
 	return obj_type_name_array[type];
 }
