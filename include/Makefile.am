@@ -12,6 +12,7 @@ noinst_HEADERS = 	cli.h		\
 			nftables.h	\
 			payload.h	\
 			rbtree.h	\
+			tcpopt.h	\
 			statement.h	\
 			ct.h		\
 			erec.h		\
