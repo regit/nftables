@@ -965,6 +965,28 @@ static struct datatype *dtype_alloc(void)
 	return dtype;
 }
 
+static struct datatype *dtype_clone(const struct datatype *orig_dtype)
+{
+	struct datatype *dtype;
+
+	dtype = xzalloc(sizeof(*dtype));
+	*dtype = *orig_dtype;
+	dtype->name = xstrdup(orig_dtype->name);
+	dtype->desc = xstrdup(orig_dtype->desc);
+	dtype->flags = DTYPE_F_ALLOC;
+
+	return dtype;
+}
+
+static void dtype_free(const struct datatype *dtype)
+{
+	if (dtype->flags & DTYPE_F_ALLOC) {
+		xfree(dtype->name);
+		xfree(dtype->desc);
+		xfree(dtype);
+	}
+}
+
 const struct datatype *concat_type_alloc(uint32_t type)
 {
 	const struct datatype *i;
@@ -1004,11 +1026,27 @@ const struct datatype *concat_type_alloc(uint32_t type)
 
 void concat_type_destroy(const struct datatype *dtype)
 {
-	if (dtype->flags & DTYPE_F_ALLOC) {
-		xfree(dtype->name);
-		xfree(dtype->desc);
-		xfree(dtype);
-	}
+	dtype_free(dtype);
+}
+
+const struct datatype *set_keytype_alloc(const struct datatype *orig_dtype,
+					 unsigned int byteorder)
+{
+	struct datatype *dtype;
+
+	/* Restrict dynamic datatype allocation to generic integer datatype. */
+	if (orig_dtype != &integer_type)
+		return orig_dtype;
+
+	dtype = dtype_clone(orig_dtype);
+	dtype->byteorder = byteorder;
+
+	return dtype;
+}
+
+void set_keytype_destroy(const struct datatype *dtype)
+{
+	dtype_free(dtype);
 }
 
 static struct error_record *time_unit_parse(const struct location *loc,

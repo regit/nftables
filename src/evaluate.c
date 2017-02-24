@@ -63,6 +63,7 @@ static struct expr *implicit_set_declaration(struct eval_ctx *ctx,
 					     const char *name,
 					     const struct datatype *keytype,
 					     unsigned int keylen,
+					     unsigned int keybyteorder,
 					     struct expr *expr)
 {
 	struct cmd *cmd;
@@ -72,7 +73,7 @@ static struct expr *implicit_set_declaration(struct eval_ctx *ctx,
 	set = set_alloc(&expr->location);
 	set->flags	= NFT_SET_ANONYMOUS | expr->set_flags;
 	set->handle.set = xstrdup(name),
-	set->keytype 	= keytype;
+	set->keytype 	= set_keytype_alloc(keytype, keybyteorder);
 	set->keylen	= keylen;
 	set->init	= expr;
 
@@ -1170,7 +1171,9 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 	case EXPR_SET:
 		mappings = implicit_set_declaration(ctx, "__map%d",
 						    ctx->ectx.dtype,
-						    ctx->ectx.len, mappings);
+						    ctx->ectx.len,
+						    ctx->ectx.byteorder,
+						    mappings);
 		mappings->set->datatype = ectx.dtype;
 		mappings->set->datalen  = ectx.len;
 
@@ -1505,8 +1508,8 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 		if (right->ops->type == EXPR_SET)
 			right = rel->right =
 				implicit_set_declaration(ctx, "__set%d",
-							 left->dtype,
-							 left->len, right);
+							 left->dtype, left->len,
+							 left->byteorder, right);
 		else if (!datatype_equal(left->dtype, right->dtype))
 			return expr_binary_error(ctx->msgs, right, left,
 						 "datatype mismatch, expected %s, "
@@ -1565,7 +1568,7 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 			right = rel->right =
 				implicit_set_declaration(ctx, "__set%d",
 							 left->dtype, left->len,
-							 right);
+							 left->byteorder, right);
 			/* fall through */
 		case EXPR_SET_REF:
 			assert(rel->op == OP_NEQ);
@@ -1886,7 +1889,8 @@ static int stmt_evaluate_flow(struct eval_ctx *ctx, struct stmt *stmt)
 		set->set_flags |= NFT_SET_TIMEOUT;
 
 	setref = implicit_set_declaration(ctx, stmt->flow.table ?: "__ft%d",
-					  key->dtype, key->len, set);
+					  key->dtype, key->len,
+					  key->dtype->byteorder, set);
 
 	stmt->flow.set = setref;
 
@@ -2518,6 +2522,7 @@ static int stmt_evaluate_objref_map(struct eval_ctx *ctx, struct stmt *stmt)
 		mappings = implicit_set_declaration(ctx, "__objmap%d",
 						    ctx->ectx.dtype,
 						    ctx->ectx.len,
+						    ctx->ectx.byteorder,
 						    mappings);
 		mappings->set->datatype = &string_type;
 		mappings->set->datalen  = NFT_OBJ_MAXNAMELEN * BITS_PER_BYTE;

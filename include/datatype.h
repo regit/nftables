@@ -251,6 +251,10 @@ concat_subtype_lookup(uint32_t type, unsigned int n)
 	return datatype_lookup(concat_subtype_id(type, n));
 }
 
+extern const struct datatype *
+set_keytype_alloc(const struct datatype *orig_dtype, unsigned int byteorder);
+extern void set_keytype_destroy(const struct datatype *dtype);
+
 extern void time_print(uint64_t seconds);
 extern struct error_record *time_parse(const struct location *loc,
 				       const char *c, uint64_t *res);
