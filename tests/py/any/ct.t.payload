@@ -391,6 +391,26 @@ ip test-ip4 output
   [ bitwise reg 1 = (reg=1 & 0x00000020 ) ^ 0x00000000 ]
   [ cmp neq reg 1 0x00000000 ]
 
+# ct eventmask set new
+ip test-ip4 output
+  [ immediate reg 1 0x00000001 ]
+  [ ct set eventmask with reg 1 ]
+
+# ct eventmask set 'new | related | destroy | label'
+ip test-ip4 output
+  [ immediate reg 1 0x00000407 ]
+  [ ct set eventmask with reg 1 ]
+
+# ct eventmask set 1
+ip test-ip4 output
+  [ immediate reg 1 0x00000001 ]
+  [ ct set eventmask with reg 1 ]
+
+# ct eventmask set 0x0
+ip test-ip4 output
+  [ immediate reg 1 0x00000000 ]
+  [ ct set eventmask with reg 1 ]
+
 # ct label 127
 ip test-ip4 output
   [ ct load label => reg 1 ]

@@ -96,6 +96,12 @@ ct original mark 42;fail
 # swapped key and direction
 ct mark original;fail
 
+ct eventmask set new;ok
+ct eventmask set new or related or destroy or foobar;fail
+ct eventmask set 'new | related | destroy | label';ok;ct eventmask set new | related | destroy | label
+ct eventmask set 1;ok;ct eventmask set new
+ct eventmask set 0x0;ok
+
 ct label 127;ok
 ct label set 127;ok
 ct label 128;fail

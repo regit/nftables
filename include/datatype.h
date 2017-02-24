@@ -83,6 +83,7 @@ enum datatypes {
 	TYPE_ECN,
 	TYPE_FIB_ADDR,
 	TYPE_BOOLEAN,
+	TYPE_CT_EVENTBIT,
 	__TYPE_MAX
 };
 #define TYPE_MAX		(__TYPE_MAX - 1)

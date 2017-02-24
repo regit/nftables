@@ -100,6 +100,34 @@ static const struct datatype ct_status_type = {
 	.sym_tbl	= &ct_status_tbl,
 };
 
+static const struct symbol_table ct_events_tbl = {
+	.base		= BASE_HEXADECIMAL,
+	.symbols	= {
+		SYMBOL("new",		1 << IPCT_NEW),
+		SYMBOL("related",	1 << IPCT_RELATED),
+		SYMBOL("destroy",	1 << IPCT_DESTROY),
+		SYMBOL("reply",		1 << IPCT_REPLY),
+		SYMBOL("assured",	1 << IPCT_ASSURED),
+		SYMBOL("protoinfo",	1 << IPCT_PROTOINFO),
+		SYMBOL("helper",	1 << IPCT_HELPER),
+		SYMBOL("mark",		1 << IPCT_MARK),
+		SYMBOL("seqadj",	1 << IPCT_SEQADJ),
+		SYMBOL("secmark",	1 << IPCT_SECMARK),
+		SYMBOL("label",		1 << IPCT_LABEL),
+		SYMBOL_LIST_END
+	},
+};
+
+static const struct datatype ct_event_type = {
+	.type		= TYPE_CT_EVENTBIT,
+	.name		= "ct_event",
+	.desc		= "conntrack event bits",
+	.byteorder	= BYTEORDER_HOST_ENDIAN,
+	.size		= 4 * BITS_PER_BYTE,
+	.basetype	= &bitmask_type,
+	.sym_tbl	= &ct_events_tbl,
+};
+
 static struct symbol_table *ct_label_tbl;
 
 #define CT_LABEL_BIT_SIZE 128
@@ -236,6 +264,8 @@ static const struct ct_template ct_templates[] = {
 					      BYTEORDER_HOST_ENDIAN, 64),
 	[NFT_CT_ZONE]		= CT_TEMPLATE("zone", &integer_type,
 					      BYTEORDER_HOST_ENDIAN, 16),
+	[NFT_CT_EVENTMASK]	= CT_TEMPLATE("eventmask", &ct_event_type,
+					      BYTEORDER_HOST_ENDIAN, 32),
 };
 
 static void ct_print(enum nft_ct_keys key, int8_t dir)
