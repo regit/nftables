@@ -6,7 +6,7 @@ ip test-ip4 pre
 # dnat to numgen inc mod 2 map { 0 : 192.168.10.100, 1 : 192.168.20.200 }
 __map%d x b
 __map%d x 0
-        element 00000000  : 640aa8c0 0 [end]    element 01000000  : c814a8c0 0 [end]
+        element 00000000  : 640aa8c0 0 [end]    element 00000001  : c814a8c0 0 [end]
 ip test-ip4 pre 
   [ numgen reg 1 = inc mod 2 ]
   [ lookup reg 1 set __map%d dreg 1 ]
