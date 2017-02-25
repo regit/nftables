@@ -973,7 +973,7 @@ static struct datatype *dtype_clone(const struct datatype *orig_dtype)
 	*dtype = *orig_dtype;
 	dtype->name = xstrdup(orig_dtype->name);
 	dtype->desc = xstrdup(orig_dtype->desc);
-	dtype->flags = DTYPE_F_ALLOC;
+	dtype->flags = DTYPE_F_ALLOC | DTYPE_F_CLONE;
 
 	return dtype;
 }
@@ -1046,7 +1046,8 @@ const struct datatype *set_keytype_alloc(const struct datatype *orig_dtype,
 
 void set_keytype_destroy(const struct datatype *dtype)
 {
-	dtype_free(dtype);
+	if (dtype->flags & DTYPE_F_CLONE)
+		dtype_free(dtype);
 }
 
 static struct error_record *time_unit_parse(const struct location *loc,
