@@ -477,4 +477,10 @@ enum udata_type {
 
 #define UDATA_COMMENT_MAXLEN 128
 
+enum udata_set_type {
+	UDATA_SET_KEYBYTEORDER,
+	__UDATA_SET_MAX,
+};
+#define UDATA_SET_MAX (__UDATA_SET_MAX - 1)
+
 #endif /* NFTABLES_RULE_H */

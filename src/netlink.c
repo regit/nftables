@@ -1104,12 +1104,58 @@ void netlink_dump_set(const struct nftnl_set *nls)
 #endif
 }
 
+static int set_parse_udata_cb(const struct nftnl_udata *attr, void *data)
+{
+	const struct nftnl_udata **tb = data;
+	uint8_t type = nftnl_udata_type(attr);
+	uint8_t len = nftnl_udata_len(attr);
+
+	switch (type) {
+	case UDATA_SET_KEYBYTEORDER:
+		if (len != sizeof(uint32_t))
+			return -1;
+		break;
+	default:
+		return 0;
+	}
+	tb[type] = attr;
+	return 0;
+}
+
+static uint32_t set_udata_get_key_byteorder(const void *data, uint32_t data_len)
+{
+	const struct nftnl_udata *tb[UDATA_TYPE_MAX + 1] = {};
+
+	if (nftnl_udata_parse(data, data_len, set_parse_udata_cb, tb) < 0)
+		return BYTEORDER_INVALID;
+
+	if (!tb[UDATA_SET_KEYBYTEORDER])
+		return BYTEORDER_INVALID;
+
+	return *((uint32_t *)nftnl_udata_get(tb[UDATA_SET_KEYBYTEORDER]));
+}
+
+static enum byteorder set_key_byteorder(const struct nftnl_set *nls)
+{
+	enum byteorder byteorder = BYTEORDER_INVALID;
+	const void *data;
+	uint32_t len;
+
+	if (nftnl_set_is_set(nls, NFTNL_SET_USERDATA)) {
+		data = nftnl_set_get_data(nls, NFTNL_SET_USERDATA, &len);
+		byteorder = set_udata_get_key_byteorder(data, len);
+	}
+
+	return byteorder;
+}
+
 static struct set *netlink_delinearize_set(struct netlink_ctx *ctx,
 					   const struct nftnl_set *nls)
 {
 	struct set *set;
 	const struct datatype *keytype, *datatype;
 	uint32_t flags, key, data, data_len, objtype = 0;
+	enum byteorder byteorder;
 
 	key = nftnl_set_get_u32(nls, NFTNL_SET_KEY_TYPE);
 	keytype = dtype_map_from_kernel(key);
@@ -1118,6 +1164,7 @@ static struct set *netlink_delinearize_set(struct netlink_ctx *ctx,
 				 key);
 		return NULL;
 	}
+	byteorder = set_key_byteorder(nls);
 
 	flags = nftnl_set_get_u32(nls, NFTNL_SET_FLAGS);
 	if (flags & NFT_SET_MAP) {
@@ -1142,7 +1189,7 @@ static struct set *netlink_delinearize_set(struct netlink_ctx *ctx,
 	set->handle.table  = xstrdup(nftnl_set_get_str(nls, NFTNL_SET_TABLE));
 	set->handle.set    = xstrdup(nftnl_set_get_str(nls, NFTNL_SET_NAME));
 
-	set->keytype = keytype;
+	set->keytype = set_keytype_alloc(keytype, byteorder);
 	set->keylen  = nftnl_set_get_u32(nls, NFTNL_SET_KEY_LEN) * BITS_PER_BYTE;
 	set->flags   = nftnl_set_get_u32(nls, NFTNL_SET_FLAGS);
 
@@ -1205,6 +1252,7 @@ static int netlink_add_set_batch(struct netlink_ctx *ctx,
 				 const struct handle *h, struct set *set,
 				 bool excl)
 {
+	struct nftnl_udata_buf *udbuf;
 	struct nftnl_set *nls;
 	int err;
 
@@ -1238,6 +1286,16 @@ static int netlink_add_set_batch(struct netlink_ctx *ctx,
 			nftnl_set_set_u32(nls, NFTNL_SET_DESC_SIZE,
 					  set->desc.size);
 	}
+
+	udbuf = nftnl_udata_buf_alloc(NFT_USERDATA_MAXLEN);
+	if (!udbuf)
+		memory_allocation_error();
+	if (!nftnl_udata_put(udbuf, UDATA_SET_KEYBYTEORDER, sizeof(uint32_t),
+			     &set->keytype->byteorder))
+		memory_allocation_error();
+	nftnl_set_set_data(nls, NFTNL_SET_USERDATA, nftnl_udata_buf_data(udbuf),
+			   nftnl_udata_buf_len(udbuf));
+	nftnl_udata_buf_free(udbuf);
 
 	netlink_dump_set(nls);
 
