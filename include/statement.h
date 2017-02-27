@@ -127,10 +127,12 @@ struct ct_stmt {
 	enum nft_ct_keys		key;
 	const struct ct_template	*tmpl;
 	struct expr			*expr;
+	int8_t				direction;
 };
 
 extern struct stmt *ct_stmt_alloc(const struct location *loc,
 				  enum nft_ct_keys key,
+				  int8_t direction,
 				  struct expr *expr);
 struct dup_stmt {
 	struct expr		*to;

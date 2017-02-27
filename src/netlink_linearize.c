@@ -1151,6 +1151,10 @@ static void netlink_gen_ct_stmt(struct netlink_linearize_ctx *ctx,
 	nle = alloc_nft_expr("ct");
 	netlink_put_register(nle, NFTNL_EXPR_CT_SREG, sreg);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_CT_KEY, stmt->ct.key);
+	if (stmt->ct.direction >= 0)
+		nftnl_expr_set_u8(nle, NFTNL_EXPR_CT_DIR,
+				  stmt->ct.direction);
+
 	nftnl_rule_add_expr(ctx->nlr, nle);
 }
 

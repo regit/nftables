@@ -2977,7 +2977,7 @@ ct_key_dir_optional	:	BYTES		{ $$ = NFT_CT_BYTES; }
 
 ct_stmt			:	CT	ct_key		SET	expr
 			{
-				$$ = ct_stmt_alloc(&@$, $2, $4);
+				$$ = ct_stmt_alloc(&@$, $2, -1, $4);
 			}
 			|	CT	STRING		SET	expr
 			{
@@ -2990,7 +2990,20 @@ ct_stmt			:	CT	ct_key		SET	expr
 					YYERROR;
 				}
 
-				$$ = ct_stmt_alloc(&@$, key, $4);
+				$$ = ct_stmt_alloc(&@$, key, -1, $4);
+			}
+			|	CT	STRING	ct_key_dir_optional SET	expr
+			{
+				struct error_record *erec;
+				int8_t direction;
+
+				erec = ct_dir_parse(&@$, $2, &direction);
+				if (erec != NULL) {
+					erec_queue(erec, state->msgs);
+					YYERROR;
+				}
+
+				$$ = ct_stmt_alloc(&@$, $3, direction, $5);
 			}
 			;
 

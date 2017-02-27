@@ -404,7 +404,8 @@ void ct_expr_update_type(struct proto_ctx *ctx, struct expr *expr)
 
 static void ct_stmt_print(const struct stmt *stmt)
 {
-	printf("ct %s set ", ct_templates[stmt->ct.key].token);
+	ct_print(stmt->ct.key, stmt->ct.direction);
+	printf(" set ");
 	expr_print(stmt->ct.expr);
 }
 
@@ -415,7 +416,7 @@ static const struct stmt_ops ct_stmt_ops = {
 };
 
 struct stmt *ct_stmt_alloc(const struct location *loc, enum nft_ct_keys key,
-			     struct expr *expr)
+			   int8_t direction, struct expr *expr)
 {
 	struct stmt *stmt;
 
@@ -423,6 +424,8 @@ struct stmt *ct_stmt_alloc(const struct location *loc, enum nft_ct_keys key,
 	stmt->ct.key	= key;
 	stmt->ct.tmpl	= &ct_templates[key];
 	stmt->ct.expr	= expr;
+	stmt->ct.direction = direction;
+
 	return stmt;
 }
 

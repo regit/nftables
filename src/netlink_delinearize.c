@@ -659,6 +659,7 @@ static void netlink_parse_ct_stmt(struct netlink_parse_ctx *ctx,
 	uint32_t key;
 	struct stmt *stmt;
 	struct expr *expr;
+	int8_t dir = -1;
 
 	sreg = netlink_parse_register(nle, NFTNL_EXPR_CT_SREG);
 	expr = netlink_get_register(ctx, loc, sreg);
@@ -666,8 +667,11 @@ static void netlink_parse_ct_stmt(struct netlink_parse_ctx *ctx,
 		return netlink_error(ctx, loc,
 				     "ct statement has no expression");
 
+	if (nftnl_expr_is_set(nle, NFTNL_EXPR_CT_DIR))
+		dir = nftnl_expr_get_u8(nle, NFTNL_EXPR_CT_DIR);
+
 	key  = nftnl_expr_get_u32(nle, NFTNL_EXPR_CT_KEY);
-	stmt = ct_stmt_alloc(loc, key, expr);
+	stmt = ct_stmt_alloc(loc, key, dir, expr);
 	expr_set_type(expr, stmt->ct.tmpl->dtype, stmt->ct.tmpl->byteorder);
 
 	ctx->stmt = stmt;
