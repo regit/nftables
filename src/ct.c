@@ -238,22 +238,27 @@ static const struct ct_template ct_templates[] = {
 					      BYTEORDER_HOST_ENDIAN, 16),
 };
 
-static void ct_expr_print(const struct expr *expr)
+static void ct_print(enum nft_ct_keys key, int8_t dir)
 {
 	const struct symbolic_constant *s;
 
 	printf("ct ");
-	if (expr->ct.direction < 0)
+	if (dir < 0)
 		goto done;
 
 	for (s = ct_dir_tbl.symbols; s->identifier != NULL; s++) {
-		if (expr->ct.direction == (int) s->value) {
+		if (dir == (int)s->value) {
 			printf("%s ", s->identifier);
 			break;
 		}
 	}
  done:
-	printf("%s", ct_templates[expr->ct.key].token);
+	printf("%s", ct_templates[key].token);
+}
+
+static void ct_expr_print(const struct expr *expr)
+{
+	ct_print(expr->ct.key, expr->ct.direction);
 }
 
 static bool ct_expr_cmp(const struct expr *e1, const struct expr *e2)
