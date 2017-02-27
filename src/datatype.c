@@ -1029,8 +1029,8 @@ void concat_type_destroy(const struct datatype *dtype)
 	dtype_free(dtype);
 }
 
-const struct datatype *set_keytype_alloc(const struct datatype *orig_dtype,
-					 unsigned int byteorder)
+const struct datatype *set_datatype_alloc(const struct datatype *orig_dtype,
+					  unsigned int byteorder)
 {
 	struct datatype *dtype;
 
@@ -1044,7 +1044,7 @@ const struct datatype *set_keytype_alloc(const struct datatype *orig_dtype,
 	return dtype;
 }
 
-void set_keytype_destroy(const struct datatype *dtype)
+void set_datatype_destroy(const struct datatype *dtype)
 {
 	if (dtype->flags & DTYPE_F_CLONE)
 		dtype_free(dtype);

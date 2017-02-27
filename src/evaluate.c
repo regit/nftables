@@ -73,7 +73,7 @@ static struct expr *implicit_set_declaration(struct eval_ctx *ctx,
 	set = set_alloc(&expr->location);
 	set->flags	= NFT_SET_ANONYMOUS | expr->set_flags;
 	set->handle.set = xstrdup(name),
-	set->keytype 	= set_keytype_alloc(keytype, keybyteorder);
+	set->keytype 	= set_datatype_alloc(keytype, keybyteorder);
 	set->keylen	= keylen;
 	set->init	= expr;
 
