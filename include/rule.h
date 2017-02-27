@@ -479,6 +479,7 @@ enum udata_type {
 
 enum udata_set_type {
 	UDATA_SET_KEYBYTEORDER,
+	UDATA_SET_DATABYTEORDER,
 	__UDATA_SET_MAX,
 };
 #define UDATA_SET_MAX (__UDATA_SET_MAX - 1)

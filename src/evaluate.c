@@ -1174,7 +1174,9 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 						    ctx->ectx.len,
 						    ctx->ectx.byteorder,
 						    mappings);
-		mappings->set->datatype = ectx.dtype;
+
+		mappings->set->datatype = set_datatype_alloc(ectx.dtype,
+							     ectx.byteorder);
 		mappings->set->datalen  = ectx.len;
 
 		map->mappings = mappings;
