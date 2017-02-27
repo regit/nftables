@@ -402,6 +402,50 @@ ip test-ip4 output
   [ immediate reg 1 0x00000000 0x00000000 0x00000000 0x80000000 ]
   [ ct set label with reg 1 ]
 
+# ct zone 0
+ip test-ip4 output
+  [ ct load zone => reg 1 ]
+  [ cmp eq reg 1 0x00000000 ]
+
+# ct zone 23
+ip test-ip4 output
+  [ ct load zone => reg 1 ]
+  [ cmp eq reg 1 0x00000017 ]
+
+# ct original zone 1
+ip test-ip4 output
+  [ ct load zone => reg 1 , dir original ]
+  [ cmp eq reg 1 0x00000001 ]
+
+# ct reply zone 1
+ip test-ip4 output
+  [ ct load zone => reg 1 , dir reply ]
+  [ cmp eq reg 1 0x00000001 ]
+
+# ct zone set 1
+ip test-ip4 output
+  [ immediate reg 1 0x00000001 ]
+  [ ct set zone with reg 1 ]
+
+# ct original zone set 1
+ip test-ip4 output
+  [ immediate reg 1 0x00000001 ]
+  [ ct set zone with reg 1 , dir original ]
+
+# ct reply zone set 1
+ip test-ip4 output
+  [ immediate reg 1 0x00000001 ]
+  [ ct set zone with reg 1 , dir reply ]
+
+# ct zone set mark map { 1 : 1,  2 : 2 }
+__map%d test-ip4 b
+__map%d test-ip4 0
+        element 00000001  : 00000001 0 [end]    element 00000002  : 00000002 0 [end]
+ip test-ip4 output
+  [ meta load mark => reg 1 ]
+  [ lookup reg 1 set __map%d dreg 1 ]
+  [ ct set zone with reg 1 ]
+
 # notrack
 ip test-ip4 output
   [ notrack ]

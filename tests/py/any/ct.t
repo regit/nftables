@@ -100,6 +100,19 @@ ct label 127;ok
 ct label set 127;ok
 ct label 128;fail
 
+ct zone 0;ok
+ct zone 23;ok
+ct zone 65536;fail
+ct both zone 1;fail
+ct original zone 1;ok
+ct reply zone 1;ok
+
+ct zone set 1;ok
+ct original zone set 1;ok
+ct reply zone set 1;ok
+ct zone set mark map { 1 : 1,  2 : 2 };ok;ct zone set mark map { 0x00000001 : 1, 0x00000002 : 2}
+ct both zone set 1;fail
+
 ct invalid;fail
 ct invalid original;fail
 ct set invalid original 42;fail
