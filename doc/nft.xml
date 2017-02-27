@@ -2655,7 +2655,8 @@ ip6 filter input frag more-fragments 1 counter
 				direction before the conntrack key, others must be used directly because they are direction agnostic.
 				The <command>packets</command>, <command>bytes</command> and <command>avgpkt</command> keywords can be
 				used with or without a direction. If the direction is omitted, the sum of the original and the reply
-				direction is returned.
+				direction is returned.  The same is true for the <command>zone</command>, if a direction is given, the zone
+				is only matched if the zone id is tied to the given direction.
 			</para>
 			<para>
 				<cmdsynopsis>
@@ -2673,6 +2674,7 @@ ip6 filter input frag more-fragments 1 counter
 						<arg>bytes</arg>
 						<arg>packets</arg>
 						<arg>avgpkt</arg>
+						<arg>zone</arg>
 					</group>
 				</cmdsynopsis>
 				<cmdsynopsis>
@@ -2691,6 +2693,7 @@ ip6 filter input frag more-fragments 1 counter
 						<arg>bytes</arg>
 						<arg>packets</arg>
 						<arg>avgpkt</arg>
+						<arg>zone</arg>
 					</group>
 				</cmdsynopsis>
 			</para>
@@ -2788,6 +2791,11 @@ ip6 filter input frag more-fragments 1 counter
 								<entry>avgpkt</entry>
 								<entry>average bytes per packet, see description for <command>packets</command> keyword</entry>
 								<entry>integer (64 bit)</entry>
+							</row>
+							<row>
+								<entry>zone</entry>
+								<entry>conntrack zone</entry>
+								<entry>integer (16 bit)</entry>
 							</row>
 						</tbody>
 					</tgroup>

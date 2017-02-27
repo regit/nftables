@@ -358,6 +358,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token L3PROTOCOL		"l3proto"
 %token PROTO_SRC		"proto-src"
 %token PROTO_DST		"proto-dst"
+%token ZONE			"zone"
 
 %token COUNTER			"counter"
 %token NAME			"name"
@@ -614,7 +615,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %type <expr>			ct_expr
 %destructor { expr_free($$); }	ct_expr
-%type <val>			ct_key		ct_key_dir	ct_key_counters
+%type <val>			ct_key		ct_key_dir	ct_key_dir_optional
 
 %type <expr>			fib_expr
 %destructor { expr_free($$); }	fib_expr
@@ -2957,7 +2958,7 @@ ct_expr			: 	CT	ct_key
 ct_key			:	L3PROTOCOL	{ $$ = NFT_CT_L3PROTOCOL; }
 			|	PROTOCOL	{ $$ = NFT_CT_PROTOCOL; }
 			|	MARK		{ $$ = NFT_CT_MARK; }
-			|	ct_key_counters
+			|	ct_key_dir_optional
 			;
 ct_key_dir		:	SADDR		{ $$ = NFT_CT_SRC; }
 			|	DADDR		{ $$ = NFT_CT_DST; }
@@ -2965,12 +2966,13 @@ ct_key_dir		:	SADDR		{ $$ = NFT_CT_SRC; }
 			|	PROTOCOL	{ $$ = NFT_CT_PROTOCOL; }
 			|	PROTO_SRC	{ $$ = NFT_CT_PROTO_SRC; }
 			|	PROTO_DST	{ $$ = NFT_CT_PROTO_DST; }
-			|	ct_key_counters
+			|	ct_key_dir_optional
 			;
 
-ct_key_counters		:	BYTES		{ $$ = NFT_CT_BYTES; }
+ct_key_dir_optional	:	BYTES		{ $$ = NFT_CT_BYTES; }
 			|	PACKETS		{ $$ = NFT_CT_PKTS; }
 			|	AVGPKT		{ $$ = NFT_CT_AVGPKT; }
+			|	ZONE		{ $$ = NFT_CT_ZONE; }
 			;
 
 ct_stmt			:	CT	ct_key		SET	expr
