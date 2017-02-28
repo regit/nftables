@@ -36,3 +36,7 @@ ip test-ip4 pre
   [ lookup reg 1 set __map%d dreg 1 ]
   [ nat dnat ip addr_min reg 1 addr_max reg 0 ]
 
+# ct mark set symhash mod 2 offset 100
+ip test-ip4 pre
+  [ hash reg 1 = symhash() % mod 2 offset 100 ]
+  [ ct set mark with reg 1 ]

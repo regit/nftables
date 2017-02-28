@@ -309,6 +309,7 @@ struct expr {
 			uint32_t		mod;
 			uint32_t		seed;
 			uint32_t		offset;
+			enum nft_hash_types	type;
 		} hash;
 		struct {
 			/* EXPR_FIB */

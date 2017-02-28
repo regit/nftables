@@ -488,6 +488,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "offset"		{ return OFFSET; }
 
 "jhash"			{ return JHASH; }
+"symhash"		{ return SYMHASH; }
 "seed"			{ return SEED; }
 
 "dup"			{ return DUP; }

@@ -125,18 +125,23 @@ static void netlink_gen_hash(struct netlink_linearize_ctx *ctx,
 	enum nft_registers sreg;
 	struct nftnl_expr *nle;
 
-	sreg = get_register(ctx, expr->hash.expr);
-	netlink_gen_expr(ctx, expr->hash.expr, sreg);
-	release_register(ctx, expr->hash.expr);
-
 	nle = alloc_nft_expr("hash");
-	netlink_put_register(nle, NFTNL_EXPR_HASH_SREG, sreg);
+
+	if (expr->hash.expr) {
+		sreg = get_register(ctx, expr->hash.expr);
+		netlink_gen_expr(ctx, expr->hash.expr, sreg);
+		release_register(ctx, expr->hash.expr);
+		netlink_put_register(nle, NFTNL_EXPR_HASH_SREG, sreg);
+
+		nftnl_expr_set_u32(nle, NFTNL_EXPR_HASH_LEN,
+				   div_round_up(expr->hash.expr->len,
+						BITS_PER_BYTE));
+	}
 	netlink_put_register(nle, NFTNL_EXPR_HASH_DREG, dreg);
-	nftnl_expr_set_u32(nle, NFTNL_EXPR_HASH_LEN,
-			   div_round_up(expr->hash.expr->len, BITS_PER_BYTE));
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_HASH_MODULUS, expr->hash.mod);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_HASH_SEED, expr->hash.seed);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_HASH_OFFSET, expr->hash.offset);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_HASH_TYPE, expr->hash.type);
 	nftnl_rule_add_expr(ctx->nlr, nle);
 }
 

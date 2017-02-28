@@ -523,26 +523,32 @@ static void netlink_parse_hash(struct netlink_parse_ctx *ctx,
 	enum nft_registers sreg, dreg;
 	struct expr *expr, *hexpr;
 	uint32_t mod, seed, len, offset;
+	enum nft_hash_types type;
 
-	sreg = netlink_parse_register(nle, NFTNL_EXPR_HASH_SREG);
-	hexpr = netlink_get_register(ctx, loc, sreg);
-	if (hexpr == NULL)
-		return netlink_error(ctx, loc,
-				     "hash statement has no expression");
-
+	type = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_TYPE);
 	offset = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_OFFSET);
 	seed = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_SEED);
 	mod  = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_MODULUS);
-	len = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_LEN) * BITS_PER_BYTE;
 
-	if (hexpr->len < len) {
-		hexpr = netlink_parse_concat_expr(ctx, loc, sreg, len);
+	expr = hash_expr_alloc(loc, mod, seed, offset, type);
+
+	if (type != NFT_HASH_SYM) {
+		sreg = netlink_parse_register(nle, NFTNL_EXPR_HASH_SREG);
+		hexpr = netlink_get_register(ctx, loc, sreg);
+
 		if (hexpr == NULL)
-			return;
+			return
+			netlink_error(ctx, loc,
+				      "hash statement has no expression");
+		len = nftnl_expr_get_u32(nle,
+					 NFTNL_EXPR_HASH_LEN) * BITS_PER_BYTE;
+		if (hexpr->len < len) {
+			hexpr = netlink_parse_concat_expr(ctx, loc, sreg, len);
+			if (hexpr == NULL)
+				return;
+		}
+		expr->hash.expr = hexpr;
 	}
-
-	expr = hash_expr_alloc(loc, mod, seed, offset);
-	expr->hash.expr = hexpr;
 
 	dreg = netlink_parse_register(nle, NFTNL_EXPR_HASH_DREG);
 	netlink_set_register(ctx, dreg, expr);
@@ -1826,7 +1832,8 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 	case EXPR_FIB:
 		break;
 	case EXPR_HASH:
-		expr_postprocess(ctx, &expr->hash.expr);
+		if (expr->hash.expr)
+			expr_postprocess(ctx, &expr->hash.expr);
 		break;
 	case EXPR_CT:
 		ct_expr_update_type(&ctx->pctx, expr);

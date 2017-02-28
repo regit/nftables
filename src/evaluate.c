@@ -1288,7 +1288,8 @@ static int expr_evaluate_hash(struct eval_ctx *ctx, struct expr **exprp)
 	expr_dtype_integer_compatible(ctx, expr);
 
 	expr_set_context(&ctx->ectx, NULL, 0);
-	if (expr_evaluate(ctx, &expr->hash.expr) < 0)
+	if (expr->hash.expr &&
+	    expr_evaluate(ctx, &expr->hash.expr) < 0)
 		return -1;
 
 	/* expr_evaluate_primary() sets the context to what to the input

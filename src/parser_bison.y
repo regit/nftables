@@ -437,6 +437,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token OFFSET			"offset"
 
 %token JHASH			"jhash"
+%token SYMHASH			"symhash"
 %token SEED			"seed"
 
 %token POSITION			"position"
@@ -512,7 +513,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { stmt_free($$); }	reject_stmt reject_stmt_alloc
 %type <stmt>			nat_stmt nat_stmt_alloc masq_stmt masq_stmt_alloc redir_stmt redir_stmt_alloc
 %destructor { stmt_free($$); }	nat_stmt nat_stmt_alloc masq_stmt masq_stmt_alloc redir_stmt redir_stmt_alloc
-%type <val>			nf_nat_flags nf_nat_flag offset_opt
+%type <val>			nf_nat_flags nf_nat_flag offset_opt seed_opt
 %type <stmt>			queue_stmt queue_stmt_alloc
 %destructor { stmt_free($$); }	queue_stmt queue_stmt_alloc
 %type <val>			queue_stmt_flags queue_stmt_flag
@@ -2916,15 +2917,18 @@ numgen_expr		:	NUMGEN	numgen_type	MOD	NUM	offset_opt
 			}
 			;
 
-hash_expr		:	JHASH	expr	MOD	NUM	SEED	NUM	offset_opt
+seed_opt		:	/* empty */	{ $$ = 0; }
+			|	SEED	NUM	{ $$ = $2; }
+			;
+
+hash_expr		:	JHASH		expr	MOD	NUM	seed_opt	offset_opt
 			{
-				$$ = hash_expr_alloc(&@$, $4, $6, $7);
+				$$ = hash_expr_alloc(&@$, $4, $5, $6, NFT_HASH_JENKINS);
 				$$->hash.expr = $2;
 			}
-			|	JHASH	expr	MOD	NUM	offset_opt
+			|	SYMHASH		MOD	NUM	offset_opt
 			{
-				$$ = hash_expr_alloc(&@$, $4, 0, $5);
-				$$->hash.expr = $2;
+				$$ = hash_expr_alloc(&@$, $3, 0, $4, NFT_HASH_SYM);
 			}
 			;
 
