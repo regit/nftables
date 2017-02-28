@@ -2525,11 +2525,14 @@ inet filter meta nfproto ipv6 output rt nexthop fd00::1
 					<arg>noop</arg>
 					<arg>maxseg</arg>
 					<arg>window</arg>
-					<arg>sack_permitted</arg>
+					<arg>sack-permitted</arg>
 					<arg>sack</arg>
+					<arg>sack0</arg>
+					<arg>sack1</arg>
+					<arg>sack2</arg>
+					<arg>sack3</arg>
 					<arg>timestamp</arg>
 				</group>
-                <arg><replaceable>offset</replaceable></arg>
 				<arg choice="none"><replaceable>tcp_option_field</replaceable></arg>
 			</cmdsynopsis>
 			<para>
@@ -2604,13 +2607,33 @@ inet filter meta nfproto ipv6 output rt nexthop fd00::1
 								<entry>kind, length, count</entry>
 							</row>
 							<row>
-								<entry>sack_permitted</entry>
+								<entry>sack-permitted</entry>
 								<entry>TCP SACK permitted</entry>
 								<entry>kind, length</entry>
 							</row>
 							<row>
 								<entry>sack</entry>
-								<entry>TCP Selective Acknowledgement</entry>
+								<entry>TCP Selective Acknowledgement (alias of block 0)</entry>
+								<entry>kind, length, left, right</entry>
+							</row>
+							<row>
+								<entry>sack0</entry>
+								<entry>TCP Selective Acknowledgement (block 0)</entry>
+								<entry>kind, length, left, right</entry>
+							</row>
+							<row>
+								<entry>sack1</entry>
+								<entry>TCP Selective Acknowledgement (block 1)</entry>
+								<entry>kind, length, left, right</entry>
+							</row>
+							<row>
+								<entry>sack2</entry>
+								<entry>TCP Selective Acknowledgement (block 2)</entry>
+								<entry>kind, length, left, right</entry>
+							</row>
+							<row>
+								<entry>sack3</entry>
+								<entry>TCP Selective Acknowledgement (block 3)</entry>
 								<entry>kind, length, left, right</entry>
 							</row>
 							<row>
@@ -2624,16 +2647,10 @@ inet filter meta nfproto ipv6 output rt nexthop fd00::1
 			</para>
 
 			<para>
-				The <replaceable>offset</replaceable> is only used for the SACK TCP option fields <command>left</command> and <command>right</command>.
-				For all non-SACK TCP options it is always zero.
-				<replaceable>Offsets</replaceable> which equals to zero can be omitted.
-			</para>
-
-			<para>
 				<example>
 					<title>finding TCP options</title>
 					<programlisting>
-filter input tcp option sack_permitted kind 1 counter
+filter input tcp option sack-permitted kind 1 counter
 					</programlisting>
 				</example>
 				<example>

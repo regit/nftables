@@ -12,48 +12,6 @@
 #include <expression.h>
 #include <tcpopt.h>
 
-/* We do not need to export these enums, because the tcpopts are parsed at
- * runtime and not by bison.
- */
-enum tcpopt_eol_hdr_fields {
-	TCPOPT_EOLHDR_KIND,
-};
-
-enum tcpopt_nop_hdr_fields {
-	TCPOPT_NOPHDR_KIND,
-};
-
-enum tcpopt_maxseg_hdr_fields {
-	TCPOPT_MAXSEGHDR_KIND,
-	TCPOPT_MAXSEGHDR_LENGTH,
-	TCPOPT_MAXSEGHDR_SIZE,
-};
-
-enum tcpopt_window_hdr_fields {
-	TCPOPT_WINDOWHDR_KIND,
-	TCPOPT_WINDOWHDR_LENGTH,
-	TCPOPT_WINDOWHDR_COUNT,
-};
-
-enum tcpopt_sack_permitted_hdr_fields {
-	TCPOPT_SACKPERMHDR_KIND,
-	TCPOPT_SACKPERMHDR_LENGTH,
-};
-
-enum tcpopt_sack_hdr_fields {
-	TCPOPT_SACKHDR_KIND,
-	TCPOPT_SACKHDR_LENGTH,
-	TCPOPT_SACKHDR_LEFT,
-	TCPOPT_SACKHDR_RIGHT,
-};
-
-enum tcpopt_timestamp_hdr_fields {
-	TCPOPT_TIMESTAMPSHDR_KIND,
-	TCPOPT_TIMESTAMPSHDR_LENGTH,
-	TCPOPT_TIMESTAMPSHDR_TSVAL,
-	TCPOPT_TIMESTAMPSHDR_TSECR,
-};
-
 static const struct proto_hdr_template tcpopt_unknown_template =
 	PROTO_HDR_TEMPLATE("unknown", &invalid_type, BYTEORDER_INVALID, 0, 0);
 
@@ -64,7 +22,7 @@ const struct exthdr_desc tcpopt_eol = {
 	.name		= "eol",
 	.type		= TCPOPT_EOL,
 	.templates	= {
-		[TCPOPT_EOLHDR_KIND]		= PHT("kind",  0,    8),
+		[TCPOPTHDR_FIELD_KIND]		= PHT("kind",  0,    8),
 	},
 };
 
@@ -72,7 +30,7 @@ const struct exthdr_desc tcpopt_nop = {
 	.name		= "noop",
 	.type		= TCPOPT_NOP,
 	.templates	= {
-		[TCPOPT_NOPHDR_KIND]		= PHT("kind",   0,   8),
+		[TCPOPTHDR_FIELD_KIND]		= PHT("kind",   0,   8),
 	},
 };
 
@@ -80,9 +38,9 @@ const struct exthdr_desc tcptopt_maxseg = {
 	.name		= "maxseg",
 	.type		= TCPOPT_MAXSEG,
 	.templates	= {
-		[TCPOPT_MAXSEGHDR_KIND]		= PHT("kind",   0,  8),
-		[TCPOPT_MAXSEGHDR_LENGTH]	= PHT("length", 8,  8),
-		[TCPOPT_MAXSEGHDR_SIZE]		= PHT("size",  16, 16),
+		[TCPOPTHDR_FIELD_KIND]		= PHT("kind",   0,  8),
+		[TCPOPTHDR_FIELD_LENGTH]	= PHT("length", 8,  8),
+		[TCPOPTHDR_FIELD_SIZE]		= PHT("size",  16, 16),
 	},
 };
 
@@ -90,18 +48,18 @@ const struct exthdr_desc tcpopt_window = {
 	.name		= "window",
 	.type		= TCPOPT_WINDOW,
 	.templates	= {
-		[TCPOPT_WINDOWHDR_KIND]		= PHT("kind",   0,  8),
-		[TCPOPT_WINDOWHDR_LENGTH]	= PHT("length", 8,  8),
-		[TCPOPT_WINDOWHDR_COUNT]	= PHT("count", 16,  8),
+		[TCPOPTHDR_FIELD_KIND]		= PHT("kind",   0,  8),
+		[TCPOPTHDR_FIELD_LENGTH]	= PHT("length", 8,  8),
+		[TCPOPTHDR_FIELD_COUNT]		= PHT("count", 16,  8),
 	},
 };
 
 const struct exthdr_desc tcpopt_sack_permitted = {
-	.name		= "sack_permitted",
+	.name		= "sack-permitted",
 	.type		= TCPOPT_SACK_PERMITTED,
 	.templates	= {
-		[TCPOPT_SACKPERMHDR_KIND]	= PHT("kind",   0, 8),
-		[TCPOPT_SACKPERMHDR_LENGTH]	= PHT("length", 8, 8),
+		[TCPOPTHDR_FIELD_KIND]		= PHT("kind",   0, 8),
+		[TCPOPTHDR_FIELD_LENGTH]	= PHT("length", 8, 8),
 	},
 };
 
@@ -109,10 +67,10 @@ const struct exthdr_desc tcpopt_sack = {
 	.name		= "sack",
 	.type		= TCPOPT_SACK,
 	.templates	= {
-		[TCPOPT_SACKHDR_KIND]		= PHT("kind",   0,   8),
-		[TCPOPT_SACKHDR_LENGTH]		= PHT("length", 8,   8),
-		[TCPOPT_SACKHDR_LEFT]		= PHT("left",  16,  32),
-		[TCPOPT_SACKHDR_RIGHT]		= PHT("right", 48,  32),
+		[TCPOPTHDR_FIELD_KIND]		= PHT("kind",   0,   8),
+		[TCPOPTHDR_FIELD_LENGTH]		= PHT("length", 8,   8),
+		[TCPOPTHDR_FIELD_LEFT]		= PHT("left",  16,  32),
+		[TCPOPTHDR_FIELD_RIGHT]		= PHT("right", 48,  32),
 	},
 };
 
@@ -120,10 +78,10 @@ const struct exthdr_desc tcpopt_timestamp = {
 	.name		= "timestamp",
 	.type		= TCPOPT_TIMESTAMP,
 	.templates	= {
-		[TCPOPT_TIMESTAMPSHDR_KIND]	= PHT("kind",   0,  8),
-		[TCPOPT_TIMESTAMPSHDR_LENGTH]	= PHT("length", 8,  8),
-		[TCPOPT_TIMESTAMPSHDR_TSVAL]	= PHT("tsval",  16, 32),
-		[TCPOPT_TIMESTAMPSHDR_TSECR]	= PHT("tsecr",  48, 32),
+		[TCPOPTHDR_FIELD_KIND]		= PHT("kind",   0,  8),
+		[TCPOPTHDR_FIELD_LENGTH]	= PHT("length", 8,  8),
+		[TCPOPTHDR_FIELD_TSVAL]		= PHT("tsval",  16, 32),
+		[TCPOPTHDR_FIELD_TSECR]		= PHT("tsecr",  48, 32),
 	},
 };
 #undef PHT
@@ -178,46 +136,57 @@ static unsigned int calc_offset_reverse(const struct exthdr_desc *desc,
 	}
 }
 
+static const struct exthdr_desc *tcpopthdr_protocols[] = {
+	[TCPOPTHDR_EOL]			= &tcpopt_eol,
+	[TCPOPTHDR_NOOP]		= &tcpopt_nop,
+	[TCPOPTHDR_MAXSEG]		= &tcptopt_maxseg,
+	[TCPOPTHDR_WINDOW]		= &tcpopt_window,
+	[TCPOPTHDR_SACK_PERMITTED]	= &tcpopt_sack_permitted,
+	[TCPOPTHDR_SACK0]		= &tcpopt_sack,
+	[TCPOPTHDR_SACK1]		= &tcpopt_sack,
+	[TCPOPTHDR_SACK2]		= &tcpopt_sack,
+	[TCPOPTHDR_SACK3]		= &tcpopt_sack,
+	[TCPOPTHDR_ECHO]		= TCPOPT_OBSOLETE,
+	[TCPOPTHDR_ECHO_REPLY]		= TCPOPT_OBSOLETE,
+	[TCPOPTHDR_TIMESTAMP]		= &tcpopt_timestamp,
+};
 
-struct expr *tcpopt_expr_alloc(const struct location *loc,
-			       const char *option_str,
-			       const unsigned int option_num,
-			       const char *option_field)
+static uint8_t tcpopt_optnum[] = {
+	[TCPOPTHDR_SACK0]	= 0,
+	[TCPOPTHDR_SACK1]	= 1,
+	[TCPOPTHDR_SACK2]	= 2,
+	[TCPOPTHDR_SACK3]	= 3,
+};
+
+static uint8_t tcpopt_find_optnum(uint8_t optnum)
 {
-	const struct proto_hdr_template *tmp, *tmpl = &tcpopt_unknown_template;
-	const struct exthdr_desc *desc = NULL;
+	if (optnum > TCPOPTHDR_SACK3)
+		return 0;
+
+	return tcpopt_optnum[optnum];
+}
+
+struct expr *tcpopt_expr_alloc(const struct location *loc, uint8_t type,
+			       uint8_t field)
+{
+	const struct proto_hdr_template *tmpl;
+	const struct exthdr_desc *desc;
 	struct expr *expr;
-	unsigned int i, j;
+	uint8_t optnum;
 
-	for (i = 0; i < array_size(tcpopt_protocols); ++i) {
-		if (tcpopt_protocols[i] == TCPOPT_OBSOLETE)
-			continue;
+	desc = tcpopthdr_protocols[type];
+	tmpl = &desc->templates[field];
+	if (!tmpl)
+		return NULL;
 
-		if (!tcpopt_protocols[i]->name ||
-		    strcmp(option_str, tcpopt_protocols[i]->name))
-			continue;
+	optnum = tcpopt_find_optnum(type);
 
-		for (j = 0; j < array_size(tcpopt_protocols[i]->templates); ++j) {
-			tmp = &tcpopt_protocols[i]->templates[j];
-			if (!tmp->token || strcmp(option_field, tmp->token))
-				continue;
-
-			desc = tcpopt_protocols[i];
-			tmpl = tmp;
-			goto found;
-		}
-	}
-
-found:
-	/* tmpl still points to tcpopt_unknown_template if nothing was found and
-	 * desc is null
-	 */
 	expr = expr_alloc(loc, &exthdr_expr_ops, tmpl->dtype,
 			  BYTEORDER_BIG_ENDIAN, tmpl->len);
 	expr->exthdr.desc   = desc;
 	expr->exthdr.tmpl   = tmpl;
 	expr->exthdr.op     = NFT_EXTHDR_OP_TCPOPT;
-	expr->exthdr.offset = calc_offset(desc, tmpl, option_num);
+	expr->exthdr.offset = calc_offset(desc, tmpl, optnum);
 
 	return expr;
 }

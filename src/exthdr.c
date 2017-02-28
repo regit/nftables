@@ -33,7 +33,7 @@ static void exthdr_expr_print(const struct expr *expr)
 		char buf[3] = {0};
 
 		if (offset)
-			snprintf(buf, sizeof buf, " %d", offset);
+			snprintf(buf, sizeof buf, "%d", offset);
 		printf("tcp option %s%s %s", expr->exthdr.desc->name, buf,
 					     expr->exthdr.tmpl->token);
 	}

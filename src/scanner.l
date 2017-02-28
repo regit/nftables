@@ -375,6 +375,25 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "protocol"		{ return PROTOCOL; }
 "checksum"		{ return CHECKSUM; }
 
+"echo"			{ return ECHO; }
+"eol"			{ return EOL; }
+"maxseg"		{ return MAXSEG; }
+"noop"			{ return NOOP; }
+"sack"			{ return SACK; }
+"sack0"			{ return SACK0; }
+"sack1"			{ return SACK1; }
+"sack2"			{ return SACK2; }
+"sack3"			{ return SACK3; }
+"sack-permitted"	{ return SACK_PERMITTED; }
+"timestamp"		{ return TIMESTAMP; }
+
+"kind"			{ return KIND; }
+"count"			{ return COUNT; }
+"left"			{ return LEFT; }
+"right"			{ return RIGHT; }
+"tsval"			{ return TSVAL; }
+"tsecr"			{ return TSECR; }
+
 "icmp"			{ return ICMP; }
 "code"			{ return CODE; }
 "sequence"		{ return SEQUENCE; }

@@ -309,6 +309,23 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token WINDOW			"window"
 %token URGPTR			"urgptr"
 %token OPTION			"option"
+%token ECHO			"echo"
+%token EOL			"eol"
+%token MAXSEG			"maxseg"
+%token NOOP			"noop"
+%token SACK			"sack"
+%token SACK0			"sack0"
+%token SACK1			"sack1"
+%token SACK2			"sack2"
+%token SACK3			"sack3"
+%token SACK_PERMITTED		"sack-permitted"
+%token TIMESTAMP		"timestamp"
+%token KIND			"kind"
+%token COUNT			"count"
+%token LEFT			"left"
+%token RIGHT			"right"
+%token TSVAL			"tsval"
+%token TSECR			"tsecr"
 
 %token DCCP			"dccp"
 
@@ -430,8 +447,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %token NOTRACK			"notrack"
 
-%type <string>			identifier type_identifier string comment_spec tcp_option_name tcp_option_field
-%destructor { xfree($$); }	identifier type_identifier string comment_spec tcp_option_name tcp_option_field
+%type <string>			identifier type_identifier string comment_spec
+%destructor { xfree($$); }	identifier type_identifier string comment_spec
 
 %type <val>			time_spec quota_used
 
@@ -602,9 +619,6 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { expr_free($$); }	mh_hdr_expr
 %type <val>			mh_hdr_field
 
-%type <expr>			tcp_hdr_optexpr
-%destructor { expr_free($$); }	tcp_hdr_optexpr
-
 %type <expr>			meta_expr
 %destructor { expr_free($$); }	meta_expr
 %type <val>			meta_key	meta_key_qualified	meta_key_unqualified	numgen_type
@@ -634,6 +648,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			tcp_hdr_expr
 %destructor { expr_free($$); }	tcp_hdr_expr
 %type <val>			tcp_hdr_field
+%type <val>			tcp_hdr_option_type tcp_hdr_option_field
 
 %%
 
@@ -3211,6 +3226,10 @@ tcp_hdr_expr		:	TCP	tcp_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &proto_tcp, $2);
 			}
+			|	TCP	OPTION	tcp_hdr_option_type tcp_hdr_option_field
+			{
+				$$ = tcpopt_expr_alloc(&@$, $3, $4);
+			}
 			;
 
 tcp_hdr_field		:	SPORT		{ $$ = TCPHDR_SPORT; }
@@ -3223,6 +3242,30 @@ tcp_hdr_field		:	SPORT		{ $$ = TCPHDR_SPORT; }
 			|	WINDOW		{ $$ = TCPHDR_WINDOW; }
 			|	CHECKSUM	{ $$ = TCPHDR_CHECKSUM; }
 			|	URGPTR		{ $$ = TCPHDR_URGPTR; }
+			;
+
+tcp_hdr_option_type	:	EOL		{ $$ = TCPOPTHDR_EOL; }
+			|	NOOP		{ $$ = TCPOPTHDR_NOOP; }
+			|	MAXSEG		{ $$ = TCPOPTHDR_MAXSEG; }
+			|	WINDOW		{ $$ = TCPOPTHDR_WINDOW; }
+			|	SACK_PERMITTED	{ $$ = TCPOPTHDR_SACK_PERMITTED; }
+			|	SACK		{ $$ = TCPOPTHDR_SACK0; }
+			|	SACK0		{ $$ = TCPOPTHDR_SACK0; }
+			|	SACK1		{ $$ = TCPOPTHDR_SACK1; }
+			|	SACK2		{ $$ = TCPOPTHDR_SACK2; }
+			|	SACK3		{ $$ = TCPOPTHDR_SACK3; }
+			|	ECHO		{ $$ = TCPOPTHDR_ECHO; }
+			|	TIMESTAMP	{ $$ = TCPOPTHDR_TIMESTAMP; }
+			;
+
+tcp_hdr_option_field	:	KIND		{ $$ = TCPOPTHDR_FIELD_KIND; }
+			|	LENGTH		{ $$ = TCPOPTHDR_FIELD_LENGTH; }
+			|	SIZE		{ $$ = TCPOPTHDR_FIELD_SIZE; }
+			|	COUNT		{ $$ = TCPOPTHDR_FIELD_COUNT; }
+			|	LEFT		{ $$ = TCPOPTHDR_FIELD_LEFT; }
+			|	RIGHT		{ $$ = TCPOPTHDR_FIELD_RIGHT; }
+			|	TSVAL		{ $$ = TCPOPTHDR_FIELD_TSVAL; }
+			|	TSECR		{ $$ = TCPOPTHDR_FIELD_TSECR; }
 			;
 
 dccp_hdr_expr		:	DCCP	dccp_hdr_field
@@ -3255,7 +3298,6 @@ exthdr_expr		:	hbh_hdr_expr
 			|	frag_hdr_expr
 			|	dst_hdr_expr
 			|	mh_hdr_expr
-			|	tcp_hdr_optexpr
 			;
 
 hbh_hdr_expr		:	HBH	hbh_hdr_field
@@ -3338,31 +3380,4 @@ mh_hdr_field		:	NEXTHDR		{ $$ = MHHDR_NEXTHDR; }
 			|	CHECKSUM	{ $$ = MHHDR_CHECKSUM; }
 			;
 
-tcp_option_name		:	STRING		{ $$ = $1; }
-			|	WINDOW		{ $$ = xstrdup("window"); }
-			;
-
-tcp_option_field	:	STRING		{ $$ = $1; }
-			|	LENGTH		{ $$ = xstrdup("length"); }
-			|	SIZE		{ $$ = xstrdup("size"); }
-			;
-
-tcp_hdr_optexpr		:	TCP	OPTION	tcp_option_name		tcp_option_field
-			{
-				$$ = tcpopt_expr_alloc(&@$, $3, 0, $4);
-			}
-			|	TCP	OPTION	STRING	NUM	tcp_option_field
-			{
-				if (strcmp($3, "sack")) {
-					erec_queue(error(&@2, "tcp: number (%d) can only be used with sack option", $4), state->msgs);
-					YYERROR;
-				}
-
-				if ($4 > 3) {
-					erec_queue(error(&@2, "tcp: option block (%d) too large (0-3)", $4), state->msgs);
-					YYERROR;
-				}
-				$$ = tcpopt_expr_alloc(&@$, $3, $4, $5);
-			}
-			;
 %%
