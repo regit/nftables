@@ -40,21 +40,21 @@ families. Unless you specify the --force-family option.
 
 * Execute broken tests:
 
-./nft-test.sh -e
+./nft-test.py -e
 
 This runs tests for rules that need a fix: This mode runs the lines that
 that start with a "-" symbol.
 
 * Debugging:
 
-./nft-test.sh -d
+./nft-test.py -d
 
 This shows all the commands that the script executes, so you can watch
 its internal behaviour.
 
 * Keep testing all families on error.
 
-./nft-test.sh -f
+./nft-test.py -f
 
 Don't stop testing for more families in case of error.
 
