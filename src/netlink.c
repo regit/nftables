@@ -1143,9 +1143,11 @@ static struct set *netlink_delinearize_set(struct netlink_ctx *ctx,
 		}
 
 		if (ud[UDATA_SET_KEYBYTEORDER])
-			keybyteorder = *((uint32_t *)nftnl_udata_get(ud[UDATA_SET_KEYBYTEORDER]));
+			keybyteorder =
+				nftnl_udata_get_u32(ud[UDATA_SET_KEYBYTEORDER]);
 		if (ud[UDATA_SET_DATABYTEORDER])
-			databyteorder = *((uint32_t *)nftnl_udata_get(ud[UDATA_SET_DATABYTEORDER]));
+			databyteorder =
+				nftnl_udata_get_u32(ud[UDATA_SET_DATABYTEORDER]);
 	}
 
 	key = nftnl_set_get_u32(nls, NFTNL_SET_KEY_TYPE);
@@ -1284,13 +1286,13 @@ static int netlink_add_set_batch(struct netlink_ctx *ctx,
 	udbuf = nftnl_udata_buf_alloc(NFT_USERDATA_MAXLEN);
 	if (!udbuf)
 		memory_allocation_error();
-	if (!nftnl_udata_put(udbuf, UDATA_SET_KEYBYTEORDER, sizeof(uint32_t),
-			     &set->keytype->byteorder))
+	if (!nftnl_udata_put_u32(udbuf, UDATA_SET_KEYBYTEORDER,
+				 set->keytype->byteorder))
 		memory_allocation_error();
 
 	if (set->flags & NFT_SET_MAP &&
-	    !nftnl_udata_put(udbuf, UDATA_SET_DATABYTEORDER, sizeof(uint32_t),
-			     &set->datatype->byteorder))
+	    !nftnl_udata_put_u32(udbuf, UDATA_SET_DATABYTEORDER,
+				 set->datatype->byteorder))
 		memory_allocation_error();
 
 	nftnl_set_set_data(nls, NFTNL_SET_USERDATA, nftnl_udata_buf_data(udbuf),
