@@ -46,7 +46,8 @@ static bool exthdr_expr_cmp(const struct expr *e1, const struct expr *e2)
 {
 	return e1->exthdr.desc == e2->exthdr.desc &&
 	       e1->exthdr.tmpl == e2->exthdr.tmpl &&
-	       e1->exthdr.op == e2->exthdr.op;
+	       e1->exthdr.op == e2->exthdr.op &&
+	       e1->exthdr.flags == e2->exthdr.flags;
 }
 
 static void exthdr_expr_clone(struct expr *new, const struct expr *expr)
@@ -55,6 +56,7 @@ static void exthdr_expr_clone(struct expr *new, const struct expr *expr)
 	new->exthdr.tmpl = expr->exthdr.tmpl;
 	new->exthdr.offset = expr->exthdr.offset;
 	new->exthdr.op = expr->exthdr.op;
+	new->exthdr.flags = expr->exthdr.flags;
 }
 
 const struct expr_ops exthdr_expr_ops = {
@@ -97,16 +99,17 @@ static const struct exthdr_desc *exthdr_protocols[IPPROTO_MAX] = {
 
 void exthdr_init_raw(struct expr *expr, uint8_t type,
 		     unsigned int offset, unsigned int len,
-		     enum nft_exthdr_op op)
+		     enum nft_exthdr_op op, uint32_t flags)
 {
 	const struct proto_hdr_template *tmpl;
 	unsigned int i;
 
 	assert(expr->ops->type == EXPR_EXTHDR);
 	if (op == NFT_EXTHDR_OP_TCPOPT)
-		return tcpopt_init_raw(expr, type, offset, len);
+		return tcpopt_init_raw(expr, type, offset, len, flags);
 
 	expr->len = len;
+	expr->exthdr.flags = flags;
 	expr->exthdr.offset = offset;
 	expr->exthdr.desc = exthdr_protocols[type];
 	assert(expr->exthdr.desc != NULL);
@@ -149,7 +152,7 @@ bool exthdr_find_template(struct expr *expr, const struct expr *mask, unsigned i
 	off += round_up(mask->len, BITS_PER_BYTE) - mask_len;
 
 	exthdr_init_raw(expr, expr->exthdr.desc->type,
-			off, mask_len - mask_offset, NFT_EXTHDR_OP_IPV6);
+			off, mask_len - mask_offset, NFT_EXTHDR_OP_IPV6, 0);
 
 	/* still failed to find a template... Bug. */
 	if (expr->exthdr.tmpl == &exthdr_unknown_template)

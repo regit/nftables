@@ -498,9 +498,9 @@ static void netlink_parse_exthdr(struct netlink_parse_ctx *ctx,
 				 const struct location *loc,
 				 const struct nftnl_expr *nle)
 {
+	uint32_t offset, len, flags;
 	enum nft_registers dreg;
 	enum nft_exthdr_op op;
-	uint32_t offset, len;
 	uint8_t type;
 	struct expr *expr;
 
@@ -508,9 +508,10 @@ static void netlink_parse_exthdr(struct netlink_parse_ctx *ctx,
 	offset = nftnl_expr_get_u32(nle, NFTNL_EXPR_EXTHDR_OFFSET) * BITS_PER_BYTE;
 	len    = nftnl_expr_get_u32(nle, NFTNL_EXPR_EXTHDR_LEN) * BITS_PER_BYTE;
 	op     = nftnl_expr_get_u32(nle, NFTNL_EXPR_EXTHDR_OP);
+	flags  = nftnl_expr_get_u32(nle, NFTNL_EXPR_EXTHDR_FLAGS);
 
 	expr = exthdr_expr_alloc(loc, NULL, 0);
-	exthdr_init_raw(expr, type, offset, len, op);
+	exthdr_init_raw(expr, type, offset, len, op, flags);
 
 	dreg = netlink_parse_register(nle, NFTNL_EXPR_EXTHDR_DREG);
 	netlink_set_register(ctx, dreg, expr);

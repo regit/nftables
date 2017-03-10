@@ -23,7 +23,7 @@ extern struct expr *exthdr_expr_alloc(const struct location *loc,
 
 extern void exthdr_init_raw(struct expr *expr, uint8_t type,
 			    unsigned int offset, unsigned int len,
-			    enum nft_exthdr_op op);
+			    enum nft_exthdr_op op, uint32_t flags);
 
 extern bool exthdr_find_template(struct expr *expr, const struct expr *mask,
 				 unsigned int *shift);

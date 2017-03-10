@@ -282,6 +282,7 @@ struct expr {
 			const struct proto_hdr_template	*tmpl;
 			unsigned int			offset;
 			enum nft_exthdr_op		op;
+			unsigned int			flags;
 		} exthdr;
 		struct {
 			/* EXPR_META */

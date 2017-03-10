@@ -8,7 +8,8 @@ extern struct expr *tcpopt_expr_alloc(const struct location *loc,
 				      uint8_t type, uint8_t field);
 
 extern void tcpopt_init_raw(struct expr *expr, uint8_t type,
-			    unsigned int offset, unsigned int len);
+			    unsigned int offset, unsigned int len,
+			    uint32_t flags);
 
 extern bool tcpopt_find_template(struct expr *expr, const struct expr *mask,
 				 unsigned int *shift);

@@ -192,7 +192,7 @@ struct expr *tcpopt_expr_alloc(const struct location *loc, uint8_t type,
 }
 
 void tcpopt_init_raw(struct expr *expr, uint8_t type, unsigned int offset,
-		     unsigned int len)
+		     unsigned int len, uint32_t flags)
 {
 	const struct proto_hdr_template *tmpl;
 	unsigned int i, off;
@@ -200,6 +200,7 @@ void tcpopt_init_raw(struct expr *expr, uint8_t type, unsigned int offset,
 	assert(expr->ops->type == EXPR_EXTHDR);
 
 	expr->len = len;
+	expr->exthdr.flags = flags;
 	expr->exthdr.offset = offset;
 
 	assert(type < array_size(tcpopt_protocols));
@@ -229,7 +230,7 @@ bool tcpopt_find_template(struct expr *expr, const struct expr *mask,
 		return false;
 
 	tcpopt_init_raw(expr, expr->exthdr.desc->type, expr->exthdr.offset,
-			expr->len);
+			expr->len, 0);
 
 	if (expr->exthdr.tmpl == &tcpopt_unknown_template)
 		return false;
