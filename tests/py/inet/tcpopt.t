@@ -35,3 +35,6 @@ tcp option eol left 1;fail
 tcp option eol left 1;fail
 tcp option sack window;fail
 tcp option sack window 1;fail
+
+tcp option window exists;ok
+tcp option window missing;ok

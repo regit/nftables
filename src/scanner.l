@@ -507,6 +507,8 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "exists"		{ return EXISTS; }
 "missing"		{ return MISSING; }
 
+"exthdr"		{ return EXTHDR; }
+
 {addrstring}		{
 				yylval->string = xstrdup(yytext);
 				return STRING;

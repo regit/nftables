@@ -32,14 +32,22 @@ static void exthdr_expr_print(const struct expr *expr)
 		unsigned int offset = expr->exthdr.offset / 64;
 		char buf[3] = {0};
 
+		if (expr->exthdr.flags & NFT_EXTHDR_F_PRESENT) {
+			printf("tcp option %s", expr->exthdr.desc->name);
+			return;
+		}
+
 		if (offset)
 			snprintf(buf, sizeof buf, "%d", offset);
 		printf("tcp option %s%s %s", expr->exthdr.desc->name, buf,
 					     expr->exthdr.tmpl->token);
+	} else {
+		if (expr->exthdr.flags & NFT_EXTHDR_F_PRESENT)
+			printf("exthdr %s", expr->exthdr.desc->name);
+		else
+			printf("%s %s", expr->exthdr.desc->name,
+					expr->exthdr.tmpl->token);
 	}
-	else
-		printf("%s %s", expr->exthdr.desc->name,
-				expr->exthdr.tmpl->token);
 }
 
 static bool exthdr_expr_cmp(const struct expr *e1, const struct expr *e2)
@@ -97,6 +105,13 @@ static const struct exthdr_desc *exthdr_protocols[IPPROTO_MAX] = {
 	[IPPROTO_MH]		= &exthdr_mh,
 };
 
+const struct exthdr_desc *exthdr_find_proto(uint8_t proto)
+{
+	assert(exthdr_protocols[proto]);
+
+	return exthdr_protocols[proto];
+}
+
 void exthdr_init_raw(struct expr *expr, uint8_t type,
 		     unsigned int offset, unsigned int len,
 		     enum nft_exthdr_op op, uint32_t flags)
@@ -119,7 +134,12 @@ void exthdr_init_raw(struct expr *expr, uint8_t type,
 		if (tmpl->offset != offset ||
 		    tmpl->len    != len)
 			continue;
-		expr->dtype	  = tmpl->dtype;
+
+		if (flags & NFT_EXTHDR_F_PRESENT)
+			expr->dtype = &boolean_type;
+		else
+			expr->dtype = tmpl->dtype;
+
 		expr->exthdr.tmpl = tmpl;
 		return;
 	}

@@ -21,6 +21,8 @@ extern struct expr *exthdr_expr_alloc(const struct location *loc,
 				      const struct exthdr_desc *desc,
 				      uint8_t type);
 
+extern const struct exthdr_desc *exthdr_find_proto(uint8_t proto);
+
 extern void exthdr_init_raw(struct expr *expr, uint8_t type,
 			    unsigned int offset, unsigned int len,
 			    enum nft_exthdr_op op, uint32_t flags);

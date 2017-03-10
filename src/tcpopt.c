@@ -205,6 +205,7 @@ void tcpopt_init_raw(struct expr *expr, uint8_t type, unsigned int offset,
 
 	assert(type < array_size(tcpopt_protocols));
 	expr->exthdr.desc = tcpopt_protocols[type];
+	expr->exthdr.flags = flags;
 	assert(expr->exthdr.desc != TCPOPT_OBSOLETE);
 
 	for (i = 0; i < array_size(expr->exthdr.desc->templates); ++i) {
@@ -216,7 +217,10 @@ void tcpopt_init_raw(struct expr *expr, uint8_t type, unsigned int offset,
 		if (tmpl->offset != off || tmpl->len != len)
 			continue;
 
-		expr->dtype       = tmpl->dtype;
+		if (flags & NFT_EXTHDR_F_PRESENT)
+			expr->dtype = &boolean_type;
+		else
+			expr->dtype = tmpl->dtype;
 		expr->exthdr.tmpl = tmpl;
 		expr->exthdr.op   = NFT_EXTHDR_OP_TCPOPT;
 		break;

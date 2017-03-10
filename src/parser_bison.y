@@ -139,6 +139,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 	const struct datatype	*datatype;
 	struct handle_spec	handle_spec;
 	struct position_spec	position_spec;
+	const struct exthdr_desc *exthdr_desc;
 }
 
 %token TOKEN_EOF 0		"end of file"
@@ -451,6 +452,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token EXISTS			"exists"
 %token MISSING			"missing"
 
+%token EXTHDR			"exthdr"
+
 %type <string>			identifier type_identifier string comment_spec
 %destructor { xfree($$); }	identifier type_identifier string comment_spec
 
@@ -657,6 +660,10 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			boolean_expr
 %destructor { expr_free($$); }	boolean_expr
 %type <val>			boolean_keys
+
+%type <expr>			exthdr_exists_expr
+%destructor { expr_free($$); }	exthdr_exists_expr
+%type <val>			exthdr_key
 
 %%
 
@@ -2291,6 +2298,7 @@ primary_expr		:	symbol_expr			{ $$ = $1; }
 			|	integer_expr			{ $$ = $1; }
 			|	payload_expr			{ $$ = $1; }
 			|	exthdr_expr			{ $$ = $1; }
+			|	exthdr_exists_expr		{ $$ = $1; }
 			|	meta_expr			{ $$ = $1; }
 			|	rt_expr				{ $$ = $1; }
 			|	ct_expr				{ $$ = $1; }
@@ -3254,6 +3262,11 @@ tcp_hdr_expr		:	TCP	tcp_hdr_field
 			{
 				$$ = tcpopt_expr_alloc(&@$, $3, $4);
 			}
+			|	TCP	OPTION	tcp_hdr_option_type
+			{
+				$$ = tcpopt_expr_alloc(&@$, $3, TCPOPTHDR_FIELD_KIND);
+				$$->exthdr.flags = NFT_EXTHDR_F_PRESENT;
+			}
 			;
 
 tcp_hdr_field		:	SPORT		{ $$ = TCPHDR_SPORT; }
@@ -3402,6 +3415,27 @@ mh_hdr_field		:	NEXTHDR		{ $$ = MHHDR_NEXTHDR; }
 			|	TYPE		{ $$ = MHHDR_TYPE; }
 			|	RESERVED	{ $$ = MHHDR_RESERVED; }
 			|	CHECKSUM	{ $$ = MHHDR_CHECKSUM; }
+			;
+
+exthdr_exists_expr	:	EXTHDR	exthdr_key
+			{
+				const struct exthdr_desc *desc;
+
+				desc = exthdr_find_proto($2);
+
+				/* Assume that NEXTHDR template is always
+				 * the fist one in list of templates.
+				 */
+				$$ = exthdr_expr_alloc(&@$, desc, 1);
+				$$->exthdr.flags = NFT_EXTHDR_F_PRESENT;
+			}
+			;
+
+exthdr_key		:	HBH	{ $$ = IPPROTO_HOPOPTS; }
+			|	RT	{ $$ = IPPROTO_ROUTING; }
+			|	FRAG	{ $$ = IPPROTO_FRAGMENT; }
+			|	DST	{ $$ = IPPROTO_DSTOPTS; }
+			|	MH	{ $$ = IPPROTO_MH; }
 			;
 
 %%

@@ -432,6 +432,9 @@ static int __expr_evaluate_exthdr(struct eval_ctx *ctx, struct expr **exprp)
 {
 	struct expr *expr = *exprp;
 
+	if (expr->exthdr.flags & NFT_EXTHDR_F_PRESENT)
+		expr->dtype = &boolean_type;
+
 	if (expr_evaluate_primary(ctx, exprp) < 0)
 		return -1;
 
