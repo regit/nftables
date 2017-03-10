@@ -48,6 +48,7 @@ static const struct datatype *datatypes[TYPE_MAX + 1] = {
 	[TYPE_ICMP_CODE]	= &icmp_code_type,
 	[TYPE_ICMPV6_CODE]	= &icmpv6_code_type,
 	[TYPE_ICMPX_CODE]	= &icmpx_code_type,
+	[TYPE_BOOLEAN]		= &boolean_type,
 };
 
 void datatype_register(const struct datatype *dtype)
@@ -1104,3 +1105,21 @@ struct error_record *rate_parse(const struct location *loc, const char *str,
 
 	return NULL;
 }
+
+static const struct symbol_table boolean_tbl = {
+	.base		= BASE_DECIMAL,
+	.symbols	= {
+		SYMBOL("exists",	true),
+		SYMBOL("missing",	false),
+		SYMBOL_LIST_END
+	},
+};
+
+const struct datatype boolean_type = {
+	.type		= TYPE_BOOLEAN,
+	.name		= "boolean",
+	.desc		= "boolean type",
+	.size		= 1,
+	.basetype	= &integer_type,
+	.sym_tbl	= &boolean_tbl,
+};

@@ -82,6 +82,7 @@ enum datatypes {
 	TYPE_DSCP,
 	TYPE_ECN,
 	TYPE_FIB_ADDR,
+	TYPE_BOOLEAN,
 	__TYPE_MAX
 };
 #define TYPE_MAX		(__TYPE_MAX - 1)
@@ -233,6 +234,7 @@ extern const struct datatype icmp_code_type;
 extern const struct datatype icmpv6_code_type;
 extern const struct datatype icmpx_code_type;
 extern const struct datatype time_type;
+extern const struct datatype boolean_type;
 
 extern const struct datatype *concat_type_alloc(uint32_t type);
 extern void concat_type_destroy(const struct datatype *dtype);

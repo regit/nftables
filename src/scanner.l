@@ -504,6 +504,9 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "xml"			{ return XML; }
 "json"			{ return JSON; }
 
+"exists"		{ return EXISTS; }
+"missing"		{ return MISSING; }
+
 {addrstring}		{
 				yylval->string = xstrdup(yytext);
 				return STRING;

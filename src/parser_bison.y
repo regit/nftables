@@ -448,6 +448,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %token NOTRACK			"notrack"
 
+%token EXISTS			"exists"
+%token MISSING			"missing"
+
 %type <string>			identifier type_identifier string comment_spec
 %destructor { xfree($$); }	identifier type_identifier string comment_spec
 
@@ -650,6 +653,10 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { expr_free($$); }	tcp_hdr_expr
 %type <val>			tcp_hdr_field
 %type <val>			tcp_hdr_option_type tcp_hdr_option_field
+
+%type <expr>			boolean_expr
+%destructor { expr_free($$); }	boolean_expr
+%type <val>			boolean_keys
 
 %%
 
@@ -2655,8 +2662,21 @@ concat_rhs_expr		:	basic_rhs_expr
 			}
 			;
 
+boolean_keys		:	EXISTS		{ $$ = true; }
+			|	MISSING		{ $$ = false; }
+			;
+
+boolean_expr		:	boolean_keys
+			{
+				$$ = constant_expr_alloc(&@$, &boolean_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 1, &$1);
+			}
+			;
+
 primary_rhs_expr	:	symbol_expr		{ $$ = $1; }
 			|	integer_expr		{ $$ = $1; }
+			|	boolean_expr		{ $$ = $1; }
 			|	ETHER
 			{
 				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
