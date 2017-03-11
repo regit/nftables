@@ -20,3 +20,13 @@ __map%d test-ip 0
 ip test-ip prerouting
   [ fib daddr . iif type => reg 1 ]
   [ lookup reg 1 set __map%d dreg 0 ]
+
+# fib daddr oif exists
+ip test-ip prerouting
+  [ fib daddr oif present => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+
+# fib daddr oif missing
+ip test-ip prerouting
+  [ fib daddr oif present => reg 1 ]
+  [ cmp eq reg 1 0x00000000 ]

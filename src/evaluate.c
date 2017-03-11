@@ -1658,6 +1658,17 @@ range:
 	return 0;
 }
 
+static int expr_evaluate_fib(struct eval_ctx *ctx, struct expr **exprp)
+{
+	struct expr *expr = *exprp;
+
+	if (expr->flags & EXPR_F_BOOLEAN) {
+		expr->fib.flags |= NFTA_FIB_F_PRESENT;
+		expr->dtype = &boolean_type;
+	}
+	return expr_evaluate_primary(ctx, exprp);
+}
+
 static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 {
 #ifdef DEBUG
@@ -1680,8 +1691,9 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 		return expr_evaluate_exthdr(ctx, expr);
 	case EXPR_VERDICT:
 	case EXPR_META:
-	case EXPR_FIB:
 		return expr_evaluate_primary(ctx, expr);
+	case EXPR_FIB:
+		return expr_evaluate_fib(ctx, expr);
 	case EXPR_PAYLOAD:
 		return expr_evaluate_payload(ctx, expr);
 	case EXPR_RT:

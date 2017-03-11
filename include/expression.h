@@ -171,12 +171,14 @@ struct expr_ops {
  * @EXPR_F_SINGLETON:		singleton (implies primary and constant)
  * @EXPR_F_PROTOCOL:		expressions describes upper layer protocol
  * @EXPR_F_INTERVAL_END:	set member ends an open interval
+ * @EXPR_F_BOOLEAN:		expression is boolean (set by relational expr on LHS)
  */
 enum expr_flags {
 	EXPR_F_CONSTANT		= 0x1,
 	EXPR_F_SINGLETON	= 0x2,
 	EXPR_F_PROTOCOL		= 0x4,
 	EXPR_F_INTERVAL_END	= 0x8,
+	EXPR_F_BOOLEAN		= 0x10,
 };
 
 #include <payload.h>

@@ -592,6 +592,10 @@ struct expr *relational_expr_alloc(const struct location *loc, enum ops op,
 	expr->left  = left;
 	expr->op    = op;
 	expr->right = right;
+
+	if (right->dtype == &boolean_type)
+		left->flags |= EXPR_F_BOOLEAN;
+
 	return expr;
 }
 

@@ -73,7 +73,7 @@ static void __fib_expr_print_f(unsigned int *flags, unsigned int f, const char *
 
 static void fib_expr_print(const struct expr *expr)
 {
-	unsigned int flags = expr->fib.flags;
+	unsigned int flags = expr->fib.flags & ~NFTA_FIB_F_PRESENT;
 
 	printf("fib ");
 	__fib_expr_print_f(&flags, NFTA_FIB_F_SADDR, "saddr");
@@ -129,6 +129,9 @@ struct expr *fib_expr_alloc(const struct location *loc,
 	default:
 		BUG("Unknown result %d\n", result);
 	}
+
+	if (flags & NFTA_FIB_F_PRESENT)
+		type = &boolean_type;
 
 	expr = expr_alloc(loc, &fib_expr_ops, type,
 			  BYTEORDER_HOST_ENDIAN, len);
