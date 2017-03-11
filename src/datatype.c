@@ -1047,7 +1047,7 @@ const struct datatype *set_datatype_alloc(const struct datatype *orig_dtype,
 
 void set_datatype_destroy(const struct datatype *dtype)
 {
-	if (dtype->flags & DTYPE_F_CLONE)
+	if (dtype && dtype->flags & DTYPE_F_CLONE)
 		dtype_free(dtype);
 }
 

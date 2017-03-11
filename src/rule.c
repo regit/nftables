@@ -211,8 +211,7 @@ void set_free(struct set *set)
 		expr_free(set->init);
 	handle_free(&set->handle);
 	set_datatype_destroy(set->keytype);
-	if (set->datatype)
-		set_datatype_destroy(set->datatype);
+	set_datatype_destroy(set->datatype);
 	xfree(set);
 }
 
