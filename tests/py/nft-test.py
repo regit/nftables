@@ -885,6 +885,10 @@ def obj_process(obj_line, filename, lineno):
     obj_type = tokens[2]
     obj_spcf = ""
 
+    if obj_type == "ct" and tokens[3] == "helper":
+       obj_type = "ct helper"
+       tokens[3] = ""
+
     if len(tokens) > 3:
         obj_spcf = " ".join(tokens[3:])
 
@@ -985,7 +989,12 @@ def run_test_file(filename, force_all_family_option, specific_file):
             continue
 
         if line[0] == "%":  # Adds this object
-            obj_line = line.rstrip()[1:].split(";")
+            brace = line.rfind("}")
+            if brace < 0:
+                obj_line = line.rstrip()[1:].split(";")
+            else:
+                obj_line = (line[1:brace+1], line[brace+2:].rstrip())
+
             ret = obj_process(obj_line, filename, lineno)
             tests += 1
             if ret == -1:

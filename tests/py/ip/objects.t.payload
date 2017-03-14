@@ -29,3 +29,17 @@ ip test-ip4 output
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ objref sreg 1 set __objmap%d id 1 ]
+
+# ct helper set "cthelp1"
+ip test-ip4 output
+  [ objref type 3 name cthelp1 ]
+
+# ct helper set tcp dport map {21 : "cthelp1", 2121 : "cthelp1" }
+__objmap%d test-ip4 43
+__objmap%d test-ip4 0
+        element 00001500  : 0 [end]     element 00004908  : 0 [end]
+ip test-ip4 output
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 2b @ transport header + 2 => reg 1 ]
+  [ objref sreg 1 set __objmap%d id 1 ]
