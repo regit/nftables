@@ -3347,6 +3347,7 @@ ip6 filter output log flags all
 					<group choice="req">
 						<arg>mark</arg>
 						<arg>label</arg>
+						<arg>zone</arg>
 					</group>
 					<arg choice="none">set</arg>
 					<replaceable>value</replaceable>
@@ -3354,10 +3355,14 @@ ip6 filter output log flags all
 			</para>
 			<para>
 				The ct statement sets meta data associated with a connection.
+				The zone id has to be assigned before a conntrack lookup takes place,
+				i.e. this has to be done in prerouting and possibly output (if locally
+				generated packets need to be placed in a distinct zone), with a hook
+				priority of -300.
 			</para>
 			<para>
 				<table frame="all">
-					<title>Meta statement types</title>
+					<title>Conntrack statement types</title>
 					<tgroup cols='3' align='left' colsep='1' rowsep='1'>
 						<colspec colname='c1'/>
 						<colspec colname='c2'/>
@@ -3380,6 +3385,12 @@ ip6 filter output log flags all
 								<entry>Connection tracking label</entry>
 								<entry>label</entry>
 							</row>
+							<row>
+								<entry>zone</entry>
+								<entry>conntrack zone</entry>
+								<entry>integer (16 bit)</entry>
+							</row>
+
 						</tbody>
 					</tgroup>
 				</table>
@@ -3391,6 +3402,21 @@ ip6 filter output log flags all
 ct set mark meta mark
 					</programlisting>
 				</example>
+				<example>
+					<title>set zone mapped via interface</title>
+				<programlisting>
+table inet raw {
+  chain prerouting {
+      type filter hook prerouting priority -300;
+      ct zone set iif map { "eth1" : 1, "veth1" : 2 }
+  }
+  chain output {
+      type filter hook output priority -300;
+      ct zone set oif map { "eth1" : 1, "veth1" : 2 }
+  }
+}
+				</programlisting>
+			</example>
 			</para>
 		</refsect2>
 		<refsect2>
