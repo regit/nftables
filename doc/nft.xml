@@ -3399,7 +3399,7 @@ ip6 filter output log flags all
 				<example>
 					<title>save packet nfmark in conntrack</title>
 					<programlisting>
-ct set mark meta mark
+ct mark set meta mark
 					</programlisting>
 				</example>
 				<example>
