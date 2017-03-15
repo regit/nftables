@@ -517,12 +517,23 @@ def obj_add(o, test_result, filename, lineno):
             print_error(reason, filename, lineno)
             return -1
 
-        if not _obj_exist(o, filename, lineno):
-            reason = "I have just added the " + obj_handle + \
-                     " to the table " + table.name + " but it does not exist"
+        exist = _obj_exist(o, filename, lineno)
+
+        if exist:
+            if test_result == "ok":
+                 return 0
+            reason = "I added the " + obj_handle + \
+                     " to the table " + table.name + " but it should have failed"
             print_error(reason, filename, lineno)
             return -1
 
+        if test_result == "fail":
+            return 0
+
+        reason = "I have just added the " + obj_handle + \
+                 " to the table " + table.name + " but it does not exist"
+        print_error(reason, filename, lineno)
+        return -1
 
 def obj_delete(table, filename=None, lineno=None):
     '''

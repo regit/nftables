@@ -6,6 +6,7 @@
 %cnt2 type counter;ok
 %qt1 type quota 25 mbytes;ok
 %qt2 type quota over 1 kbytes;ok
+%cthelp2 type ct helper { type \"ftp\" protocol tcp\; l3proto ip6\; };fail
 
 ip saddr 192.168.1.3 counter name "cnt2";ok
 ip saddr 192.168.1.3 counter name "cnt3";fail
