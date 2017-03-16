@@ -11,7 +11,8 @@ icmpv6 type echo-request accept;ok
 icmpv6 type echo-reply accept;ok
 icmpv6 type mld-listener-query accept;ok
 icmpv6 type mld-listener-report accept;ok
-icmpv6 type mld-listener-reduction accept;ok
+icmpv6 type mld-listener-done accept;ok
+icmpv6 type mld-listener-reduction accept;ok;icmpv6 type mld-listener-done accept
 icmpv6 type nd-router-solicit accept;ok
 icmpv6 type nd-router-advert accept;ok
 icmpv6 type nd-neighbor-solicit accept;ok
@@ -19,8 +20,11 @@ icmpv6 type nd-neighbor-advert accept;ok
 icmpv6 type nd-redirect accept;ok
 icmpv6 type parameter-problem accept;ok
 icmpv6 type router-renumbering accept;ok
+icmpv6 type ind-neighbor-solicit accept;ok
+icmpv6 type ind-neighbor-advert accept;ok
+icmpv6 type mld2-listener-report accept;ok
 icmpv6 type {destination-unreachable, time-exceeded, nd-router-solicit} accept;ok
-icmpv6 type {router-renumbering, mld-listener-reduction, time-exceeded, nd-router-solicit} accept;ok
+icmpv6 type {router-renumbering, mld-listener-done, time-exceeded, nd-router-solicit} accept;ok
 icmpv6 type {mld-listener-query, time-exceeded, nd-router-advert} accept;ok
 icmpv6 type != {mld-listener-query, time-exceeded, nd-router-advert} accept;ok
 

@@ -632,6 +632,10 @@ const struct proto_desc proto_ip = {
 
 #include <netinet/icmp6.h>
 
+#define IND_NEIGHBOR_SOLICIT	141
+#define IND_NEIGHBOR_ADVERT	142
+#define ICMPV6_MLD2_REPORT	143
+
 static const struct symbol_table icmp6_type_tbl = {
 	.base		= BASE_DECIMAL,
 	.symbols	= {
@@ -643,6 +647,7 @@ static const struct symbol_table icmp6_type_tbl = {
 		SYMBOL("echo-reply",			ICMP6_ECHO_REPLY),
 		SYMBOL("mld-listener-query",		MLD_LISTENER_QUERY),
 		SYMBOL("mld-listener-report",		MLD_LISTENER_REPORT),
+		SYMBOL("mld-listener-done",		MLD_LISTENER_REDUCTION),
 		SYMBOL("mld-listener-reduction",	MLD_LISTENER_REDUCTION),
 		SYMBOL("nd-router-solicit",		ND_ROUTER_SOLICIT),
 		SYMBOL("nd-router-advert",		ND_ROUTER_ADVERT),
@@ -650,6 +655,9 @@ static const struct symbol_table icmp6_type_tbl = {
 		SYMBOL("nd-neighbor-advert",		ND_NEIGHBOR_ADVERT),
 		SYMBOL("nd-redirect",			ND_REDIRECT),
 		SYMBOL("router-renumbering",		ICMP6_ROUTER_RENUMBERING),
+		SYMBOL("ind-neighbor-solicit",		IND_NEIGHBOR_SOLICIT),
+		SYMBOL("ind-neighbor-advert",		IND_NEIGHBOR_ADVERT),
+		SYMBOL("mld2-listener-report",		ICMPV6_MLD2_REPORT),
 		SYMBOL_LIST_END
 	},
 };

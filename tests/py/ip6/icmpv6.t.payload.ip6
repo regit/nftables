@@ -54,6 +54,14 @@ ip6 test-ip6 input
   [ cmp eq reg 1 0x00000083 ]
   [ immediate reg 0 accept ]
 
+# icmpv6 type mld-listener-done accept
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 1b @ transport header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000084 ]
+  [ immediate reg 0 accept ]
+
 # icmpv6 type mld-listener-reduction accept
 ip6 test-ip6 input
   [ payload load 1b @ network header + 6 => reg 1 ]
@@ -118,6 +126,30 @@ ip6 test-ip6 input
   [ cmp eq reg 1 0x0000008a ]
   [ immediate reg 0 accept ]
 
+# icmpv6 type ind-neighbor-solicit accept
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 1b @ transport header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x0000008d ]
+  [ immediate reg 0 accept ]
+
+# icmpv6 type ind-neighbor-advert accept
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 1b @ transport header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x0000008e ]
+  [ immediate reg 0 accept ]
+
+# icmpv6 type mld2-listener-report accept
+ip6 test-ip6 input
+  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 1b @ transport header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x0000008f ]
+  [ immediate reg 0 accept ]
+
 # icmpv6 type {destination-unreachable, time-exceeded, nd-router-solicit} accept
 __set%d test-ip6 3
 __set%d test-ip6 0
@@ -129,7 +161,7 @@ ip6 test-ip6 input
   [ lookup reg 1 set __set%d ]
   [ immediate reg 0 accept ]
 
-# icmpv6 type {router-renumbering, mld-listener-reduction, time-exceeded, nd-router-solicit} accept
+# icmpv6 type {router-renumbering, mld-listener-done, time-exceeded, nd-router-solicit} accept
 __set%d test-ip6 3
 __set%d test-ip6 0
 	element 0000008a  : 0 [end]	element 00000084  : 0 [end]	element 00000003  : 0 [end]	element 00000085  : 0 [end]
