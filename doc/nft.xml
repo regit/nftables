@@ -812,6 +812,7 @@ filter input iif $int_ifs accept
 				<group choice="req">
 					<arg>delete</arg>
 					<arg>list</arg>
+					<arg>flush</arg>
 				</group>
 				<command> map</command>
 				<arg choice="opt"><replaceable>family</replaceable></arg>
@@ -845,6 +846,14 @@ filter input iif $int_ifs accept
 				<listitem>
 					<para>
 						Display the elements in the specified map.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>flush</option></term>
+				<listitem>
+					<para>
+						Remove all elements from the specified map.
 					</para>
 				</listitem>
 			</varlistentry>
