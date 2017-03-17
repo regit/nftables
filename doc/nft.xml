@@ -697,6 +697,19 @@ filter input iif $int_ifs accept
 				<arg choice="req"><replaceable>table</replaceable></arg>
 				<arg choice="req"><replaceable>set</replaceable></arg>
 			</cmdsynopsis>
+			<cmdsynopsis>
+				<group choice="req">
+					<arg>add</arg>
+					<arg>delete</arg>
+				</group>
+				<command> element</command>
+				<arg choice="opt"><replaceable>family</replaceable></arg>
+				<arg choice="req"><replaceable>table</replaceable></arg>
+				<arg choice="req"><replaceable>set</replaceable></arg>
+				{
+				<arg choice="req"><replaceable>elements</replaceable></arg>
+				}
+			</cmdsynopsis>
 		</para>
 		<para>
 			Sets are elements containers of an user-defined data type, they are uniquely identified by an user-defined name and attached to tables.
@@ -732,6 +745,22 @@ filter input iif $int_ifs accept
 				<listitem>
 					<para>
 						Remove all elements from the specified set.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>add element</option></term>
+				<listitem>
+					<para>
+						Comma-separated list of elements to add into the specified set.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>delete element</option></term>
+				<listitem>
+					<para>
+						Comma-separated list of elements to delete from the specified set.
 					</para>
 				</listitem>
 			</varlistentry>
@@ -819,6 +848,19 @@ filter input iif $int_ifs accept
 				<arg choice="req"><replaceable>table</replaceable></arg>
 				<arg choice="req"><replaceable>map</replaceable></arg>
 			</cmdsynopsis>
+			<cmdsynopsis>
+				<group choice="req">
+					<arg>add</arg>
+					<arg>delete</arg>
+				</group>
+				<command> element</command>
+				<arg choice="opt"><replaceable>family</replaceable></arg>
+				<arg choice="req"><replaceable>table</replaceable></arg>
+				<arg choice="req"><replaceable>map</replaceable></arg>
+				{
+				<arg choice="req"><replaceable>elements</replaceable></arg>
+				}
+			</cmdsynopsis>
 		</para>
 		<para>
 			Maps store data based on some specific key used as input, they are uniquely identified by an user-defined name and attached to tables.
@@ -854,6 +896,22 @@ filter input iif $int_ifs accept
 				<listitem>
 					<para>
 						Remove all elements from the specified map.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>add element</option></term>
+				<listitem>
+					<para>
+						Comma-separated list of elements to add into the specified map.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>delete element</option></term>
+				<listitem>
+					<para>
+						Comma-separated list of element keys to delete from the specified map.
 					</para>
 				</listitem>
 			</varlistentry>
