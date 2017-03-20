@@ -1132,6 +1132,15 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 			return expr_error(ctx->msgs, i,
 					  "Set reference cannot be part of another set");
 
+		if (i->ops->type == EXPR_SET_ELEM &&
+		    i->key->ops->type == EXPR_SET) {
+			struct expr *new = expr_clone(i->key);
+
+			list_replace(&i->list, &new->list);
+			expr_free(i);
+			i = new;
+		}
+
 		if (!expr_is_constant(i))
 			return expr_error(ctx->msgs, i,
 					  "Set member is not constant");
