@@ -187,6 +187,13 @@ ip test-ip4 input
   [ byteorder reg 1 = hton(reg 1, 2, 1) ]
   [ lookup reg 1 set __set%d 0x1 ]
 
+# meta l4proto ipv6-icmp icmpv6 type nd-router-advert
+ip test-ip4 input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x0000003a ]
+  [ payload load 1b @ transport header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000086 ]
+
 # meta mark 0x4
 ip test-ip4 input
   [ meta load mark => reg 1 ]
