@@ -29,7 +29,7 @@ EXPECTED="table ip x {
 	map y {
 		type ipv4_addr : ipv4_addr
 		flags interval
-		elements = { 10.0.1.0/24 : 10.0.0.1, 10.0.2.0/24 : 10.0.0.2}
+		elements = { 10.0.1.0/24 : 10.0.0.1, 10.0.2.0/24 : 10.0.0.2 }
 	}
 }"
 GET=$($NFT list ruleset)

@@ -19,12 +19,12 @@ trap "rm -rf $tmpfile" EXIT # cleanup if aborted
 RULESET="table ip t {
 	set s {
 		type ipv4_addr
-		elements = { 1.1.0.0}
+		elements = { 1.1.0.0 }
 	}
 
 	chain c {
 		ct state new
-		udp dport { 12345}
+		udp dport { 12345 }
 		ip saddr @s drop
 		jump other
 	}
@@ -35,12 +35,12 @@ RULESET="table ip t {
 table ip6 t {
 	set s {
 		type ipv6_addr
-		elements = { fe00::1}
+		elements = { fe00::1 }
 	}
 
 	chain c {
 		ct state new
-		udp dport { 12345}
+		udp dport { 12345 }
 		ip6 saddr @s drop
 		jump other
 	}
@@ -51,12 +51,12 @@ table ip6 t {
 table inet t {
 	set s {
 		type ipv6_addr
-		elements = { fe00::1}
+		elements = { fe00::1 }
 	}
 
 	chain c {
 		ct state new
-		udp dport { 12345}
+		udp dport { 12345 }
 		ip6 saddr @s drop
 		jump other
 	}

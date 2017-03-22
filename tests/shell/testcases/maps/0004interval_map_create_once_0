@@ -48,7 +48,7 @@ EXPECTED="table ip x {
 	map y {
 		type ipv4_addr : ipv4_addr
 		flags interval
-		elements = { $(generate_test)}
+		elements = { $(generate_test) }
 	}
 }"
 GET=$($NFT list ruleset)

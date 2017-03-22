@@ -14,12 +14,12 @@ trap "rm -rf $tmpfile" EXIT # cleanup if aborted
 GOOD_RULESET="table ip t {
 	set t {
 		type ipv4_addr
-		elements = { 1.1.1.1}
+		elements = { 1.1.1.1 }
 	}
 
 	chain c {
 		ct state new
-		tcp dport { 22222}
+		tcp dport { 22222 }
 		ip saddr @t drop
 		jump other
 	}

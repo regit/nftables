@@ -746,7 +746,7 @@ static void set_expr_print(const struct expr *expr)
 {
 	printf("{ ");
 	compound_expr_print(expr, ", ");
-	printf("}");
+	printf(" }");
 }
 
 static void set_expr_set_type(const struct expr *expr,

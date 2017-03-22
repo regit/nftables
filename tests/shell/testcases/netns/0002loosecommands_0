@@ -39,12 +39,12 @@ netns_exec $NETNS_NAME "$NFT add rule ip t c jump other"
 RULESET="table ip t {
 	set s {
 		type ipv4_addr
-		elements = { 1.1.0.0}
+		elements = { 1.1.0.0 }
 	}
 
 	chain c {
 		ct state new
-		udp dport { 12345}
+		udp dport { 12345 }
 		ip saddr @s drop
 		jump other
 	}
