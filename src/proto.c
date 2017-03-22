@@ -707,7 +707,6 @@ const struct proto_desc proto_icmp6 = {
 const struct proto_desc proto_ip6 = {
 	.name		= "ip6",
 	.base		= PROTO_BASE_NETWORK_HDR,
-	.protocol_key	= IP6HDR_NEXTHDR,
 	.protocols	= {
 		PROTO_LINK(IPPROTO_ESP,		&proto_esp),
 		PROTO_LINK(IPPROTO_AH,		&proto_ah),
@@ -720,6 +719,7 @@ const struct proto_desc proto_ip6 = {
 		PROTO_LINK(IPPROTO_ICMPV6,	&proto_icmp6),
 	},
 	.templates	= {
+		[0]	= PROTO_META_TEMPLATE("l4proto", &inet_protocol_type, NFT_META_L4PROTO, 8),
 		[IP6HDR_VERSION]	= HDR_BITFIELD("version", &integer_type, 0, 4),
 		[IP6HDR_DSCP]		= HDR_BITFIELD("dscp", &dscp_type, 4, 6),
 		[IP6HDR_ECN]		= HDR_BITFIELD("ecn", &ecn_type, 10, 2),
