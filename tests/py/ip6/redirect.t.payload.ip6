@@ -4,7 +4,7 @@ ip6 test-ip6 output
 
 # udp dport 954 redirect
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x0000ba03 ]
@@ -19,7 +19,7 @@ ip6 test-ip6 output
 
 # udp dport 53 redirect random
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
@@ -27,7 +27,7 @@ ip6 test-ip6 output
 
 # udp dport 53 redirect random,persistent
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
@@ -35,7 +35,7 @@ ip6 test-ip6 output
 
 # udp dport 53 redirect random,persistent,fully-random
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
@@ -43,7 +43,7 @@ ip6 test-ip6 output
 
 # udp dport 53 redirect random,fully-random
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
@@ -51,7 +51,7 @@ ip6 test-ip6 output
 
 # udp dport 53 redirect random,fully-random,persistent
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
@@ -59,7 +59,7 @@ ip6 test-ip6 output
 
 # udp dport 53 redirect persistent
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
@@ -67,7 +67,7 @@ ip6 test-ip6 output
 
 # udp dport 53 redirect persistent,random
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
@@ -75,7 +75,7 @@ ip6 test-ip6 output
 
 # udp dport 53 redirect persistent,random,fully-random
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
@@ -83,7 +83,7 @@ ip6 test-ip6 output
 
 # udp dport 53 redirect persistent,fully-random
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
@@ -91,7 +91,7 @@ ip6 test-ip6 output
 
 # udp dport 53 redirect persistent,fully-random,random
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
@@ -99,7 +99,7 @@ ip6 test-ip6 output
 
 # udp dport 1234 redirect to :1234
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x0000d204 ]
@@ -110,7 +110,7 @@ ip6 test-ip6 output
 ip6 test-ip6 output
   [ payload load 16b @ network header + 24 => reg 1 ]
   [ cmp eq reg 1 0x000000fe 0x00000000 0x00000000 0xfeca0000 ]
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00000e27 ]
@@ -127,7 +127,7 @@ ip6 test-ip6 output
 
 # tcp dport 39128 redirect to :993
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x0000d898 ]
@@ -136,7 +136,7 @@ ip6 test-ip6 output
 
 # tcp dport 9128 redirect to :993 random
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x0000a823 ]
@@ -145,7 +145,7 @@ ip6 test-ip6 output
 
 # tcp dport 9128 redirect to :993 fully-random,persistent
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x0000a823 ]
@@ -157,7 +157,7 @@ __set%d test-ip6 3
 __set%d test-ip6 0
 	element 00000100  : 0 [end]	element 00000200  : 0 [end]	element 00000300  : 0 [end]	element 00000400  : 0 [end]	element 00000500  : 0 [end]	element 00000600  : 0 [end]	element 00000700  : 0 [end]	element 00000800  : 0 [end]	element 00006500  : 0 [end]	element 0000ca00  : 0 [end]	element 00002f01  : 0 [end]	element 0000e903  : 0 [end]	element 0000d207  : 0 [end]	element 0000bb0b  : 0 [end]
 ip6 test-ip6 output
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set __set%d ]
@@ -168,7 +168,7 @@ ip6 test-ip6 output
   [ payload load 16b @ network header + 24 => reg 1 ]
   [ cmp gte reg 1 0x000000fe 0x00000000 0x00000000 0x01000000 ]
   [ cmp lte reg 1 0x000000fe 0x00000000 0x00000000 0x00020000 ]
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000011 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00003500 ]
@@ -185,7 +185,7 @@ ip6 test-ip6 output
   [ ct load state => reg 1 ]
   [ bitwise reg 1 = (reg=1 & 0x0000000a ) ^ 0x00000000 ]
   [ cmp neq reg 1 0x00000000 ]
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set __map%d dreg 0 ]

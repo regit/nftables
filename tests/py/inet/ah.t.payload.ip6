@@ -1,6 +1,6 @@
 # ah hdrlength 11-23
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 1b @ transport header + 1 => reg 1 ]
   [ cmp gte reg 1 0x0000000b ]
@@ -8,7 +8,7 @@ ip6 test-ip6 input
 
 # ah hdrlength != 11-23
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 1b @ transport header + 1 => reg 1 ]
   [ range neq reg 1 0x0000000b 0x00000017 ]
@@ -18,7 +18,7 @@ __set%d test-ip6 7
 __set%d test-ip6 0
 	element 00000000  : 1 [end]	element 0000000b  : 0 [end]	element 00000018  : 1 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 1b @ transport header + 1 => reg 1 ]
   [ lookup reg 1 set __set%d ]
@@ -28,7 +28,7 @@ __set%d test-ip6 7
 __set%d test-ip6 0
 	element 00000000  : 1 [end]	element 0000000b  : 0 [end]	element 00000018  : 1 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 1b @ transport header + 1 => reg 1 ]
   [ lookup reg 1 set __set%d 0x1 ]
@@ -38,7 +38,7 @@ __set%d test-ip6 3
 __set%d test-ip6 0
 	element 0000000b  : 0 [end]	element 00000017  : 0 [end]	element 0000002c  : 0 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 1b @ transport header + 1 => reg 1 ]
   [ lookup reg 1 set __set%d ]
@@ -48,28 +48,28 @@ __set%d test-ip6 3
 __set%d test-ip6 0
 	element 0000000b  : 0 [end]	element 00000017  : 0 [end]	element 0000002c  : 0 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 1b @ transport header + 1 => reg 1 ]
   [ lookup reg 1 set __set%d 0x1 ]
 
 # ah reserved 22
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp eq reg 1 0x00001600 ]
 
 # ah reserved != 233
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp neq reg 1 0x0000e900 ]
 
 # ah reserved 33-45
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ cmp gte reg 1 0x00002100 ]
@@ -77,7 +77,7 @@ ip6 test-ip6 input
 
 # ah reserved != 33-45
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ range neq reg 1 0x00002100 0x00002d00 ]
@@ -87,7 +87,7 @@ __set%d test-ip6 3
 __set%d test-ip6 0
 	element 00001700  : 0 [end]	element 00006400  : 0 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set __set%d ]
@@ -97,7 +97,7 @@ __set%d test-ip6 3
 __set%d test-ip6 0
 	element 00001700  : 0 [end]	element 00006400  : 0 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set __set%d 0x1 ]
@@ -107,7 +107,7 @@ __set%d test-ip6 7
 __set%d test-ip6 0
 	element 00000000  : 1 [end]	element 00002100  : 0 [end]	element 00003800  : 1 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set __set%d ]
@@ -117,28 +117,28 @@ __set%d test-ip6 7
 __set%d test-ip6 0
 	element 00000000  : 1 [end]	element 00002100  : 0 [end]	element 00003800  : 1 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ lookup reg 1 set __set%d 0x1 ]
 
 # ah spi 111
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 4 => reg 1 ]
   [ cmp eq reg 1 0x6f000000 ]
 
 # ah spi != 111
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 4 => reg 1 ]
   [ cmp neq reg 1 0x6f000000 ]
 
 # ah spi 111-222
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 4 => reg 1 ]
   [ cmp gte reg 1 0x6f000000 ]
@@ -146,7 +146,7 @@ ip6 test-ip6 input
 
 # ah spi != 111-222
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 4 => reg 1 ]
   [ range neq reg 1 0x6f000000 0xde000000 ]
@@ -156,7 +156,7 @@ __set%d test-ip6 3
 __set%d test-ip6 0
 	element 6f000000  : 0 [end]	element 7a000000  : 0 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 4 => reg 1 ]
   [ lookup reg 1 set __set%d ]
@@ -166,7 +166,7 @@ __set%d test-ip6 3
 __set%d test-ip6 0
 	element 6f000000  : 0 [end]	element 7a000000  : 0 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 4 => reg 1 ]
   [ lookup reg 1 set __set%d 0x1 ]
@@ -176,7 +176,7 @@ __set%d test-ip6 7
 __set%d test-ip6 0
 	element 00000000  : 1 [end]	element 6f000000  : 0 [end]	element 7b000000  : 1 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 4 => reg 1 ]
   [ lookup reg 1 set __set%d ]
@@ -186,21 +186,21 @@ __set%d test-ip6 7
 __set%d test-ip6 0
 	element 00000000  : 1 [end]	element 6f000000  : 0 [end]	element 7b000000  : 1 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 4 => reg 1 ]
   [ lookup reg 1 set __set%d 0x1 ]
 
 # ah sequence 123
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 8 => reg 1 ]
   [ cmp eq reg 1 0x7b000000 ]
 
 # ah sequence != 123
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 8 => reg 1 ]
   [ cmp neq reg 1 0x7b000000 ]
@@ -210,7 +210,7 @@ __set%d test-ip6 3
 __set%d test-ip6 0
 	element 17000000  : 0 [end]	element 19000000  : 0 [end]	element 21000000  : 0 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 8 => reg 1 ]
   [ lookup reg 1 set __set%d ]
@@ -220,7 +220,7 @@ __set%d test-ip6 3
 __set%d test-ip6 0
 	element 17000000  : 0 [end]	element 19000000  : 0 [end]	element 21000000  : 0 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 8 => reg 1 ]
   [ lookup reg 1 set __set%d 0x1 ]
@@ -230,7 +230,7 @@ __set%d test-ip6 7
 __set%d test-ip6 0
 	element 00000000  : 1 [end]	element 17000000  : 0 [end]	element 22000000  : 1 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 8 => reg 1 ]
   [ lookup reg 1 set __set%d ]
@@ -240,14 +240,14 @@ __set%d test-ip6 7
 __set%d test-ip6 0
 	element 00000000  : 1 [end]	element 17000000  : 0 [end]	element 22000000  : 1 [end]
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 8 => reg 1 ]
   [ lookup reg 1 set __set%d 0x1 ]
 
 # ah sequence 23-33
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 8 => reg 1 ]
   [ cmp gte reg 1 0x17000000 ]
@@ -255,7 +255,7 @@ ip6 test-ip6 input
 
 # ah sequence != 23-33
 ip6 test-ip6 input
-  [ payload load 1b @ network header + 6 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000033 ]
   [ payload load 4b @ transport header + 8 => reg 1 ]
   [ range neq reg 1 0x17000000 0x21000000 ]

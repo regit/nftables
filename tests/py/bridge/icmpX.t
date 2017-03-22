@@ -5,4 +5,4 @@
 ip protocol icmp icmp type echo-request;ok;icmp type echo-request
 icmp type echo-request;ok
 ip6 nexthdr icmpv6 icmpv6 type echo-request;ok;icmpv6 type echo-request
-icmpv6 type echo-request;ok
+icmpv6 type echo-request;ok;ether type ip6 meta l4proto 58 icmpv6 type echo-request
