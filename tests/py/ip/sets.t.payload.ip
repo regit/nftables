@@ -22,3 +22,18 @@ ip test-ip4 input
   [ lookup reg 1 set set2 0x1 ]
   [ immediate reg 0 drop ]
 
+# ip saddr { { 1.1.1.0, 3.3.3.0 }, 2.2.2.0 }
+__set%d test-ip4 3
+__set%d test-ip4 0
+	element 00010101  : 0 [end]	element 00030303  : 0 [end]	element 00020202  : 0 [end]
+ip test-ip4 input
+  [ payload load 4b @ network header + 12 => reg 1 ]
+  [ lookup reg 1 set __set%d ]
+
+# ip saddr { { 1.1.1.0/24, 3.3.3.0/24 }, 2.2.2.0/24 }
+__set%d test-ip4 7
+__set%d test-ip4 0
+	element 00000000  : 1 [end]	element 00010101  : 0 [end]	element 00020101  : 1 [end]	element 00020202  : 0 [end]	element 00030202  : 1 [end]	element 00030303  : 0 [end]	element 00040303  : 1 [end]
+ip test-ip4 input
+  [ payload load 4b @ network header + 12 => reg 1 ]
+  [ lookup reg 1 set __set%d ]

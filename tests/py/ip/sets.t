@@ -46,3 +46,7 @@ ip saddr != @set33 drop;fail
 ?set4 192.168.2.0/24;ok
 ?set4 192.168.1.1;fail
 ?set4 192.168.3.0/24;ok
+
+# test nested anonymous sets
+ip saddr { { 1.1.1.0, 3.3.3.0 }, 2.2.2.0 };ok;ip saddr { 1.1.1.0, 2.2.2.0, 3.3.3.0 }
+ip saddr { { 1.1.1.0/24, 3.3.3.0/24 }, 2.2.2.0/24 };ok;ip saddr { 1.1.1.0/24, 2.2.2.0/24, 3.3.3.0/24 }
