@@ -28,7 +28,7 @@ static void hash_expr_print(const struct expr *expr)
 	}
 
 	printf(" mod %u", expr->hash.mod);
-	if (expr->hash.type & NFT_HASH_JENKINS && expr->hash.seed)
+	if ((expr->hash.type == NFT_HASH_JENKINS) && expr->hash.seed)
 		printf(" seed 0x%x", expr->hash.seed);
 	if (expr->hash.offset)
 		printf(" offset %u", expr->hash.offset);
