@@ -1512,6 +1512,8 @@ static int do_command_flush(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_CHAIN:
 		return netlink_flush_chain(ctx, &cmd->handle, &cmd->location);
 	case CMD_OBJ_SET:
+	case CMD_OBJ_MAP:
+	case CMD_OBJ_FLOWTABLE:
 		return netlink_flush_setelems(ctx, &cmd->handle,
 					      &cmd->location);
 	case CMD_OBJ_RULESET:

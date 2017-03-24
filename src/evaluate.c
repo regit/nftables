@@ -3080,6 +3080,8 @@ static int cmd_evaluate_reset(struct eval_ctx *ctx, struct cmd *cmd)
 
 static int cmd_evaluate_flush(struct eval_ctx *ctx, struct cmd *cmd)
 {
+	struct table *table;
+	struct set *set;
 	int ret;
 
 	ret = cache_update(cmd->op, ctx->msgs);
@@ -3096,8 +3098,37 @@ static int cmd_evaluate_flush(struct eval_ctx *ctx, struct cmd *cmd)
 		 */
 	case CMD_OBJ_CHAIN:
 		/* Chains don't hold sets */
-	case CMD_OBJ_SET:
 		break;
+	case CMD_OBJ_SET:
+		table = table_lookup(&cmd->handle);
+		if (table == NULL)
+			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
+					 cmd->handle.table);
+		set = set_lookup(table, cmd->handle.set);
+		if (set == NULL || set->flags & (NFT_SET_MAP | NFT_SET_EVAL))
+			return cmd_error(ctx, "Could not process rule: Set '%s' does not exist",
+					 cmd->handle.set);
+		return 0;
+	case CMD_OBJ_MAP:
+		table = table_lookup(&cmd->handle);
+		if (table == NULL)
+			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
+					 cmd->handle.table);
+		set = set_lookup(table, cmd->handle.set);
+		if (set == NULL || !(set->flags & NFT_SET_MAP))
+			return cmd_error(ctx, "Could not process rule: Map '%s' does not exist",
+					 cmd->handle.set);
+		return 0;
+	case CMD_OBJ_FLOWTABLE:
+		table = table_lookup(&cmd->handle);
+		if (table == NULL)
+			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
+					 cmd->handle.table);
+		set = set_lookup(table, cmd->handle.set);
+		if (set == NULL || !(set->flags & NFT_SET_EVAL))
+			return cmd_error(ctx, "Could not process rule: Flow table '%s' does not exist",
+					 cmd->handle.set);
+		return 0;
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}

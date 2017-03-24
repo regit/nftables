@@ -1127,13 +1127,13 @@ flush_cmd		:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_SET, &$2, &@$, NULL);
 			}
-			|	FLOW TABLE	set_spec
-			{
-				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_SET, &$3, &@$, NULL);
-			}
 			|	MAP		set_spec
 			{
-				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_SET, &$2, &@$, NULL);
+				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_MAP, &$2, &@$, NULL);
+			}
+			|	FLOW TABLE	set_spec
+			{
+				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_FLOWTABLE, &$3, &@$, NULL);
 			}
 			|	RULESET		ruleset_spec
 			{
