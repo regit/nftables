@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# This tests the selectiveness of flush command on structures that use the
+# generic set infrastructure (sets, maps and flow tables).
+
+tmpfile=$(mktemp)
+if [ ! -w $tmpfile ] ; then
+	echo "Failed to create tmp file" >&2
+	exit 0
+fi
+
+trap "rm -rf $tmpfile" EXIT # cleanup if aborted
+
+echo "
+add table t
+add chain t c
+add set t s {type ipv4_addr;}
+add map t m {type ipv4_addr : inet_service;}
+add rule t c tcp dport 80 flow table f {ip saddr limit rate 10/second}
+" >$tmpfile
+
+$NFT -f $tmpfile
+
+# Commands that should be invalid
+
+declare -a cmds=(
+		"flush set t m" "flush set t f"
+		"flush map t s" "flush map t f"
+		"flush flow table t s" "flush flow table t m"
+		)
+
+for i in "${cmds[@]}"
+do
+	echo "$i" >$tmpfile
+	$NFT -f $tmpfile &>/dev/null
+	ret=$?
+
+	if [ $ret -eq 0 ]; then
+		exit 1
+	fi
+done
