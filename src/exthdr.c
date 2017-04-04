@@ -44,9 +44,10 @@ static void exthdr_expr_print(const struct expr *expr)
 	} else {
 		if (expr->exthdr.flags & NFT_EXTHDR_F_PRESENT)
 			printf("exthdr %s", expr->exthdr.desc->name);
-		else
-			printf("%s %s", expr->exthdr.desc->name,
+		else {
+			printf("%s %s", expr->exthdr.desc ? expr->exthdr.desc->name : "unknown-exthdr",
 					expr->exthdr.tmpl->token);
+		}
 	}
 }
 
@@ -116,7 +117,7 @@ void exthdr_init_raw(struct expr *expr, uint8_t type,
 		     unsigned int offset, unsigned int len,
 		     enum nft_exthdr_op op, uint32_t flags)
 {
-	const struct proto_hdr_template *tmpl;
+	const struct proto_hdr_template *tmpl = &exthdr_unknown_template;
 	unsigned int i;
 
 	assert(expr->ops->type == EXPR_EXTHDR);
@@ -126,23 +127,27 @@ void exthdr_init_raw(struct expr *expr, uint8_t type,
 	expr->len = len;
 	expr->exthdr.flags = flags;
 	expr->exthdr.offset = offset;
-	expr->exthdr.desc = exthdr_protocols[type];
-	assert(expr->exthdr.desc != NULL);
+	expr->exthdr.desc = NULL;
+
+	if (type < array_size(exthdr_protocols))
+		expr->exthdr.desc = exthdr_protocols[type];
+
+	if (expr->exthdr.desc == NULL)
+		goto out;
 
 	for (i = 0; i < array_size(expr->exthdr.desc->templates); i++) {
 		tmpl = &expr->exthdr.desc->templates[i];
-		if (tmpl->offset != offset ||
-		    tmpl->len    != len)
-			continue;
-
-		if (flags & NFT_EXTHDR_F_PRESENT)
-			expr->dtype = &boolean_type;
-		else
-			expr->dtype = tmpl->dtype;
-
-		expr->exthdr.tmpl = tmpl;
-		return;
+		if (tmpl->offset == offset && tmpl->len == len)
+			goto out;
 	}
+
+	tmpl = &exthdr_unknown_template;
+ out:
+	expr->exthdr.tmpl = tmpl;
+	if (flags & NFT_EXTHDR_F_PRESENT)
+		expr->dtype = &boolean_type;
+	else
+		expr->dtype = tmpl->dtype;
 }
 
 static unsigned int mask_length(const struct expr *mask)
