@@ -179,7 +179,7 @@ void symbolic_constant_print(const struct symbol_table *tbl,
 		printf("\"");
 
 	if (numeric_output > NUMERIC_ALL)
-		printf("%lu", val);
+		printf("%"PRIu64"", val);
 	else
 		printf("%s", s->identifier);
 
