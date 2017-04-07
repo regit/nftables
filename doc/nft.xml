@@ -1561,7 +1561,7 @@ filter output ip6 daddr ::1
 				</para>
 				<programlisting>
 # match if route exists
-filter input fib iif saddr exists
+filter input fib daddr . iif oif exists
 
 # match only non-fragmented packets in IPv6 traffic
 filter input exthdr frag missing
@@ -2147,13 +2147,13 @@ filter output oif eth0
 					<title>Using fib expressions</title>
 					<programlisting>
 # drop packets without a reverse path
-filter prerouting fib saddr . iif oif eq 0 drop
+filter prerouting fib saddr . iif oif missing drop
 
 # drop packets to address not configured on ininterface
-filter input fib daddr . iif type not { local, broadcast, multicast } drop
+filter prerouting fib daddr . iif type != { local, broadcast, multicast } drop
 
 # perform lookup in a specific 'blackhole' table (0xdead, needs ip appropriate ip rule)
-filter prerouting meta mark set 0xdead fib daddr . mark type vmap { backhole : drop, prohibit : jump prohibited, unreachable : drop }
+filter prerouting meta mark set 0xdead fib daddr . mark type vmap { blackhole : drop, prohibit : jump prohibited, unreachable : drop }
 					</programlisting>
 				</example>
 			</para>
