@@ -139,7 +139,8 @@ static void netlink_gen_hash(struct netlink_linearize_ctx *ctx,
 	}
 	netlink_put_register(nle, NFTNL_EXPR_HASH_DREG, dreg);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_HASH_MODULUS, expr->hash.mod);
-	nftnl_expr_set_u32(nle, NFTNL_EXPR_HASH_SEED, expr->hash.seed);
+	if (expr->hash.seed_set)
+		nftnl_expr_set_u32(nle, NFTNL_EXPR_HASH_SEED, expr->hash.seed);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_HASH_OFFSET, expr->hash.offset);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_HASH_TYPE, expr->hash.type);
 	nftnl_rule_add_expr(ctx->nlr, nle);

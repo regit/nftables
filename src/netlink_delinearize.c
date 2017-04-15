@@ -525,13 +525,15 @@ static void netlink_parse_hash(struct netlink_parse_ctx *ctx,
 	struct expr *expr, *hexpr;
 	uint32_t mod, seed, len, offset;
 	enum nft_hash_types type;
+	bool seed_set;
 
 	type = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_TYPE);
 	offset = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_OFFSET);
+	seed_set = nftnl_expr_is_set(nle, NFTNL_EXPR_HASH_SEED);
 	seed = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_SEED);
 	mod  = nftnl_expr_get_u32(nle, NFTNL_EXPR_HASH_MODULUS);
 
-	expr = hash_expr_alloc(loc, mod, seed, offset, type);
+	expr = hash_expr_alloc(loc, mod, seed_set, seed, offset, type);
 
 	if (type != NFT_HASH_SYM) {
 		sreg = netlink_parse_register(nle, NFTNL_EXPR_HASH_SREG);

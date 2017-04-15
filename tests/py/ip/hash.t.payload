@@ -12,6 +12,13 @@ ip test-ip4 pre
   [ hash reg 1 = jhash(reg 2, 8, 0x0) % mod 2 ]
   [ ct set mark with reg 1 ]
 
+# ct mark set jhash ip saddr . ip daddr mod 2 seed 0x0
+ip test-ip4 pre
+  [ payload load 4b @ network header + 12 => reg 2 ]
+  [ payload load 4b @ network header + 16 => reg 13 ]
+  [ hash reg 1 = jhash(reg 2, 8, 0x0) % mod 2 ]
+  [ ct set mark with reg 1 ]
+
 # ct mark set jhash ip saddr . ip daddr mod 2 seed 0xdeadbeef offset 100
 ip test-ip4 pre
   [ payload load 4b @ network header + 12 => reg 2 ]

@@ -310,6 +310,7 @@ struct expr {
 			/* EXPR_HASH */
 			struct expr		*expr;
 			uint32_t		mod;
+			bool			seed_set;
 			uint32_t		seed;
 			uint32_t		offset;
 			enum nft_hash_types	type;
