@@ -1,0 +1,76 @@
+#!/bin/bash
+
+set -e
+
+tmpfile=$(mktemp)
+if [ ! -w $tmpfile ] ; then
+        echo "Failed to create tmp file" >&2
+        exit 0
+fi
+
+trap "rm -rf $tmpfile" EXIT # cleanup if aborted
+
+RULESET="table ip filter {
+	map client_to_any {
+		type ipv4_addr : verdict
+		elements = { 1.2.3.4 : goto CIn_1 }
+	}
+
+	chain FORWARD {
+		type filter hook forward priority 0; policy accept;
+		goto client_to_any
+	}
+
+	chain client_to_any {
+		ip saddr vmap @client_to_any
+	}
+
+	chain CIn_1 {
+	}
+}"
+echo "$RULESET" > $tmpfile
+$NFT -f $tmpfile
+if [ $? -ne 0 ] ; then
+        echo "E: unable to load good ruleset" >&2
+        exit 1
+fi
+
+GET="$($NFT list ruleset)"
+
+if [ "$RULESET" != "$GET" ] ; then
+	DIFF="$(which diff)"
+	[ -x $DIFF ] && $DIFF -u <(echo "$RULESET") <(echo "$GET")
+	exit 1
+fi
+
+RULESET="delete element ip filter client_to_any { 1.2.3.4 : goto CIn_1 }
+delete chain ip filter CIn_1"
+echo "$RULESET" > $tmpfile
+$NFT -f $tmpfile
+if [ $? -ne 0 ] ; then
+        echo "E: unable to load good ruleset" >&2
+        exit 1
+fi
+
+GET="$($NFT list ruleset)"
+
+EXPECTED="table ip filter {
+	map client_to_any {
+		type ipv4_addr : verdict
+	}
+
+	chain FORWARD {
+		type filter hook forward priority 0; policy accept;
+		goto client_to_any
+	}
+
+	chain client_to_any {
+		ip saddr vmap @client_to_any
+	}
+}"
+
+if [ "$EXPECTED" != "$GET" ] ; then
+	DIFF="$(which diff)"
+	[ -x $DIFF ] && $DIFF -u <(echo "$EXPECTED") <(echo "$GET")
+	exit 1
+fi
