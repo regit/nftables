@@ -1730,6 +1730,8 @@ int netlink_get_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	ctx->set = set;
 	set->init = set_expr_alloc(loc);
 	nftnl_set_elem_foreach(nls, list_setelem_cb, ctx);
+	set->init->set_flags = set->flags;
+	set->init->dtype = set->keytype;
 
 	if (!(set->flags & NFT_SET_INTERVAL))
 		list_expr_sort(&ctx->set->init->expressions);

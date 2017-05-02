@@ -742,10 +742,66 @@ struct expr *list_expr_alloc(const struct location *loc)
 	return compound_expr_alloc(loc, &list_expr_ops);
 }
 
+static const char *calculate_delim(const struct expr *expr, int *count)
+{
+	const char *newline = ",\n\t\t\t     ";
+	const char *singleline = ", ";
+
+	if (expr->set_flags & NFT_SET_ANONYMOUS)
+		return singleline;
+
+	if (!expr->dtype)
+		return newline;
+
+	switch (expr->dtype->type) {
+	case TYPE_NFPROTO:
+	case TYPE_INTEGER:
+	case TYPE_ARPOP:
+	case TYPE_INET_PROTOCOL:
+	case TYPE_INET_SERVICE:
+	case TYPE_TCP_FLAG:
+	case TYPE_DCCP_PKTTYPE:
+	case TYPE_MARK:
+	case TYPE_IFINDEX:
+	case TYPE_CLASSID:
+	case TYPE_UID:
+	case TYPE_GID:
+	case TYPE_CT_DIR:
+		if (*count < 5)
+			return singleline;
+		*count = 0;
+		break;
+	case TYPE_IPADDR:
+	case TYPE_CT_STATE:
+	case TYPE_CT_STATUS:
+	case TYPE_PKTTYPE:
+		if (*count < 2)
+			return singleline;
+		*count = 0;
+		break;
+
+	default:
+		break;
+	}
+
+	return newline;
+}
+
 static void set_expr_print(const struct expr *expr)
 {
+	const struct expr *i;
+	const char *d = "";
+	int count = 0;
+
 	printf("{ ");
-	compound_expr_print(expr, ", ");
+
+	list_for_each_entry(i, &expr->expressions, list) {
+		printf("%s", d);
+		expr_print(i);
+		count++;
+		d = calculate_delim(expr, &count);
+	}
+
 	printf(" }");
 }
 
