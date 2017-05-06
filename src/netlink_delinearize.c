@@ -2153,6 +2153,27 @@ static void stmt_payload_postprocess(struct rule_pp_ctx *ctx)
 	expr_postprocess(ctx, &stmt->payload.val);
 }
 
+/*
+ * We can only remove payload dependencies if they occur without
+ * a statment with side effects in between.
+ *
+ * For instance:
+ * 'ip protocol tcp tcp dport 22 counter' is same as
+ * 'tcp dport 22 counter'.
+ *
+ * 'ip protocol tcp counter tcp dport 22' cannot be written as
+ * 'counter tcp dport 22' (that would be counter ip protocol tcp, but
+ * that counts every packet, not just ip/tcp).
+ */
+static void
+rule_maybe_reset_payload_deps(struct payload_dep_ctx *pdctx, enum stmt_types t)
+{
+	if (t == STMT_EXPRESSION)
+		return;
+
+	payload_dependency_reset(pdctx);
+}
+
 static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *rule)
 {
 	struct rule_pp_ctx rctx;
@@ -2162,9 +2183,11 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 	proto_ctx_init(&rctx.pctx, rule->handle.family);
 
 	list_for_each_entry_safe(stmt, next, &rule->stmts, list) {
+		enum stmt_types type = stmt->ops->type;
+
 		rctx.stmt = stmt;
 
-		switch (stmt->ops->type) {
+		switch (type) {
 		case STMT_EXPRESSION:
 			stmt_expr_postprocess(&rctx);
 			break;
@@ -2217,7 +2240,10 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 		default:
 			break;
 		}
+
 		rctx.pdctx.prev = rctx.stmt;
+
+		rule_maybe_reset_payload_deps(&rctx.pdctx, type);
 	}
 }
 

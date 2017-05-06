@@ -35,6 +35,8 @@ struct payload_dep_ctx {
 extern bool payload_is_known(const struct expr *expr);
 extern bool payload_is_stacked(const struct proto_desc *desc,
 			       const struct expr *expr);
+
+void payload_dependency_reset(struct payload_dep_ctx *ctx);
 extern void payload_dependency_store(struct payload_dep_ctx *ctx,
 				     struct stmt *stmt,
 				     enum proto_bases base);

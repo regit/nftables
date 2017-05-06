@@ -366,6 +366,11 @@ bool payload_is_stacked(const struct proto_desc *desc, const struct expr *expr)
 	return next && next->base == desc->base;
 }
 
+void payload_dependency_reset(struct payload_dep_ctx *ctx)
+{
+	memset(ctx, 0, sizeof(*ctx));
+}
+
 /**
  * payload_dependency_store - store a possibly redundant protocol match
  *
