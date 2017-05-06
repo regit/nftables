@@ -64,10 +64,12 @@ inet test-inet input
   [ cmp eq reg 1 0x0000000a ]
   [ reject type 0 code 4 ]
 
-# reject with tcp reset
+# mark 12345 reject with tcp reset
 inet test-inet input
   [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
+  [ meta load mark => reg 1 ]
+  [ cmp eq reg 1 0x00003039 ]
   [ reject type 1 code 0 ]
 
 # reject

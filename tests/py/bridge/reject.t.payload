@@ -64,8 +64,10 @@ bridge test-bridge input
   [ cmp eq reg 1 0x0000dd86 ]
   [ reject type 0 code 4 ]
 
-# ip protocol tcp reject with tcp reset
+# mark 12345 ip protocol tcp reject with tcp reset
 bridge test-bridge input
+  [ meta load mark => reg 1 ]
+  [ cmp eq reg 1 0x00003039 ]
   [ payload load 2b @ link header + 12 => reg 1 ]
   [ cmp eq reg 1 0x00000008 ]
   [ payload load 1b @ network header + 9 => reg 1 ]

@@ -16,7 +16,7 @@ reject with icmpv6 type admin-prohibited;ok;ether type ip6 reject with icmpv6 ty
 reject with icmpv6 type addr-unreachable;ok;ether type ip6 reject with icmpv6 type addr-unreachable
 reject with icmpv6 type port-unreachable;ok;ether type ip6 reject
 
-ip protocol tcp reject with tcp reset;ok;ip protocol 6 reject with tcp reset
+mark 12345 ip protocol tcp reject with tcp reset;ok;mark 0x00003039 ip protocol 6 reject with tcp reset
 
 reject;ok
 ether type ip reject;ok

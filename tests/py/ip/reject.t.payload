@@ -30,3 +30,11 @@ ip test-ip4 output
 ip test-ip4 output
   [ reject type 0 code 13 ]
 
+# mark 0x80000000 reject with tcp reset
+ip test-ip4 output
+  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ meta load mark => reg 1 ]
+  [ cmp eq reg 1 0x80000000 ]
+  [ reject type 1 code 0 ]
+
