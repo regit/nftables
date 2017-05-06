@@ -1856,10 +1856,16 @@ static void stmt_reject_postprocess(struct rule_pp_ctx *rctx)
 	case NFPROTO_IPV4:
 		stmt->reject.family = rctx->pctx.family;
 		stmt->reject.expr->dtype = &icmp_code_type;
+		if (stmt->reject.type == NFT_REJECT_TCP_RST)
+			__payload_dependency_kill(&rctx->pdctx,
+						  PROTO_BASE_TRANSPORT_HDR);
 		break;
 	case NFPROTO_IPV6:
 		stmt->reject.family = rctx->pctx.family;
 		stmt->reject.expr->dtype = &icmpv6_code_type;
+		if (stmt->reject.type == NFT_REJECT_TCP_RST)
+			__payload_dependency_kill(&rctx->pdctx,
+						  PROTO_BASE_TRANSPORT_HDR);
 		break;
 	case NFPROTO_INET:
 		if (stmt->reject.type == NFT_REJECT_ICMPX_UNREACH) {
