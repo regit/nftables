@@ -118,17 +118,22 @@ static const struct expr_ops payload_expr_ops = {
 };
 
 /*
- * ipv6 is special case, we normally use 'meta l4proto' to fetch the last
- * l4 header of the ipv6 extension header chain so we will also match
+ * We normally use 'meta l4proto' to fetch the last l4 header of the
+ * ipv6 extension header chain so we will also match
  * tcp after a fragmentation header, for instance.
+ * For consistency we also use meta l4proto for ipv4.
  *
- * If user specifically asks for nexthdr x, treat is as a full
- * dependency rather than injecting another (useless) meta l4 one.
+ * If user specifically asks for nexthdr x, don't add another (useless)
+ * meta dependency.
  */
 static bool proto_key_is_protocol(const struct proto_desc *desc, unsigned int type)
 {
-	if (type == desc->protocol_key ||
-	    (desc == &proto_ip6 && type == IP6HDR_NEXTHDR))
+	if (type == desc->protocol_key)
+		return true;
+
+	if (desc == &proto_ip6 && type == IP6HDR_NEXTHDR)
+		return true;
+	if (desc == &proto_ip && type == IPHDR_PROTOCOL)
 		return true;
 
 	return false;
