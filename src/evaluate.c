@@ -2015,6 +2015,14 @@ static int stmt_reject_gen_dependency(struct eval_ctx *ctx, struct stmt *stmt,
 	if (payload_gen_dependency(ctx, payload, &nstmt) < 0)
 		return -1;
 
+	/*
+	 * Unlike payload deps this adds the dependency at the beginning, i.e.
+	 * log ... reject with tcp-reset
+	 * turns into
+	 * meta l4proto tcp log ... reject with tcp-reset
+	 *
+	 * Otherwise we'd log things that won't be rejected.
+	 */
 	list_add(&nstmt->list, &ctx->rule->stmts);
 	return 0;
 }
