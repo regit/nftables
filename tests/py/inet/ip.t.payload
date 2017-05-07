@@ -1,8 +1,8 @@
 # ip saddr . ip daddr . ether saddr { 1.1.1.1 . 2.2.2.2 . ca:fe:ca:fe:ca:fe }
-__set%d test-ip4 3
-__set%d test-ip4 0
+__set%d test-inet 3
+__set%d test-inet 0
 	element 01010101 02020202 fecafeca 0000feca  : 0 [end]
-ip test-ip4 input
+inet test-ip input
   [ meta load iiftype => reg 1 ]
   [ cmp eq reg 1 0x00000001 ]
   [ payload load 4b @ network header + 12 => reg 1 ]

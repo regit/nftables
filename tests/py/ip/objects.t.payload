@@ -9,7 +9,7 @@ __objmap%d test-ip4 43
 __objmap%d test-ip4 0
 	element 0000bb01  : 0 [end]	element 00005000  : 0 [end]	element 00001600  : 0 [end]
 ip test-ip4 output 
-  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ objref sreg 1 set __objmap%d id 1 ]
@@ -25,7 +25,7 @@ __objmap%d test-ip4 43
 __objmap%d test-ip4 0
 	element 0000bb01  : 0 [end]	element 00005000  : 0 [end]	element 00001600  : 0 [end]
 ip test-ip4 output 
-  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ objref sreg 1 set __objmap%d id 1 ]
@@ -39,7 +39,7 @@ __objmap%d test-ip4 43
 __objmap%d test-ip4 0
         element 00001500  : 0 [end]     element 00004908  : 0 [end]
 ip test-ip4 output
-  [ payload load 1b @ network header + 9 => reg 1 ]
+  [ meta load l4proto => reg 1 ]
   [ cmp eq reg 1 0x00000006 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ objref sreg 1 set __objmap%d id 1 ]
