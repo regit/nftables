@@ -1332,7 +1332,7 @@ static void payload_match_expand(struct rule_pp_ctx *ctx,
 			payload_dependency_store(&ctx->pdctx, nstmt, base - stacked);
 		} else {
 			payload_dependency_kill(&ctx->pdctx, nexpr->left);
-			if (left->flags & EXPR_F_PROTOCOL)
+			if (expr->op == OP_EQ && left->flags & EXPR_F_PROTOCOL)
 				payload_dependency_store(&ctx->pdctx, nstmt, base - stacked);
 		}
 	}
