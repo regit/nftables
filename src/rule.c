@@ -156,11 +156,11 @@ replay:
 	netlink_genid_get();
 	ret = cache_init(cmd, msgs);
 	if (ret < 0) {
+		cache_release();
 		if (errno == EINTR) {
 			netlink_restart();
 			goto replay;
 		}
-		cache_release();
 		return -1;
 	}
 	cache_initialized = true;
