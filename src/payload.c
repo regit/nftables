@@ -224,21 +224,28 @@ static int payload_add_dependency(struct eval_ctx *ctx,
 }
 
 static const struct proto_desc *
+payload_get_get_ll_hdr(const struct eval_ctx *ctx)
+{
+	switch (ctx->pctx.family) {
+	case NFPROTO_INET:
+		return &proto_inet;
+	case NFPROTO_BRIDGE:
+		return &proto_eth;
+	case NFPROTO_NETDEV:
+		return &proto_netdev;
+	default:
+		break;
+	}
+
+	return NULL;
+}
+
+static const struct proto_desc *
 payload_gen_special_dependency(struct eval_ctx *ctx, const struct expr *expr)
 {
 	switch (expr->payload.base) {
 	case PROTO_BASE_LL_HDR:
-		switch (ctx->pctx.family) {
-		case NFPROTO_INET:
-			return &proto_inet;
-		case NFPROTO_BRIDGE:
-			return &proto_eth;
-		case NFPROTO_NETDEV:
-			return &proto_netdev;
-		default:
-			break;
-		}
-		break;
+		return payload_get_get_ll_hdr(ctx);
 	case PROTO_BASE_TRANSPORT_HDR:
 		if (expr->payload.desc == &proto_icmp)
 			return &proto_ip;
