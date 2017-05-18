@@ -264,10 +264,29 @@ payload_gen_special_dependency(struct eval_ctx *ctx, const struct expr *expr)
 	case PROTO_BASE_LL_HDR:
 		return payload_get_get_ll_hdr(ctx);
 	case PROTO_BASE_TRANSPORT_HDR:
-		if (expr->payload.desc == &proto_icmp)
-			return &proto_ip;
-		if (expr->payload.desc == &proto_icmp6)
-			return &proto_ip6;
+		if (expr->payload.desc == &proto_icmp ||
+		    expr->payload.desc == &proto_icmp6) {
+			const struct proto_desc *desc, *desc_upper;
+			struct stmt *nstmt;
+
+			desc = ctx->pctx.protocol[PROTO_BASE_LL_HDR].desc;
+			if (!desc) {
+				desc = payload_get_get_ll_hdr(ctx);
+				if (!desc)
+					break;
+			}
+
+			desc_upper = &proto_ip6;
+			if (expr->payload.desc == &proto_icmp)
+				desc_upper = &proto_ip;
+
+			if (payload_add_dependency(ctx, desc, desc_upper,
+						   expr, &nstmt) < 0)
+				return NULL;
+
+			list_add_tail(&nstmt->list, &ctx->stmt->list);
+			return desc_upper;
+		}
 		return &proto_inet_service;
 	default:
 		break;
