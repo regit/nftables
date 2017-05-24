@@ -1258,9 +1258,9 @@ static void obj_print_data(const struct obj *obj,
 		break;
 	case NFT_OBJECT_CT_HELPER: {
 		printf("ct helper %s {\n", obj->handle.obj);
-		printf("\t\ttype \"%s\" protocol ", obj->ct.helper_name);
-		print_proto_name_proto(obj->ct.l4proto);
-		printf("\t\tl3proto %s", family2str(obj->ct.l3proto));
+		printf("\t\ttype \"%s\" protocol ", obj->ct_helper.name);
+		print_proto_name_proto(obj->ct_helper.l4proto);
+		printf("\t\tl3proto %s", family2str(obj->ct_helper.l3proto));
 		break;
 		}
 	default:

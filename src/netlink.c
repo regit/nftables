@@ -319,12 +319,12 @@ alloc_nftnl_obj(const struct handle *h, struct obj *obj)
 		break;
 	case NFT_OBJECT_CT_HELPER:
 		nftnl_obj_set_str(nlo, NFTNL_OBJ_CT_HELPER_NAME,
-				  obj->ct.helper_name);
+				  obj->ct_helper.name);
 		nftnl_obj_set_u8(nlo, NFTNL_OBJ_CT_HELPER_L4PROTO,
-				  obj->ct.l4proto);
-		if (obj->ct.l3proto)
+				  obj->ct_helper.l4proto);
+		if (obj->ct_helper.l3proto)
 			nftnl_obj_set_u16(nlo, NFTNL_OBJ_CT_HELPER_L3PROTO,
-					  obj->ct.l3proto);
+					  obj->ct_helper.l3proto);
 		break;
 	default:
 		BUG("Unknown type %d\n", obj->type);
@@ -1832,10 +1832,10 @@ static struct obj *netlink_delinearize_obj(struct netlink_ctx *ctx,
 			nftnl_obj_get_u32(nlo, NFTNL_OBJ_QUOTA_FLAGS);
 		break;
 	case NFT_OBJECT_CT_HELPER:
-		snprintf(obj->ct.helper_name, sizeof(obj->ct.helper_name), "%s",
+		snprintf(obj->ct_helper.name, sizeof(obj->ct_helper.name), "%s",
 			 nftnl_obj_get_str(nlo, NFTNL_OBJ_CT_HELPER_NAME));
-		obj->ct.l3proto = nftnl_obj_get_u16(nlo, NFTNL_OBJ_CT_HELPER_L3PROTO);
-		obj->ct.l4proto = nftnl_obj_get_u8(nlo, NFTNL_OBJ_CT_HELPER_L4PROTO);
+		obj->ct_helper.l3proto = nftnl_obj_get_u16(nlo, NFTNL_OBJ_CT_HELPER_L3PROTO);
+		obj->ct_helper.l4proto = nftnl_obj_get_u8(nlo, NFTNL_OBJ_CT_HELPER_L4PROTO);
 		break;
 	}
 	obj->type = type;

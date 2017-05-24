@@ -263,8 +263,8 @@ struct quota {
 	uint32_t	flags;
 };
 
-struct ct {
-	char helper_name[16];
+struct ct_helper {
+	char name[16];
 	uint16_t l3proto;
 	uint8_t l4proto;
 };
@@ -287,7 +287,7 @@ struct obj {
 	union {
 		struct counter		counter;
 		struct quota		quota;
-		struct ct		ct;
+		struct ct_helper	ct_helper;
 	};
 };
 

@@ -2708,14 +2708,14 @@ ct_l4protoname		:	TCP	{ $$ = IPPROTO_TCP; }
 
 ct_config		:	TYPE	QUOTED_STRING	PROTOCOL	ct_l4protoname	stmt_seperator
 			{
-				struct ct *ct;
+				struct ct_helper *ct;
 				int ret;
 
-				ct = &$<obj>0->ct;
+				ct = &$<obj>0->ct_helper;
 
-				ret = snprintf(ct->helper_name, sizeof(ct->helper_name), "%s", $2);
-				if (ret <= 0 || ret >= (int)sizeof(ct->helper_name)) {
-					erec_queue(error(&@2, "invalid name '%s', max length is %u\n", $2, (int)sizeof(ct->helper_name)), state->msgs);
+				ret = snprintf(ct->name, sizeof(ct->name), "%s", $2);
+				if (ret <= 0 || ret >= (int)sizeof(ct->name)) {
+					erec_queue(error(&@2, "invalid name '%s', max length is %u\n", $2, (int)sizeof(ct->name)), state->msgs);
 					YYERROR;
 				}
 
@@ -2723,7 +2723,7 @@ ct_config		:	TYPE	QUOTED_STRING	PROTOCOL	ct_l4protoname	stmt_seperator
 			}
 			|	L3PROTOCOL	family_spec_explicit	stmt_seperator
 			{
-				$<obj>0->ct.l3proto = $2;
+				$<obj>0->ct_helper.l3proto = $2;
 			}
 			;
 
