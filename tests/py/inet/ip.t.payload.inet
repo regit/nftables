@@ -11,3 +11,4 @@ inet test-inet input
   [ payload load 4b @ network header + 16 => reg 9 ]
   [ payload load 6b @ link header + 6 => reg 10 ]
   [ lookup reg 1 set __set%d ]
+

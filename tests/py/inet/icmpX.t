@@ -3,6 +3,6 @@
 *inet;test-inet;input
 
 ip protocol icmp icmp type echo-request;ok;icmp type echo-request
-icmp type echo-request;ok
+icmp type echo-request;ok;meta nfproto ipv4 meta l4proto 1 icmp type echo-request
 ip6 nexthdr icmpv6 icmpv6 type echo-request;ok;icmpv6 type echo-request
-icmpv6 type echo-request;ok
+icmpv6 type echo-request;ok;meta nfproto ipv6 meta l4proto 58 icmpv6 type echo-request

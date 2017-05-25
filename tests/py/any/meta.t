@@ -38,6 +38,7 @@ meta l4proto { 33, 55, 67, 88};ok;meta l4proto { 33, 55, 67, 88}
 meta l4proto != { 33, 55, 67, 88};ok
 meta l4proto { 33-55};ok
 meta l4proto != { 33-55};ok
+meta l4proto ipv6-icmp icmpv6 type nd-router-advert;ok;icmpv6 type nd-router-advert
 
 meta priority root;ok
 meta priority none;ok

@@ -587,7 +587,6 @@ const struct proto_desc proto_ip = {
 	.name		= "ip",
 	.base		= PROTO_BASE_NETWORK_HDR,
 	.checksum_key	= IPHDR_CHECKSUM,
-	.protocol_key	= IPHDR_PROTOCOL,
 	.protocols	= {
 		PROTO_LINK(IPPROTO_ICMP,	&proto_icmp),
 		PROTO_LINK(IPPROTO_ESP,		&proto_esp),
@@ -600,6 +599,7 @@ const struct proto_desc proto_ip = {
 		PROTO_LINK(IPPROTO_SCTP,	&proto_sctp),
 	},
 	.templates	= {
+		[0]	= PROTO_META_TEMPLATE("l4proto", &inet_protocol_type, NFT_META_L4PROTO, 8),
 		[IPHDR_VERSION]		= HDR_BITFIELD("version", &integer_type, 0, 4),
 		[IPHDR_HDRLENGTH]	= HDR_BITFIELD("hdrlength", &integer_type, 4, 4),
 		[IPHDR_DSCP]            = HDR_BITFIELD("dscp", &dscp_type, 8, 6),
@@ -707,7 +707,6 @@ const struct proto_desc proto_icmp6 = {
 const struct proto_desc proto_ip6 = {
 	.name		= "ip6",
 	.base		= PROTO_BASE_NETWORK_HDR,
-	.protocol_key	= IP6HDR_NEXTHDR,
 	.protocols	= {
 		PROTO_LINK(IPPROTO_ESP,		&proto_esp),
 		PROTO_LINK(IPPROTO_AH,		&proto_ah),
@@ -720,6 +719,7 @@ const struct proto_desc proto_ip6 = {
 		PROTO_LINK(IPPROTO_ICMPV6,	&proto_icmp6),
 	},
 	.templates	= {
+		[0]	= PROTO_META_TEMPLATE("l4proto", &inet_protocol_type, NFT_META_L4PROTO, 8),
 		[IP6HDR_VERSION]	= HDR_BITFIELD("version", &integer_type, 0, 4),
 		[IP6HDR_DSCP]		= HDR_BITFIELD("dscp", &dscp_type, 4, 6),
 		[IP6HDR_ECN]		= HDR_BITFIELD("ecn", &ecn_type, 10, 2),
@@ -779,6 +779,8 @@ const struct proto_desc proto_inet_service = {
 		PROTO_LINK(IPPROTO_TCP,		&proto_tcp),
 		PROTO_LINK(IPPROTO_DCCP,	&proto_dccp),
 		PROTO_LINK(IPPROTO_SCTP,	&proto_sctp),
+		PROTO_LINK(IPPROTO_ICMP,	&proto_icmp),
+		PROTO_LINK(IPPROTO_ICMPV6,	&proto_icmp6),
 	},
 	.templates	= {
 		[0]	= PROTO_META_TEMPLATE("l4proto", &inet_protocol_type, NFT_META_L4PROTO, 8),

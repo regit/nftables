@@ -117,6 +117,28 @@ static const struct expr_ops payload_expr_ops = {
 	.pctx_update	= payload_expr_pctx_update,
 };
 
+/*
+ * We normally use 'meta l4proto' to fetch the last l4 header of the
+ * ipv6 extension header chain so we will also match
+ * tcp after a fragmentation header, for instance.
+ * For consistency we also use meta l4proto for ipv4.
+ *
+ * If user specifically asks for nexthdr x, don't add another (useless)
+ * meta dependency.
+ */
+static bool proto_key_is_protocol(const struct proto_desc *desc, unsigned int type)
+{
+	if (type == desc->protocol_key)
+		return true;
+
+	if (desc == &proto_ip6 && type == IP6HDR_NEXTHDR)
+		return true;
+	if (desc == &proto_ip && type == IPHDR_PROTOCOL)
+		return true;
+
+	return false;
+}
+
 struct expr *payload_expr_alloc(const struct location *loc,
 				const struct proto_desc *desc,
 				unsigned int type)
@@ -129,7 +151,7 @@ struct expr *payload_expr_alloc(const struct location *loc,
 	if (desc != NULL) {
 		tmpl = &desc->templates[type];
 		base = desc->base;
-		if (type == desc->protocol_key)
+		if (proto_key_is_protocol(desc, type))
 			flags = EXPR_F_PROTOCOL;
 	} else {
 		tmpl = &proto_unknown_template;
@@ -224,26 +246,52 @@ static int payload_add_dependency(struct eval_ctx *ctx,
 }
 
 static const struct proto_desc *
+payload_get_get_ll_hdr(const struct eval_ctx *ctx)
+{
+	switch (ctx->pctx.family) {
+	case NFPROTO_INET:
+		return &proto_inet;
+	case NFPROTO_BRIDGE:
+		return &proto_eth;
+	case NFPROTO_NETDEV:
+		return &proto_netdev;
+	default:
+		break;
+	}
+
+	return NULL;
+}
+
+static const struct proto_desc *
 payload_gen_special_dependency(struct eval_ctx *ctx, const struct expr *expr)
 {
 	switch (expr->payload.base) {
 	case PROTO_BASE_LL_HDR:
-		switch (ctx->pctx.family) {
-		case NFPROTO_INET:
-			return &proto_inet;
-		case NFPROTO_BRIDGE:
-			return &proto_eth;
-		case NFPROTO_NETDEV:
-			return &proto_netdev;
-		default:
-			break;
-		}
-		break;
+		return payload_get_get_ll_hdr(ctx);
 	case PROTO_BASE_TRANSPORT_HDR:
-		if (expr->payload.desc == &proto_icmp)
-			return &proto_ip;
-		if (expr->payload.desc == &proto_icmp6)
-			return &proto_ip6;
+		if (expr->payload.desc == &proto_icmp ||
+		    expr->payload.desc == &proto_icmp6) {
+			const struct proto_desc *desc, *desc_upper;
+			struct stmt *nstmt;
+
+			desc = ctx->pctx.protocol[PROTO_BASE_LL_HDR].desc;
+			if (!desc) {
+				desc = payload_get_get_ll_hdr(ctx);
+				if (!desc)
+					break;
+			}
+
+			desc_upper = &proto_ip6;
+			if (expr->payload.desc == &proto_icmp)
+				desc_upper = &proto_ip;
+
+			if (payload_add_dependency(ctx, desc, desc_upper,
+						   expr, &nstmt) < 0)
+				return NULL;
+
+			list_add_tail(&nstmt->list, &ctx->stmt->list);
+			return desc_upper;
+		}
 		return &proto_inet_service;
 	default:
 		break;
