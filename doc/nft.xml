@@ -566,7 +566,7 @@ filter input iif $int_ifs accept
 				<term><option>create</option></term>
 				<listitem>
 					<para>
-						Simlar to the <command>add</command> command, but returns an error if the
+						Similar to the <command>add</command> command, but returns an error if the
 						chain already exists.
 					</para>
 				</listitem>
