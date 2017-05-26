@@ -914,10 +914,6 @@ static int do_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 static int __do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
 			     struct set *set, struct expr *expr, bool excl)
 {
-	if (set->flags & NFT_SET_INTERVAL &&
-	    set_to_intervals(ctx->msgs, set, expr, true) < 0)
-		return -1;
-
 	expr->set_flags |= set->flags;
 	if (netlink_add_setelems(ctx, h, expr, excl) < 0)
 		return -1;
@@ -934,18 +930,27 @@ static int do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	table = table_lookup(h);
 	set = set_lookup(table, h->set);
 
+	if (set->flags & NFT_SET_INTERVAL &&
+	    set_to_intervals(ctx->msgs, set, init, true) < 0)
+		return -1;
+
 	return __do_add_setelems(ctx, h, set, init, excl);
 }
 
 static int do_add_set(struct netlink_ctx *ctx, const struct handle *h,
 		      struct set *set, bool excl)
 {
+	if (set->init != NULL) {
+		if (set->flags & NFT_SET_INTERVAL &&
+		    set_to_intervals(ctx->msgs, set, set->init, true) < 0)
+			return -1;
+	}
 	if (netlink_add_set(ctx, h, set, excl) < 0)
 		return -1;
-	if (set->init != NULL)
+	if (set->init != NULL) {
 		return __do_add_setelems(ctx, &set->handle, set, set->init,
 					 false);
-
+	}
 	return 0;
 }
 
