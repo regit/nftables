@@ -552,6 +552,7 @@ int set_to_intervals(struct list_head *errs, struct set *set,
 		return -1;
 	segtree_linearize(&list, set, init, &tree, add);
 
+	init->size = 0;
 	list_for_each_entry_safe(ei, next, &list, list) {
 		if (segtree_debug()) {
 			pr_gmp_debug("list: [%.*Zx %.*Zx]\n",
@@ -566,6 +567,7 @@ int set_to_intervals(struct list_head *errs, struct set *set,
 		expr_print(init);
 		pr_gmp_debug("\n");
 	}
+
 	return 0;
 }
 
