@@ -1759,6 +1759,21 @@ static int stmt_evaluate_arg(struct eval_ctx *ctx, struct stmt *stmt,
 					 "datatype mismatch: expected %s, "
 					 "expression has type %s",
 					 dtype->desc, (*expr)->dtype->desc);
+
+	/* we are setting a value, we can't use a set */
+	switch ((*expr)->ops->type) {
+	case EXPR_SET:
+		return stmt_binary_error(ctx, *expr, stmt,
+					 "you cannot use a set here, unknown "
+					 "value to use");
+	case EXPR_SET_REF:
+		return stmt_binary_error(ctx, *expr, stmt,
+					 "you cannot reference a set here, "
+					 "unknown value to use");
+	default:
+		break;
+	}
+
 	return 0;
 }
 
