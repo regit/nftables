@@ -1759,10 +1759,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 	}
 	case EXPR_UNARY:
 		expr_postprocess(ctx, &expr->arg);
-		expr_set_type(expr->arg, expr->arg->dtype, !expr->arg->byteorder);
-
-		*exprp = expr_get(expr->arg);
-		expr_free(expr);
+		expr_set_type(expr, expr->arg->dtype, !expr->arg->byteorder);
 		break;
 	case EXPR_BINOP:
 		expr_postprocess(ctx, &expr->left);

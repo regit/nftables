@@ -460,10 +460,7 @@ const char *expr_op_symbols[] = {
 
 static void unary_expr_print(const struct expr *expr)
 {
-	if (expr_op_symbols[expr->op] != NULL)
-		printf("%s(", expr_op_symbols[expr->op]);
 	expr_print(expr->arg);
-	printf(")");
 }
 
 static void unary_expr_clone(struct expr *new, const struct expr *expr)
