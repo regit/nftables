@@ -955,6 +955,8 @@ def run_test_file(filename, force_all_family_option, specific_file):
     tests = passed = total_unit_run = total_warning = total_error = 0
 
     for lineno, line in enumerate(f):
+        sys.stdout.flush()
+
         if signal_received == 1:
             print "\nSignal received. Cleaning up and Exitting..."
             cleanup_on_exit()
