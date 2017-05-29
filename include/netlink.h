@@ -45,6 +45,7 @@ struct netlink_ctx {
 	struct set		*set;
 	const void		*data;
 	uint32_t		seqnum;
+	struct nftnl_batch	*batch;
 	bool			batch_supported;
 };
 
@@ -186,7 +187,7 @@ extern void netlink_dump_expr(const struct nftnl_expr *nle);
 extern void netlink_dump_set(const struct nftnl_set *nls);
 extern void netlink_dump_obj(struct nftnl_obj *nlo);
 
-extern int netlink_batch_send(struct list_head *err_list);
+extern int netlink_batch_send(struct netlink_ctx *ctx, struct list_head *err_list);
 
 extern void netlink_genid_get(void);
 extern void netlink_restart(void);

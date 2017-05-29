@@ -180,6 +180,7 @@ static const struct input_descriptor indesc_cmdline = {
 
 static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 {
+	struct nftnl_batch *batch;
 	struct netlink_ctx ctx;
 	struct cmd *cmd;
 	struct mnl_err *err, *tmp;
@@ -188,25 +189,26 @@ static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 	bool batch_supported = netlink_batch_supported();
 	int ret = 0;
 
-	mnl_batch_init();
+	batch = mnl_batch_init();
 
-	batch_seqnum = mnl_batch_begin();
+	batch_seqnum = mnl_batch_begin(batch);
 	list_for_each_entry(cmd, &state->cmds, list) {
 		memset(&ctx, 0, sizeof(ctx));
 		ctx.msgs = msgs;
 		ctx.seqnum = cmd->seqnum = mnl_seqnum_alloc();
+		ctx.batch = batch;
 		ctx.batch_supported = batch_supported;
 		init_list_head(&ctx.list);
 		ret = do_command(&ctx, cmd);
 		if (ret < 0)
 			goto out;
 	}
-	mnl_batch_end();
+	mnl_batch_end(batch);
 
-	if (!mnl_batch_ready())
+	if (!mnl_batch_ready(batch))
 		goto out;
 
-	ret = netlink_batch_send(&err_list);
+	ret = netlink_batch_send(&ctx, &err_list);
 
 	list_for_each_entry_safe(err, tmp, &err_list, head) {
 		list_for_each_entry(cmd, &state->cmds, list) {
@@ -225,7 +227,7 @@ static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 		}
 	}
 out:
-	mnl_batch_reset();
+	mnl_batch_reset(batch);
 	return ret;
 }
 
