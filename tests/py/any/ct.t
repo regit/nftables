@@ -91,6 +91,10 @@ ct bytes original reply;fail
 # missing direction
 ct saddr 1.2.3.4;fail
 
+meta nfproto ipv4 ct original saddr 1.2.3.4;ok
+# wrong base (ip6 but ipv4 address given)
+meta nfproto ipv6 ct original saddr 1.2.3.4;fail
+
 # direction, but must be used without
 ct original mark 42;fail
 # swapped key and direction

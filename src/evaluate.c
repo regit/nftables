@@ -649,6 +649,13 @@ static int expr_evaluate_payload(struct eval_ctx *ctx, struct expr **exprp)
 	return 0;
 }
 
+static int expr_error_base(struct list_head *msgs, const struct expr *e)
+{
+	return expr_error(msgs, e,
+			  "meta nfproto ipv4 or ipv6 must be specified "
+			  "before %s expression", e->ops->name);
+}
+
 /*
  * RT expression: validate protocol dependencies.
  */
@@ -663,22 +670,17 @@ static int expr_evaluate_rt(struct eval_ctx *ctx, struct expr **expr)
 	switch (rt->rt.key) {
 	case NFT_RT_NEXTHOP4:
 		if (base != &proto_ip)
-			goto err;
+			return expr_error_base(ctx->msgs, rt);
 		break;
 	case NFT_RT_NEXTHOP6:
 		if (base != &proto_ip6)
-			goto err;
+			return expr_error_base(ctx->msgs, rt);
 		break;
 	default:
 		break;
 	}
 
 	return expr_evaluate_primary(ctx, expr);
-
-err:
-	return expr_error(ctx->msgs, rt,
-			  "meta nfproto ipv4 or ipv6 must be specified "
-			  "before routing expression");
 }
 
 /*
@@ -687,9 +689,20 @@ err:
  */
 static int expr_evaluate_ct(struct eval_ctx *ctx, struct expr **expr)
 {
+	const struct proto_desc *base;
 	struct expr *ct = *expr;
 
 	ct_expr_update_type(&ctx->pctx, ct);
+
+	base = ctx->pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
+	switch (ct->ct.key) {
+	case NFT_CT_SRC:
+	case NFT_CT_DST:
+		if (base != &proto_ip && base != &proto_ip6)
+			return expr_error_base(ctx->msgs, ct);
+	default:
+		break;
+	}
 
 	return expr_evaluate_primary(ctx, expr);
 }
