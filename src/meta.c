@@ -497,6 +497,7 @@ static void meta_expr_pctx_update(struct proto_ctx *ctx,
 	const struct hook_proto_desc *h = &hook_proto_desc[ctx->family];
 	const struct expr *left = expr->left, *right = expr->right;
 	const struct proto_desc *desc;
+	uint8_t protonum;
 
 	assert(expr->op == OP_EQ);
 
@@ -514,9 +515,15 @@ static void meta_expr_pctx_update(struct proto_ctx *ctx,
 		proto_ctx_update(ctx, PROTO_BASE_LL_HDR, &expr->location, desc);
 		break;
 	case NFT_META_NFPROTO:
-		desc = proto_find_upper(h->desc, mpz_get_uint8(right->value));
-		if (desc == NULL)
+		protonum = mpz_get_uint8(right->value);
+		desc = proto_find_upper(h->desc, protonum);
+		if (desc == NULL) {
 			desc = &proto_unknown;
+
+			if (protonum == ctx->family &&
+			    h->base == PROTO_BASE_NETWORK_HDR)
+				desc = h->desc;
+		}
 
 		proto_ctx_update(ctx, PROTO_BASE_NETWORK_HDR, &expr->location, desc);
 		break;
