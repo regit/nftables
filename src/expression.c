@@ -962,7 +962,7 @@ static void set_elem_expr_print(const struct expr *expr)
 		printf(" timeout ");
 		time_print(expr->timeout / 1000);
 	}
-	if (expr->expiration) {
+	if (!stateless_output && expr->expiration) {
 		printf(" expires ");
 		time_print(expr->expiration / 1000);
 	}
