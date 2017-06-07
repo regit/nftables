@@ -209,6 +209,10 @@ vi:ts=4 sw=4
 				The directories to be searched for include files can be specified using
 				the <option>-I/--includepath</option> option.
 			</para>
+			<para>
+				If the <literal>filename</literal> parameter is a directory, then all files in
+				the directory are loaded in alphabetical order.
+			</para>
 		</refsect2>
 		<refsect2>
 			<title>Symbolic variables</title>
