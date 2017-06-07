@@ -2205,8 +2205,13 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 				expr_postprocess(&rctx, &stmt->meta.expr);
 			break;
 		case STMT_CT:
-			if (stmt->ct.expr != NULL)
+			if (stmt->ct.expr != NULL) {
 				expr_postprocess(&rctx, &stmt->ct.expr);
+
+				if (stmt->ct.expr->ops->type == EXPR_BINOP)
+					stmt->ct.expr = binop_tree_to_list(NULL,
+									   stmt->ct.expr);
+			}
 			break;
 		case STMT_NAT:
 			if (stmt->nat.addr != NULL)
