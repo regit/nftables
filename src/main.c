@@ -125,12 +125,12 @@ static void show_help(const char *name)
 "  -s, --stateless		Omit stateful information of ruleset.\n"
 "  -N				Translate IP addresses to names.\n"
 "  -a, --handle			Output rule handle.\n"
-"  -I, --includepath <directory>	Add <directory> to the paths searched for include files.\n"
+"  -I, --includepath <directory>	Add <directory> to the paths searched for include files. Default is: %s\n"
 #ifdef DEBUG
 "  --debug <level [,level...]>	Specify debugging level (scanner, parser, eval, netlink, mnl, proto-ctx, segtree, all)\n"
 #endif
 "\n",
-	name);
+	name, DEFAULT_INCLUDE_PATH);
 }
 
 #ifdef DEBUG

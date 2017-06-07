@@ -213,6 +213,11 @@ vi:ts=4 sw=4
 				as an absolute path.
 			</para>
 			<para>
+				If -I/--includepath is not specified, then nft relies on the default directory
+				that is specified at compile time. You can retrieve this default directory via
+				-h/--help option.
+			</para>
+			<para>
 				If the <literal>filename</literal> parameter is a directory, then all files in
 				the directory are loaded in alphabetical order.
 			</para>
