@@ -207,7 +207,10 @@ vi:ts=4 sw=4
 			<para>
 				Other files can be included by using the <command>include</command> statement.
 				The directories to be searched for include files can be specified using
-				the <option>-I/--includepath</option> option.
+				the <option>-I/--includepath</option> option. You can override this behaviour
+				either by prepending ./ to your path to force inclusion of files located in the
+				current working directory (ie. relative path) or / for file location expressed
+				as an absolute path.
 			</para>
 			<para>
 				If the <literal>filename</literal> parameter is a directory, then all files in
