@@ -3876,7 +3876,7 @@ ip6 filter output log flags all
 					<command>ct</command>
 					<group choice="req">
 						<arg>mark</arg>
-						<arg>eventmask</arg>
+						<arg>event</arg>
 						<arg>label</arg>
 						<arg>zone</arg>
 					</group>
@@ -3907,7 +3907,7 @@ ip6 filter output log flags all
 						</thead>
 						<tbody>
 							<row>
-								<entry>eventmask</entry>
+								<entry>event</entry>
 								<entry>conntrack event bits</entry>
 								<entry>bitmask, integer (32 bit)</entry>
 							</row>
@@ -3962,7 +3962,7 @@ table inet raw {
 			<example>
 					<title>restrict events reported by ctnetlink</title>
 				<programlisting>
-ct eventmask set new or related or destroy
+ct event set new,related,destroy
 				</programlisting>
 			</example>
 
