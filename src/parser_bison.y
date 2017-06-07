@@ -635,8 +635,11 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { expr_free($$); }	rt_expr
 %type <val>			rt_key
 
-%type <expr>			ct_expr
-%destructor { expr_free($$); }	ct_expr
+%type <expr>			list_stmt_expr
+%destructor { expr_free($$); }	list_stmt_expr
+
+%type <expr>			ct_expr		ct_stmt_expr
+%destructor { expr_free($$); }	ct_expr		ct_stmt_expr
 %type <val>			ct_key		ct_key_dir	ct_key_dir_optional
 
 %type <expr>			fib_expr
@@ -3174,11 +3177,29 @@ ct_key_dir_optional	:	BYTES		{ $$ = NFT_CT_BYTES; }
 			|	ZONE		{ $$ = NFT_CT_ZONE; }
 			;
 
+list_stmt_expr		:	symbol_expr	COMMA	symbol_expr
+			{
+				$$ = list_expr_alloc(&@$);
+				compound_expr_add($$, $1);
+				compound_expr_add($$, $3);
+			}
+			|	list_stmt_expr	COMMA		symbol_expr
+			{
+				$1->location = @$;
+				compound_expr_add($1, $3);
+				$$ = $1;
+			}
+			;
+
+ct_stmt_expr		:	expr
+			|	list_stmt_expr
+			;
+
 ct_stmt			:	CT	ct_key		SET	expr
 			{
 				$$ = ct_stmt_alloc(&@$, $2, -1, $4);
 			}
-			|	CT	STRING		SET	expr
+			|	CT	STRING		SET	ct_stmt_expr
 			{
 				struct error_record *erec;
 				unsigned int key;
