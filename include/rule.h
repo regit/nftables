@@ -182,6 +182,7 @@ extern void chain_print_plain(const struct chain *chain);
  * @stmt:	list of statements
  * @num_stmts:	number of statements in stmts list
  * @comment:	comment
+ * @refcnt:	rule reference counter
  */
 struct rule {
 	struct list_head	list;
@@ -190,10 +191,12 @@ struct rule {
 	struct list_head	stmts;
 	unsigned int		num_stmts;
 	const char		*comment;
+	unsigned int		refcnt;
 };
 
 extern struct rule *rule_alloc(const struct location *loc,
 			       const struct handle *h);
+extern struct rule *rule_get(struct rule *rule);
 extern void rule_free(struct rule *rule);
 extern void rule_print(const struct rule *rule);
 extern struct rule *rule_lookup(const struct chain *chain, uint64_t handle);
@@ -273,13 +276,14 @@ struct ct {
  * @location:	location the stateful object was defined/declared at
  * @handle:	counter handle
  * @type:	type of stateful object
+ * @refcnt:	object reference counter
  */
 struct obj {
 	struct list_head		list;
 	struct location			location;
 	struct handle			handle;
 	uint32_t			type;
-
+	unsigned int			refcnt;
 	union {
 		struct counter		counter;
 		struct quota		quota;
@@ -288,6 +292,7 @@ struct obj {
 };
 
 struct obj *obj_alloc(const struct location *loc);
+extern struct obj *obj_get(struct obj *obj);
 void obj_free(struct obj *obj);
 void obj_add_hash(struct obj *obj, struct table *table);
 struct obj *obj_lookup(const struct table *table, const char *name,
@@ -295,6 +300,7 @@ struct obj *obj_lookup(const struct table *table, const char *name,
 void obj_print(const struct obj *n);
 void obj_print_plain(const struct obj *obj);
 const char *obj_type_name(uint32_t type);
+uint32_t obj_type_to_cmd(uint32_t type);
 
 /**
  * enum cmd_ops - command operations
@@ -439,6 +445,7 @@ struct cmd {
 extern struct cmd *cmd_alloc(enum cmd_ops op, enum cmd_obj obj,
 			     const struct handle *h, const struct location *loc,
 			     void *data);
+extern void nft_cmd_expand(struct cmd *cmd);
 extern struct cmd *cmd_alloc_obj_ct(enum cmd_ops op, int type,
 				    const struct handle *h,
 				    const struct location *loc, void *data);

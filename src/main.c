@@ -241,6 +241,10 @@ int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs)
 		ret = -1;
 		goto err1;
 	}
+
+	list_for_each_entry(cmd, &state->cmds, list)
+		nft_cmd_expand(cmd);
+
 	ret = nft_netlink(state, msgs);
 err1:
 	list_for_each_entry_safe(cmd, next, &state->cmds, list) {
