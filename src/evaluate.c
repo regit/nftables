@@ -1692,6 +1692,18 @@ static int expr_evaluate_fib(struct eval_ctx *ctx, struct expr **exprp)
 	return expr_evaluate_primary(ctx, exprp);
 }
 
+static int expr_evaluate_meta(struct eval_ctx *ctx, struct expr **exprp)
+{
+	struct expr *meta = *exprp;
+
+	if (ctx->pctx.family != NFPROTO_INET &&
+	    meta->flags & EXPR_F_PROTOCOL &&
+	    meta->meta.key == NFT_META_NFPROTO)
+		return expr_error(ctx->msgs, meta,
+					  "meta nfproto is only useful in the inet family");
+	return expr_evaluate_primary(ctx, exprp);
+}
+
 static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 {
 #ifdef DEBUG
@@ -1715,8 +1727,9 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 	case EXPR_EXTHDR:
 		return expr_evaluate_exthdr(ctx, expr);
 	case EXPR_VERDICT:
-	case EXPR_META:
 		return expr_evaluate_primary(ctx, expr);
+	case EXPR_META:
+		return expr_evaluate_meta(ctx, expr);
 	case EXPR_FIB:
 		return expr_evaluate_fib(ctx, expr);
 	case EXPR_PAYLOAD:

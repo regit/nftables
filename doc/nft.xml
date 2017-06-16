@@ -478,7 +478,9 @@ filter input iif $int_ifs accept
 			</simplelist>.
 
 			The <literal>inet</literal> address family is a dummy family which is used to create
-			hybrid IPv4/IPv6 tables.
+			hybrid IPv4/IPv6 tables.  The <literal>meta</literal> expression <literal>nfproto</literal>
+			keyword can be used to test which family (ipv4 or ipv6) context the packet is being processed in.
+
 
 			When no address family is specified, <literal>ip</literal> is used by default.
 		</para>
@@ -1904,6 +1906,11 @@ filter output icmpv6 type { echo-request, echo-reply }
 							<row>
 								<entry>length</entry>
 								<entry>Length of the packet in bytes</entry>
+								<entry>integer (32 bit)</entry>
+							</row>
+							<row>
+								<entry>nfproto</entry>
+								<entry>real hook protocol family, useful only in inet table</entry>
 								<entry>integer (32 bit)</entry>
 							</row>
 							<row>
