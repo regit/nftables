@@ -28,7 +28,7 @@ static const char *numgen_type_str(enum nft_ng_types type)
 	return numgen_type[type];
 }
 
-static void numgen_expr_print(const struct expr *expr)
+static void numgen_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	printf("numgen %s mod %u", numgen_type_str(expr->numgen.type),
 	       expr->numgen.mod);

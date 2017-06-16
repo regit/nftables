@@ -15,7 +15,7 @@
 #include <hash.h>
 #include <utils.h>
 
-static void hash_expr_print(const struct expr *expr)
+static void hash_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	switch (expr->hash.type) {
 	case NFT_HASH_SYM:
@@ -24,7 +24,7 @@ static void hash_expr_print(const struct expr *expr)
 	case NFT_HASH_JENKINS:
 	default:
 		printf("jhash ");
-		expr_print(expr->hash.expr);
+		expr_print(expr->hash.expr, octx);
 	}
 
 	printf(" mod %u", expr->hash.mod);

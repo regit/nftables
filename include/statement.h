@@ -261,7 +261,8 @@ struct stmt_ops {
 	enum stmt_types		type;
 	const char		*name;
 	void			(*destroy)(struct stmt *stmt);
-	void			(*print)(const struct stmt *stmt);
+	void			(*print)(const struct stmt *stmt,
+					 struct output_ctx *octx);
 };
 
 enum stmt_flags {
@@ -312,7 +313,7 @@ extern struct stmt *stmt_alloc(const struct location *loc,
 int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt);
 extern void stmt_free(struct stmt *stmt);
 extern void stmt_list_free(struct list_head *list);
-extern void stmt_print(const struct stmt *stmt);
+extern void stmt_print(const struct stmt *stmt, struct output_ctx *octx);
 
 const char *get_rate(uint64_t byte_rate, uint64_t *rate);
 

@@ -38,7 +38,7 @@ bool payload_is_known(const struct expr *expr)
 	       tmpl != &proto_unknown_template;
 }
 
-static void payload_expr_print(const struct expr *expr)
+static void payload_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	const struct proto_desc *desc;
 	const struct proto_hdr_template *tmpl;
@@ -184,11 +184,11 @@ unsigned int payload_hdr_field(const struct expr *expr)
 	return expr->payload.tmpl - expr->payload.desc->templates;
 }
 
-static void payload_stmt_print(const struct stmt *stmt)
+static void payload_stmt_print(const struct stmt *stmt, struct output_ctx *octx)
 {
-	expr_print(stmt->payload.expr);
+	expr_print(stmt->payload.expr, octx);
 	printf(" set ");
-	expr_print(stmt->payload.val);
+	expr_print(stmt->payload.val, octx);
 }
 
 static const struct stmt_ops payload_stmt_ops = {

@@ -38,6 +38,7 @@ extern const struct location netlink_location;
  * @set:	current set
  * @data:	pointer to pass data to callback
  * @seqnum:	sequence number
+ * @octx:	output context
  */
 struct netlink_ctx {
 	struct list_head	*msgs;
@@ -47,6 +48,7 @@ struct netlink_ctx {
 	uint32_t		seqnum;
 	struct nftnl_batch	*batch;
 	bool			batch_supported;
+	struct output_ctx	*octx;
 };
 
 extern struct nftnl_table *alloc_nftnl_table(const struct handle *h);

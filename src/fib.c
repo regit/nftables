@@ -71,7 +71,7 @@ static void __fib_expr_print_f(unsigned int *flags, unsigned int f, const char *
 		printf(" . ");
 }
 
-static void fib_expr_print(const struct expr *expr)
+static void fib_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	unsigned int flags = expr->fib.flags & ~NFTA_FIB_F_PRESENT;
 

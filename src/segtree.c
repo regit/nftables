@@ -64,6 +64,8 @@ struct elementary_interval {
 	struct expr			*expr;
 };
 
+static struct output_ctx debug_octx = {};
+
 static void seg_tree_init(struct seg_tree *tree, const struct set *set,
 			  struct expr *init)
 {
@@ -564,7 +566,7 @@ int set_to_intervals(struct list_head *errs, struct set *set,
 	}
 
 	if (segtree_debug()) {
-		expr_print(init);
+		expr_print(init, &debug_octx);
 		pr_gmp_debug("\n");
 	}
 

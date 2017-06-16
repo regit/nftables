@@ -22,7 +22,7 @@
 #include <headers.h>
 #include <expression.h>
 
-static void exthdr_expr_print(const struct expr *expr)
+static void exthdr_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	if (expr->exthdr.op == NFT_EXTHDR_OP_TCPOPT) {
 		/* Offset calcualtion is a bit hacky at this point.

@@ -47,9 +47,9 @@ static void __exit realm_table_exit(void)
 	rt_symbol_table_free(realm_tbl);
 }
 
-static void realm_type_print(const struct expr *expr)
+static void realm_type_print(const struct expr *expr, struct output_ctx *octx)
 {
-	return symbolic_constant_print(realm_tbl, expr, true);
+	return symbolic_constant_print(realm_tbl, expr, true, octx);
 }
 
 static struct error_record *realm_type_parse(const struct expr *sym,
@@ -70,7 +70,8 @@ static const struct datatype realm_type = {
 	.flags		= DTYPE_F_PREFIX,
 };
 
-static void tchandle_type_print(const struct expr *expr)
+static void tchandle_type_print(const struct expr *expr,
+				struct output_ctx *octx)
 {
 	uint32_t handle = mpz_get_uint32(expr->value);
 
@@ -149,7 +150,7 @@ static const struct datatype tchandle_type = {
 	.parse		= tchandle_type_parse,
 };
 
-static void ifindex_type_print(const struct expr *expr)
+static void ifindex_type_print(const struct expr *expr, struct output_ctx *octx)
 {
 	char name[IFNAMSIZ];
 	int ifindex;
@@ -222,11 +223,11 @@ const struct datatype arphrd_type = {
 	.sym_tbl	= &arphrd_tbl,
 };
 
-static void uid_type_print(const struct expr *expr)
+static void uid_type_print(const struct expr *expr, struct output_ctx *octx)
 {
 	struct passwd *pw;
 
-	if (numeric_output < NUMERIC_ALL) {
+	if (octx->numeric < NUMERIC_ALL) {
 		uint32_t uid = mpz_get_uint32(expr->value);
 
 		pw = getpwuid(uid);
@@ -236,7 +237,7 @@ static void uid_type_print(const struct expr *expr)
 			printf("%d", uid);
 		return;
 	}
-	expr_basetype(expr)->print(expr);
+	expr_basetype(expr)->print(expr, octx);
 }
 
 static struct error_record *uid_type_parse(const struct expr *sym,
@@ -274,11 +275,11 @@ static const struct datatype uid_type = {
 	.parse		= uid_type_parse,
 };
 
-static void gid_type_print(const struct expr *expr)
+static void gid_type_print(const struct expr *expr, struct output_ctx *octx)
 {
 	struct group *gr;
 
-	if (numeric_output < NUMERIC_ALL) {
+	if (octx->numeric < NUMERIC_ALL) {
 		uint32_t gid = mpz_get_uint32(expr->value);
 
 		gr = getgrgid(gid);
@@ -288,7 +289,7 @@ static void gid_type_print(const struct expr *expr)
 			printf("%u", gid);
 		return;
 	}
-	expr_basetype(expr)->print(expr);
+	expr_basetype(expr)->print(expr, octx);
 }
 
 static struct error_record *gid_type_parse(const struct expr *sym,
@@ -338,9 +339,9 @@ static const struct symbol_table pkttype_type_tbl = {
 	},
 };
 
-static void pkttype_type_print(const struct expr *expr)
+static void pkttype_type_print(const struct expr *expr, struct output_ctx *octx)
 {
-	return symbolic_constant_print(&pkttype_type_tbl, expr, false);
+	return symbolic_constant_print(&pkttype_type_tbl, expr, false, octx);
 }
 
 static const struct datatype pkttype_type = {
@@ -365,9 +366,10 @@ static void __exit devgroup_table_exit(void)
 	rt_symbol_table_free(devgroup_tbl);
 }
 
-static void devgroup_type_print(const struct expr *expr)
+static void devgroup_type_print(const struct expr *expr,
+				 struct output_ctx *octx)
 {
-	return symbolic_constant_print(devgroup_tbl, expr, true);
+	return symbolic_constant_print(devgroup_tbl, expr, true, octx);
 }
 
 static struct error_record *devgroup_type_parse(const struct expr *sym,
@@ -464,7 +466,7 @@ static bool meta_key_is_qualified(enum nft_meta_keys key)
 	}
 }
 
-static void meta_expr_print(const struct expr *expr)
+static void meta_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	if (meta_key_is_qualified(expr->meta.key))
 		printf("meta %s", meta_templates[expr->meta.key].token);
@@ -591,14 +593,14 @@ struct expr *meta_expr_alloc(const struct location *loc, enum nft_meta_keys key)
 	return expr;
 }
 
-static void meta_stmt_print(const struct stmt *stmt)
+static void meta_stmt_print(const struct stmt *stmt, struct output_ctx *octx)
 {
 	if (meta_key_is_qualified(stmt->meta.key))
 		printf("meta %s set ", meta_templates[stmt->meta.key].token);
 	else
 		printf("%s set ", meta_templates[stmt->meta.key].token);
 
-	expr_print(stmt->meta.expr);
+	expr_print(stmt->meta.expr, octx);
 }
 
 static const struct stmt_ops meta_stmt_ops = {

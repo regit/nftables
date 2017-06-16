@@ -24,11 +24,14 @@ enum debug_level {
 
 #define INCLUDE_PATHS_MAX	16
 
+struct output_ctx {
+	unsigned int numeric;
+	unsigned int stateless;
+	unsigned int ip2name;
+	unsigned int handle;
+};
+
 extern unsigned int max_errors;
-extern unsigned int numeric_output;
-extern unsigned int stateless_output;
-extern unsigned int ip2name_output;
-extern unsigned int handle_output;
 extern unsigned int debug_level;
 extern const char *include_paths[INCLUDE_PATHS_MAX];
 
@@ -107,6 +110,7 @@ struct input_descriptor {
 
 struct parser_state;
 
-int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs);
+int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs,
+	     struct output_ctx *octx);
 
 #endif /* NFTABLES_NFTABLES_H */

@@ -2173,7 +2173,7 @@ static int netlink_events_set_cb(const struct nlmsghdr *nlh, int type,
 				nftnl_set_free(nls);
 				return MNL_CB_ERROR;
 			}
-			set_print_plain(set);
+			set_print_plain(set, monh->ctx->octx);
 			set_free(set);
 			printf("\n");
 			break;
@@ -2261,7 +2261,7 @@ static int netlink_events_setelem_cb(const struct nlmsghdr *nlh, int type,
 			goto out;
 		}
 		printf("element %s %s %s ", family2str(family), table, setname);
-		expr_print(dummyset->init);
+		expr_print(dummyset->init, monh->ctx->octx);
 		printf("\n");
 
 		set_free(dummyset);
@@ -2297,7 +2297,7 @@ static int netlink_events_obj_cb(const struct nlmsghdr *nlh, int type,
 				nftnl_obj_free(nlo);
 				return MNL_CB_ERROR;
 			}
-			obj_print_plain(obj);
+			obj_print_plain(obj, monh->ctx->octx);
 			obj_free(obj);
 			printf("\n");
 			break;
@@ -2355,7 +2355,7 @@ static int netlink_events_rule_cb(const struct nlmsghdr *nlh, int type,
 			nlr_for_each_set(nlr, rule_map_decompose_cb, NULL);
 
 			printf("add rule %s %s %s ", family, table, chain);
-			rule_print(r);
+			rule_print(r, monh->ctx->octx);
 			printf("\n");
 
 			rule_free(r);
@@ -2611,7 +2611,7 @@ static void trace_print_hdr(const struct nftnl_trace *nlt)
 }
 
 static void trace_print_expr(const struct nftnl_trace *nlt, unsigned int attr,
-			     struct expr *lhs)
+			     struct expr *lhs, struct output_ctx *octx)
 {
 	struct expr *rhs, *rel;
 	const void *data;
@@ -2623,12 +2623,13 @@ static void trace_print_expr(const struct nftnl_trace *nlt, unsigned int attr,
 				   len * BITS_PER_BYTE, data);
 	rel  = relational_expr_alloc(&netlink_location, OP_EQ, lhs, rhs);
 
-	expr_print(rel);
+	expr_print(rel, octx);
 	printf(" ");
 	expr_free(rel);
 }
 
-static void trace_print_verdict(const struct nftnl_trace *nlt)
+static void trace_print_verdict(const struct nftnl_trace *nlt,
+				 struct output_ctx *octx)
 {
 	const char *chain = NULL;
 	unsigned int verdict;
@@ -2640,11 +2641,12 @@ static void trace_print_verdict(const struct nftnl_trace *nlt)
 	expr = verdict_expr_alloc(&netlink_location, verdict, chain);
 
 	printf("verdict ");
-	expr_print(expr);
+	expr_print(expr, octx);
 	expr_free(expr);
 }
 
-static void trace_print_rule(const struct nftnl_trace *nlt)
+static void trace_print_rule(const struct nftnl_trace *nlt,
+			      struct output_ctx *octx)
 {
 	const struct table *table;
 	uint64_t rule_handle;
@@ -2674,9 +2676,9 @@ static void trace_print_rule(const struct nftnl_trace *nlt)
 
 	trace_print_hdr(nlt);
 	printf("rule ");
-	rule_print(rule);
+	rule_print(rule, octx);
 	printf(" (");
-	trace_print_verdict(nlt);
+	trace_print_verdict(nlt, octx);
 	printf(")\n");
 }
 
@@ -2775,7 +2777,8 @@ next:
 	}
 }
 
-static void trace_print_packet(const struct nftnl_trace *nlt)
+static void trace_print_packet(const struct nftnl_trace *nlt,
+			        struct output_ctx *octx)
 {
 	struct list_head stmts = LIST_HEAD_INIT(stmts);
 	const struct proto_desc *ll_desc;
@@ -2791,11 +2794,11 @@ static void trace_print_packet(const struct nftnl_trace *nlt)
 	if (nftnl_trace_is_set(nlt, NFTNL_TRACE_IIF))
 		trace_print_expr(nlt, NFTNL_TRACE_IIF,
 				 meta_expr_alloc(&netlink_location,
-						 NFT_META_IIF));
+						 NFT_META_IIF), octx);
 	if (nftnl_trace_is_set(nlt, NFTNL_TRACE_OIF))
 		trace_print_expr(nlt, NFTNL_TRACE_OIF,
 				 meta_expr_alloc(&netlink_location,
-						 NFT_META_OIF));
+						 NFT_META_OIF), octx);
 
 	proto_ctx_init(&ctx, nftnl_trace_get_u32(nlt, NFTNL_TRACE_FAMILY));
 	ll_desc = ctx.protocol[PROTO_BASE_LL_HDR].desc;
@@ -2822,7 +2825,7 @@ static void trace_print_packet(const struct nftnl_trace *nlt)
 			PROTO_BASE_TRANSPORT_HDR);
 
 	list_for_each_entry_safe(stmt, next, &stmts, list) {
-		stmt_print(stmt);
+		stmt_print(stmt, octx);
 		printf(" ");
 		stmt_free(stmt);
 	}
@@ -2847,24 +2850,25 @@ static int netlink_events_trace_cb(const struct nlmsghdr *nlh, int type,
 	case NFT_TRACETYPE_RULE:
 		if (nftnl_trace_is_set(nlt, NFTNL_TRACE_LL_HEADER) ||
 		    nftnl_trace_is_set(nlt, NFTNL_TRACE_NETWORK_HEADER))
-			trace_print_packet(nlt);
+			trace_print_packet(nlt, monh->ctx->octx);
 
 		if (nftnl_trace_is_set(nlt, NFTNL_TRACE_RULE_HANDLE))
-			trace_print_rule(nlt);
+			trace_print_rule(nlt, monh->ctx->octx);
 		break;
 	case NFT_TRACETYPE_POLICY:
 	case NFT_TRACETYPE_RETURN:
 		trace_print_hdr(nlt);
 
 		if (nftnl_trace_is_set(nlt, NFTNL_TRACE_VERDICT)) {
-			trace_print_verdict(nlt);
+			trace_print_verdict(nlt, monh->ctx->octx);
 			printf(" ");
 		}
 
 		if (nftnl_trace_is_set(nlt, NFTNL_TRACE_MARK))
 			trace_print_expr(nlt, NFTNL_TRACE_MARK,
 					 meta_expr_alloc(&netlink_location,
-							 NFT_META_MARK));
+							 NFT_META_MARK),
+					 monh->ctx->octx);
 		printf("\n");
 		break;
 	}

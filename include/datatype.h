@@ -145,7 +145,8 @@ struct datatype {
 	const char			*desc;
 	const struct datatype		*basetype;
 	const char			*basefmt;
-	void				(*print)(const struct expr *expr);
+	void				(*print)(const struct expr *expr,
+						 struct output_ctx *octx);
 	struct error_record		*(*parse)(const struct expr *sym,
 						  struct expr **res);
 	const struct symbol_table	*sym_tbl;
@@ -157,7 +158,7 @@ extern const struct datatype *datatype_lookup_byname(const char *name);
 
 extern struct error_record *symbol_parse(const struct expr *sym,
 					 struct expr **res);
-extern void datatype_print(const struct expr *expr);
+extern void datatype_print(const struct expr *expr, struct output_ctx *octx);
 
 static inline bool datatype_equal(const struct datatype *d1,
 				  const struct datatype *d2)
@@ -205,7 +206,8 @@ extern struct error_record *symbolic_constant_parse(const struct expr *sym,
 						    const struct symbol_table *tbl,
 						    struct expr **res);
 extern void symbolic_constant_print(const struct symbol_table *tbl,
-				    const struct expr *expr, bool quotes);
+				    const struct expr *expr, bool quotes,
+				    struct output_ctx *octx);
 extern void symbol_table_print(const struct symbol_table *tbl,
 			       const struct datatype *dtype,
 			       enum byteorder byteorder);

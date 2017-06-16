@@ -5,9 +5,9 @@
 
 struct parser_state;
 #ifdef HAVE_LIBREADLINE
-extern int cli_init(struct parser_state *state);
+extern int cli_init(struct parser_state *state, struct output_ctx *octx);
 #else
-static inline int cli_init(struct parser_state *state)
+static inline int cli_init(struct parser_state *state, struct output_ctx *octx)
 {
         return -1;
 }

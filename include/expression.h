@@ -157,7 +157,8 @@ struct expr_ops {
 	void			(*set_type)(const struct expr *expr,
 					    const struct datatype *dtype,
 					    enum byteorder byteorder);
-	void			(*print)(const struct expr *expr);
+	void			(*print)(const struct expr *expr,
+					 struct output_ctx *octx);
 	bool			(*cmp)(const struct expr *e1,
 				       const struct expr *e2);
 	void			(*pctx_update)(struct proto_ctx *ctx,
@@ -330,7 +331,7 @@ extern struct expr *expr_alloc(const struct location *loc,
 extern struct expr *expr_clone(const struct expr *expr);
 extern struct expr *expr_get(struct expr *expr);
 extern void expr_free(struct expr *expr);
-extern void expr_print(const struct expr *expr);
+extern void expr_print(const struct expr *expr, struct output_ctx *octx);
 extern bool expr_cmp(const struct expr *e1, const struct expr *e2);
 extern void expr_describe(const struct expr *expr);
 

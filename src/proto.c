@@ -893,9 +893,9 @@ static const struct symbol_table ethertype_tbl = {
 	},
 };
 
-static void ethertype_print(const struct expr *expr)
+static void ethertype_print(const struct expr *expr, struct output_ctx *octx)
 {
-	return symbolic_constant_print(&ethertype_tbl, expr, false);
+	return symbolic_constant_print(&ethertype_tbl, expr, false, octx);
 }
 
 const struct datatype ethertype_type = {

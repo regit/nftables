@@ -70,9 +70,9 @@ void expr_free(struct expr *expr)
 	xfree(expr);
 }
 
-void expr_print(const struct expr *expr)
+void expr_print(const struct expr *expr, struct output_ctx *octx)
 {
-	expr->ops->print(expr);
+	expr->ops->print(expr, octx);
 }
 
 bool expr_cmp(const struct expr *e1, const struct expr *e2)
@@ -160,9 +160,9 @@ int __fmtstring(4, 5) expr_binary_error(struct list_head *msgs,
 	return -1;
 }
 
-static void verdict_expr_print(const struct expr *expr)
+static void verdict_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
-	datatype_print(expr);
+	datatype_print(expr, octx);
 }
 
 static bool verdict_expr_cmp(const struct expr *e1, const struct expr *e2)
@@ -213,7 +213,7 @@ struct expr *verdict_expr_alloc(const struct location *loc,
 	return expr;
 }
 
-static void symbol_expr_print(const struct expr *expr)
+static void symbol_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	printf("%s%s", expr->scope != NULL ? "$" : "", expr->identifier);
 }
@@ -252,9 +252,10 @@ struct expr *symbol_expr_alloc(const struct location *loc,
 	return expr;
 }
 
-static void constant_expr_print(const struct expr *expr)
+static void constant_expr_print(const struct expr *expr,
+				 struct output_ctx *octx)
 {
-	datatype_print(expr);
+	datatype_print(expr, octx);
 }
 
 static bool constant_expr_cmp(const struct expr *e1, const struct expr *e2)
@@ -394,9 +395,9 @@ struct expr *bitmask_expr_to_binops(struct expr *expr)
 	return binop;
 }
 
-static void prefix_expr_print(const struct expr *expr)
+static void prefix_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
-	expr_print(expr->prefix);
+	expr_print(expr->prefix, octx);
 	printf("/%u", expr->prefix_len);
 }
 
@@ -458,9 +459,9 @@ const char *expr_op_symbols[] = {
 	[OP_LOOKUP]	= NULL,
 };
 
-static void unary_expr_print(const struct expr *expr)
+static void unary_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
-	expr_print(expr->arg);
+	expr_print(expr->arg, octx);
 }
 
 static void unary_expr_clone(struct expr *new, const struct expr *expr)
@@ -501,7 +502,8 @@ static uint8_t expr_binop_precedence[OP_MAX + 1] = {
 	[OP_OR]		= 4,
 };
 
-static void binop_arg_print(const struct expr *op, const struct expr *arg)
+static void binop_arg_print(const struct expr *op, const struct expr *arg,
+			     struct output_ctx *octx)
 {
 	bool prec = false;
 
@@ -512,7 +514,7 @@ static void binop_arg_print(const struct expr *op, const struct expr *arg)
 
 	if (prec)
 		printf("(");
-	expr_print(arg);
+	expr_print(arg, octx);
 	if (prec)
 		printf(")");
 }
@@ -526,9 +528,9 @@ static bool must_print_eq_op(const struct expr *expr)
 	return expr->left->ops->type == EXPR_BINOP;
 }
 
-static void binop_expr_print(const struct expr *expr)
+static void binop_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
-	binop_arg_print(expr, expr->left);
+	binop_arg_print(expr, expr->left, octx);
 
 	if (expr_op_symbols[expr->op] &&
 	    (expr->op != OP_EQ || must_print_eq_op(expr)))
@@ -536,7 +538,7 @@ static void binop_expr_print(const struct expr *expr)
 	else
 		printf(" ");
 
-	binop_arg_print(expr, expr->right);
+	binop_arg_print(expr, expr->right, octx);
 }
 
 static void binop_expr_clone(struct expr *new, const struct expr *expr)
@@ -596,13 +598,13 @@ struct expr *relational_expr_alloc(const struct location *loc, enum ops op,
 	return expr;
 }
 
-static void range_expr_print(const struct expr *expr)
+static void range_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
-	numeric_output += NUMERIC_ALL + 1;
-	expr_print(expr->left);
+	octx->numeric += NUMERIC_ALL + 1;
+	expr_print(expr->left, octx);
 	printf("-");
-	expr_print(expr->right);
-	numeric_output -= NUMERIC_ALL + 1;
+	expr_print(expr->right, octx);
+	octx->numeric -= NUMERIC_ALL + 1;
 }
 
 static void range_expr_clone(struct expr *new, const struct expr *expr)
@@ -673,14 +675,15 @@ static void compound_expr_destroy(struct expr *expr)
 		expr_free(i);
 }
 
-static void compound_expr_print(const struct expr *expr, const char *delim)
+static void compound_expr_print(const struct expr *expr, const char *delim,
+				 struct output_ctx *octx)
 {
 	const struct expr *i;
 	const char *d = "";
 
 	list_for_each_entry(i, &expr->expressions, list) {
 		printf("%s", d);
-		expr_print(i);
+		expr_print(i, octx);
 		d = delim;
 	}
 }
@@ -703,9 +706,9 @@ static void concat_expr_destroy(struct expr *expr)
 	compound_expr_destroy(expr);
 }
 
-static void concat_expr_print(const struct expr *expr)
+static void concat_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
-	compound_expr_print(expr, " . ");
+	compound_expr_print(expr, " . ", octx);
 }
 
 static const struct expr_ops concat_expr_ops = {
@@ -721,9 +724,9 @@ struct expr *concat_expr_alloc(const struct location *loc)
 	return compound_expr_alloc(loc, &concat_expr_ops);
 }
 
-static void list_expr_print(const struct expr *expr)
+static void list_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
-	compound_expr_print(expr, ",");
+	compound_expr_print(expr, ",", octx);
 }
 
 static const struct expr_ops list_expr_ops = {
@@ -784,7 +787,7 @@ static const char *calculate_delim(const struct expr *expr, int *count)
 	return newline;
 }
 
-static void set_expr_print(const struct expr *expr)
+static void set_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	const struct expr *i;
 	const char *d = "";
@@ -794,7 +797,7 @@ static void set_expr_print(const struct expr *expr)
 
 	list_for_each_entry(i, &expr->expressions, list) {
 		printf("%s", d);
-		expr_print(i);
+		expr_print(i, octx);
 		count++;
 		d = calculate_delim(expr, &count);
 	}
@@ -826,11 +829,11 @@ struct expr *set_expr_alloc(const struct location *loc)
 	return compound_expr_alloc(loc, &set_expr_ops);
 }
 
-static void mapping_expr_print(const struct expr *expr)
+static void mapping_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
-	expr_print(expr->left);
+	expr_print(expr->left, octx);
 	printf(" : ");
-	expr_print(expr->right);
+	expr_print(expr->right, octx);
 }
 
 static void mapping_expr_set_type(const struct expr *expr,
@@ -873,15 +876,15 @@ struct expr *mapping_expr_alloc(const struct location *loc,
 	return expr;
 }
 
-static void map_expr_print(const struct expr *expr)
+static void map_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
-	expr_print(expr->map);
+	expr_print(expr->map, octx);
 	if (expr->mappings->ops->type == EXPR_SET_REF &&
 	    expr->mappings->set->datatype->type == TYPE_VERDICT)
 		printf(" vmap ");
 	else
 		printf(" map ");
-	expr_print(expr->mappings);
+	expr_print(expr->mappings, octx);
 }
 
 static void map_expr_clone(struct expr *new, const struct expr *expr)
@@ -915,13 +918,13 @@ struct expr *map_expr_alloc(const struct location *loc, struct expr *arg,
 	return expr;
 }
 
-static void set_ref_expr_print(const struct expr *expr)
+static void set_ref_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	if (expr->set->flags & NFT_SET_ANONYMOUS) {
 		if (expr->set->flags & NFT_SET_EVAL)
 			printf("table %s", expr->set->handle.set);
 		else
-			expr_print(expr->set->init);
+			expr_print(expr->set->init, octx);
 	} else {
 		printf("@%s", expr->set->handle.set);
 	}
@@ -955,14 +958,15 @@ struct expr *set_ref_expr_alloc(const struct location *loc, struct set *set)
 	return expr;
 }
 
-static void set_elem_expr_print(const struct expr *expr)
+static void set_elem_expr_print(const struct expr *expr,
+				 struct output_ctx *octx)
 {
-	expr_print(expr->key);
+	expr_print(expr->key, octx);
 	if (expr->timeout) {
 		printf(" timeout ");
 		time_print(expr->timeout / 1000);
 	}
-	if (!stateless_output && expr->expiration) {
+	if (!octx->stateless && expr->expiration) {
 		printf(" expires ");
 		time_print(expr->expiration / 1000);
 	}
@@ -971,7 +975,7 @@ static void set_elem_expr_print(const struct expr *expr)
 
 	if (expr->stmt) {
 		printf(" : ");
-		stmt_print(expr->stmt);
+		stmt_print(expr->stmt, octx);
 	}
 }
 

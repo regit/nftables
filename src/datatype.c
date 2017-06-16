@@ -79,16 +79,16 @@ const struct datatype *datatype_lookup_byname(const char *name)
 	return NULL;
 }
 
-void datatype_print(const struct expr *expr)
+void datatype_print(const struct expr *expr, struct output_ctx *octx)
 {
 	const struct datatype *dtype = expr->dtype;
 
 	do {
 		if (dtype->print != NULL)
-			return dtype->print(expr);
+			return dtype->print(expr, octx);
 		if (dtype->sym_tbl != NULL)
 			return symbolic_constant_print(dtype->sym_tbl, expr,
-						       false);
+						       false, octx);
 	} while ((dtype = dtype->basetype));
 
 	BUG("datatype %s has no print method or symbol table\n",
@@ -156,7 +156,8 @@ out:
 }
 
 void symbolic_constant_print(const struct symbol_table *tbl,
-			     const struct expr *expr, bool quotes)
+			     const struct expr *expr, bool quotes,
+			     struct output_ctx *octx)
 {
 	unsigned int len = div_round_up(expr->len, BITS_PER_BYTE);
 	const struct symbolic_constant *s;
@@ -173,12 +174,12 @@ void symbolic_constant_print(const struct symbol_table *tbl,
 	}
 
 	if (s->identifier == NULL)
-		return expr_basetype(expr)->print(expr);
+		return expr_basetype(expr)->print(expr, octx);
 
 	if (quotes)
 		printf("\"");
 
-	if (numeric_output > NUMERIC_ALL)
+	if (octx->numeric > NUMERIC_ALL)
 		printf("%"PRIu64"", val);
 	else
 		printf("%s", s->identifier);
@@ -219,7 +220,7 @@ void symbol_table_print(const struct symbol_table *tbl,
 	}
 }
 
-static void invalid_type_print(const struct expr *expr)
+static void invalid_type_print(const struct expr *expr, struct output_ctx *octx)
 {
 	gmp_printf("0x%Zx [invalid type]", expr->value);
 }
@@ -231,7 +232,7 @@ const struct datatype invalid_type = {
 	.print		= invalid_type_print,
 };
 
-static void verdict_type_print(const struct expr *expr)
+static void verdict_type_print(const struct expr *expr, struct output_ctx *octx)
 {
 	switch (expr->verdict) {
 	case NFT_CONTINUE:
@@ -299,7 +300,7 @@ const struct datatype bitmask_type = {
 	.basetype	= &integer_type,
 };
 
-static void integer_type_print(const struct expr *expr)
+static void integer_type_print(const struct expr *expr, struct output_ctx *octx)
 {
 	const struct datatype *dtype = expr->dtype;
 	const char *fmt = "%Zu";
@@ -341,7 +342,7 @@ const struct datatype integer_type = {
 	.parse		= integer_type_parse,
 };
 
-static void string_type_print(const struct expr *expr)
+static void string_type_print(const struct expr *expr, struct output_ctx *octx)
 {
 	unsigned int len = div_round_up(expr->len, BITS_PER_BYTE);
 	char data[len+1];
@@ -370,7 +371,7 @@ const struct datatype string_type = {
 	.parse		= string_type_parse,
 };
 
-static void lladdr_type_print(const struct expr *expr)
+static void lladdr_type_print(const struct expr *expr, struct output_ctx *octx)
 {
 	unsigned int len = div_round_up(expr->len, BITS_PER_BYTE);
 	const char *delim = "";
@@ -419,7 +420,7 @@ const struct datatype lladdr_type = {
 	.parse		= lladdr_type_parse,
 };
 
-static void ipaddr_type_print(const struct expr *expr)
+static void ipaddr_type_print(const struct expr *expr, struct output_ctx *octx)
 {
 	struct sockaddr_in sin = { .sin_family = AF_INET, };
 	char buf[NI_MAXHOST];
@@ -428,7 +429,7 @@ static void ipaddr_type_print(const struct expr *expr)
 	sin.sin_addr.s_addr = mpz_get_be32(expr->value);
 	err = getnameinfo((struct sockaddr *)&sin, sizeof(sin), buf,
 			  sizeof(buf), NULL, 0,
-			  ip2name_output ? 0 : NI_NUMERICHOST);
+			  octx->ip2name ? 0 : NI_NUMERICHOST);
 	if (err != 0) {
 		getnameinfo((struct sockaddr *)&sin, sizeof(sin), buf,
 			    sizeof(buf), NULL, 0, NI_NUMERICHOST);
@@ -475,7 +476,7 @@ const struct datatype ipaddr_type = {
 	.flags		= DTYPE_F_PREFIX,
 };
 
-static void ip6addr_type_print(const struct expr *expr)
+static void ip6addr_type_print(const struct expr *expr, struct output_ctx *octx)
 {
 	struct sockaddr_in6 sin6 = { .sin6_family = AF_INET6 };
 	char buf[NI_MAXHOST];
@@ -486,7 +487,7 @@ static void ip6addr_type_print(const struct expr *expr)
 
 	err = getnameinfo((struct sockaddr *)&sin6, sizeof(sin6), buf,
 			  sizeof(buf), NULL, 0,
-			  ip2name_output ? 0 : NI_NUMERICHOST);
+			  octx->ip2name ? 0 : NI_NUMERICHOST);
 	if (err != 0) {
 		getnameinfo((struct sockaddr *)&sin6, sizeof(sin6), buf,
 			    sizeof(buf), NULL, 0, NI_NUMERICHOST);
@@ -533,18 +534,19 @@ const struct datatype ip6addr_type = {
 	.flags		= DTYPE_F_PREFIX,
 };
 
-static void inet_protocol_type_print(const struct expr *expr)
+static void inet_protocol_type_print(const struct expr *expr,
+				      struct output_ctx *octx)
 {
 	struct protoent *p;
 
-	if (numeric_output < NUMERIC_ALL) {
+	if (octx->numeric < NUMERIC_ALL) {
 		p = getprotobynumber(mpz_get_uint8(expr->value));
 		if (p != NULL) {
 			printf("%s", p->p_name);
 			return;
 		}
 	}
-	integer_type_print(expr);
+	integer_type_print(expr, octx);
 }
 
 static struct error_record *inet_protocol_type_parse(const struct expr *sym,
@@ -586,13 +588,14 @@ const struct datatype inet_protocol_type = {
 	.parse		= inet_protocol_type_parse,
 };
 
-static void inet_service_type_print(const struct expr *expr)
+static void inet_service_type_print(const struct expr *expr,
+				     struct output_ctx *octx)
 {
-	if (numeric_output >= NUMERIC_PORT) {
-		integer_type_print(expr);
+	if (octx->numeric >= NUMERIC_PORT) {
+		integer_type_print(expr, octx);
 		return;
 	}
-	symbolic_constant_print(&inet_service_tbl, expr, false);
+	symbolic_constant_print(&inet_service_tbl, expr, false, octx);
 }
 
 static struct error_record *inet_service_type_parse(const struct expr *sym,
@@ -711,9 +714,9 @@ static void __exit mark_table_exit(void)
 	rt_symbol_table_free(mark_tbl);
 }
 
-static void mark_type_print(const struct expr *expr)
+static void mark_type_print(const struct expr *expr, struct output_ctx *octx)
 {
-	return symbolic_constant_print(mark_tbl, expr, true);
+	return symbolic_constant_print(mark_tbl, expr, true, octx);
 }
 
 static struct error_record *mark_type_parse(const struct expr *sym,
@@ -913,7 +916,7 @@ struct error_record *time_parse(const struct location *loc, const char *str,
 }
 
 
-static void time_type_print(const struct expr *expr)
+static void time_type_print(const struct expr *expr, struct output_ctx *octx)
 {
 	time_print(mpz_get_uint64(expr->value) / MSEC_PER_SEC);
 }

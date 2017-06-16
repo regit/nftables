@@ -28,11 +28,8 @@
 #include <iface.h>
 #include <cli.h>
 
+static struct output_ctx octx;
 unsigned int max_errors = 10;
-unsigned int numeric_output;
-unsigned int stateless_output;
-unsigned int ip2name_output;
-unsigned int handle_output;
 #ifdef DEBUG
 unsigned int debug_level;
 #endif
@@ -178,7 +175,8 @@ static const struct input_descriptor indesc_cmdline = {
 	.name	= "<cmdline>",
 };
 
-static int nft_netlink(struct parser_state *state, struct list_head *msgs)
+static int nft_netlink(struct parser_state *state, struct list_head *msgs,
+			struct output_ctx *octx)
 {
 	struct nftnl_batch *batch;
 	struct netlink_ctx ctx;
@@ -198,6 +196,7 @@ static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 		ctx.seqnum = cmd->seqnum = mnl_seqnum_alloc();
 		ctx.batch = batch;
 		ctx.batch_supported = batch_supported;
+		ctx.octx = octx;
 		init_list_head(&ctx.list);
 		ret = do_command(&ctx, cmd);
 		if (ret < 0)
@@ -231,7 +230,8 @@ out:
 	return ret;
 }
 
-int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs)
+int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs,
+	    struct output_ctx *octx)
 {
 	struct cmd *cmd, *next;
 	int ret;
@@ -245,7 +245,7 @@ int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs)
 	list_for_each_entry(cmd, &state->cmds, list)
 		nft_cmd_expand(cmd);
 
-	ret = nft_netlink(state, msgs);
+	ret = nft_netlink(state, msgs, octx);
 err1:
 	list_for_each_entry_safe(cmd, next, &state->cmds, list) {
 		list_del(&cmd->list);
@@ -294,7 +294,7 @@ int main(int argc, char * const *argv)
 			include_paths[num_include_paths++] = optarg;
 			break;
 		case OPT_NUMERIC:
-			if (++numeric_output > NUMERIC_ALL) {
+			if (++octx.numeric > NUMERIC_ALL) {
 				fprintf(stderr, "Too many numeric options "
 						"used, max. %u\n",
 					NUMERIC_ALL);
@@ -302,10 +302,10 @@ int main(int argc, char * const *argv)
 			}
 			break;
 		case OPT_STATELESS:
-			stateless_output++;
+			octx.stateless++;
 			break;
 		case OPT_IP2NAME:
-			ip2name_output++;
+			octx.ip2name++;
 			break;
 #ifdef DEBUG
 		case OPT_DEBUG:
@@ -337,7 +337,7 @@ int main(int argc, char * const *argv)
 			break;
 #endif
 		case OPT_HANDLE_OUTPUT:
-			handle_output++;
+			octx.handle++;
 			break;
 		case OPT_INVALID:
 			exit(NFT_EXIT_FAILURE);
@@ -368,7 +368,7 @@ int main(int argc, char * const *argv)
 		if (scanner_read_file(scanner, filename, &internal_location) < 0)
 			goto out;
 	} else if (interactive) {
-		if (cli_init(&state) < 0) {
+		if (cli_init(&state, &octx) < 0) {
 			fprintf(stderr, "%s: interactive CLI not supported in this build\n",
 				argv[0]);
 			exit(NFT_EXIT_FAILURE);
@@ -379,7 +379,7 @@ int main(int argc, char * const *argv)
 		exit(NFT_EXIT_FAILURE);
 	}
 
-	if (nft_run(scanner, &state, &msgs) != 0)
+	if (nft_run(scanner, &state, &msgs, &octx) != 0)
 		rc = NFT_EXIT_FAILURE;
 out:
 	scanner_destroy(scanner);

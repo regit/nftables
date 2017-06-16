@@ -198,7 +198,7 @@ extern struct rule *rule_alloc(const struct location *loc,
 			       const struct handle *h);
 extern struct rule *rule_get(struct rule *rule);
 extern void rule_free(struct rule *rule);
-extern void rule_print(const struct rule *rule);
+extern void rule_print(const struct rule *rule, struct output_ctx *octx);
 extern struct rule *rule_lookup(const struct chain *chain, uint64_t handle);
 
 /**
@@ -247,8 +247,8 @@ extern void set_add_hash(struct set *set, struct table *table);
 extern struct set *set_lookup(const struct table *table, const char *name);
 extern struct set *set_lookup_global(uint32_t family, const char *table,
 				     const char *name);
-extern void set_print(const struct set *set);
-extern void set_print_plain(const struct set *s);
+extern void set_print(const struct set *set, struct output_ctx *octx);
+extern void set_print_plain(const struct set *s, struct output_ctx *octx);
 
 #include <statement.h>
 
@@ -297,8 +297,8 @@ void obj_free(struct obj *obj);
 void obj_add_hash(struct obj *obj, struct table *table);
 struct obj *obj_lookup(const struct table *table, const char *name,
 		       uint32_t type);
-void obj_print(const struct obj *n);
-void obj_print_plain(const struct obj *obj);
+void obj_print(const struct obj *n, struct output_ctx *octx);
+void obj_print_plain(const struct obj *obj, struct output_ctx *octx);
 const char *obj_type_name(uint32_t type);
 uint32_t obj_type_to_cmd(uint32_t type);
 

@@ -34,9 +34,9 @@ static void __exit realm_table_exit(void)
 	rt_symbol_table_free(realm_tbl);
 }
 
-static void realm_type_print(const struct expr *expr)
+static void realm_type_print(const struct expr *expr, struct output_ctx *octx)
 {
-	return symbolic_constant_print(realm_tbl, expr, true);
+	return symbolic_constant_print(realm_tbl, expr, true, octx);
 }
 
 static struct error_record *realm_type_parse(const struct expr *sym,
@@ -75,7 +75,7 @@ static const struct rt_template rt_templates[] = {
 					      true),
 };
 
-static void rt_expr_print(const struct expr *expr)
+static void rt_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	printf("rt %s", rt_templates[expr->rt.key].token);
 }

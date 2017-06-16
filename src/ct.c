@@ -132,7 +132,8 @@ static struct symbol_table *ct_label_tbl;
 
 #define CT_LABEL_BIT_SIZE 128
 
-static void ct_label_type_print(const struct expr *expr)
+static void ct_label_type_print(const struct expr *expr,
+				 struct output_ctx *octx)
 {
 	unsigned long bit = mpz_scan1(expr->value, 0);
 	const struct symbolic_constant *s;
@@ -286,7 +287,7 @@ static void ct_print(enum nft_ct_keys key, int8_t dir)
 	printf("%s", ct_templates[key].token);
 }
 
-static void ct_expr_print(const struct expr *expr)
+static void ct_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	ct_print(expr->ct.key, expr->ct.direction);
 }
@@ -442,11 +443,11 @@ void ct_expr_update_type(struct proto_ctx *ctx, struct expr *expr)
 	}
 }
 
-static void ct_stmt_print(const struct stmt *stmt)
+static void ct_stmt_print(const struct stmt *stmt, struct output_ctx *octx)
 {
 	ct_print(stmt->ct.key, stmt->ct.direction);
 	printf(" set ");
-	expr_print(stmt->ct.expr);
+	expr_print(stmt->ct.expr, octx);
 }
 
 static const struct stmt_ops ct_stmt_ops = {
@@ -469,7 +470,7 @@ struct stmt *ct_stmt_alloc(const struct location *loc, enum nft_ct_keys key,
 	return stmt;
 }
 
-static void notrack_stmt_print(const struct stmt *stmt)
+static void notrack_stmt_print(const struct stmt *stmt, struct output_ctx *octx)
 {
 	printf("notrack");
 }
