@@ -1,0 +1,25 @@
+# meta nfproto ipv4
+ip test-ip4 input
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x00000002 ]
+
+# meta nfproto ipv6
+ip test-ip4 input
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+
+# meta nfproto {ipv4, ipv6}
+__set%d test-ip4 3
+__set%d test-ip4 0
+	element 00000002  : 0 [end]	element 0000000a  : 0 [end]
+ip test-ip4 input
+  [ meta load nfproto => reg 1 ]
+  [ lookup reg 1 set __set%d ]
+
+# meta nfproto != {ipv4, ipv6}
+__set%d test-ip4 3
+__set%d test-ip4 0
+	element 00000002  : 0 [end]	element 0000000a  : 0 [end]
+ip test-ip4 input
+  [ meta load nfproto => reg 1 ]
+  [ lookup reg 1 set __set%d 0x1 ]

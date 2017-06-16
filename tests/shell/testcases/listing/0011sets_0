@@ -25,7 +25,7 @@ $NFT add rule ip6 test test udp sport {123}
 
 $NFT add table arp test_arp
 $NFT add chain arp test_arp test
-$NFT add rule arp test_arp test meta nfproto {ipv4}
+$NFT add rule arp test_arp test meta mark {123}
 
 $NFT add table bridge test_bridge
 $NFT add chain bridge test_bridge test

@@ -25,11 +25,6 @@ meta protocol != {ip, arp, ip6, vlan};ok
 meta protocol ip;ok
 meta protocol != ip;ok
 
-meta nfproto ipv4;ok
-meta nfproto ipv6;ok
-meta nfproto {ipv4, ipv6};ok
-meta nfproto != {ipv4, ipv6};ok
-
 meta l4proto 22;ok
 meta l4proto != 233;ok
 meta l4proto 33-45;ok
