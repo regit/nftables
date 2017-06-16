@@ -6,6 +6,8 @@
 *inet;test-inet;input
 *netdev;test-netdev;ingress
 
+tcp dport set {1, 2, 3};fail
+
 tcp dport 22;ok
 tcp dport != 233;ok
 tcp dport 33-45;ok

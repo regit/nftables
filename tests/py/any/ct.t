@@ -58,6 +58,11 @@ ct mark set 0x11;ok;ct mark set 0x00000011
 ct mark set mark;ok;ct mark set mark
 ct mark set mark map { 1 : 10, 2 : 20, 3 : 30 };ok;ct mark set mark map { 0x00000003 : 0x0000001e, 0x00000002 : 0x00000014, 0x00000001 : 0x0000000a}
 
+ct mark set {0x11333, 0x11};fail
+ct zone set {123, 127};fail
+ct label set {123, 127};fail
+ct event set {new, related, destroy, label};fail
+
 ct expiration 30;ok;ct expiration 30s
 ct expiration 22;ok;ct expiration 22s
 ct expiration != 233;ok;ct expiration != 3m53s

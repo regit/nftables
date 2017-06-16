@@ -143,6 +143,9 @@ meta mark set 0xffffffde or 0x16;ok;mark set 0xffffffde
 meta mark set 0x32 or 0xfffff;ok;mark set 0x000fffff
 meta mark set 0xfffe xor 0x16;ok;mark set 0x0000ffe8
 
+meta mark set {0xffff, 0xcc};fail
+meta pkttype set {unicast, multicast, broadcast};fail
+
 meta iif "lo";ok;iif "lo"
 meta oif "lo";ok;oif "lo"
 meta oifname "dummy2" accept;ok;oifname "dummy2" accept

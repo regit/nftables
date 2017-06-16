@@ -15,6 +15,8 @@ udp sport != { 50, 60} accept;ok
 udp sport { 12-40};ok
 udp sport != { 13-24};ok
 
+udp dport set {1, 2, 3};fail
+
 udp dport 80 accept;ok
 udp dport != 60 accept;ok
 udp dport 70-75 accept;ok
