@@ -373,13 +373,6 @@ ip test-ip4 output
   [ byteorder reg 1 = hton(reg 1, 8, 8) ]
   [ cmp lt reg 1 0x00000000 0xf4010000 ]
 
-# meta nfproto ipv4 ct original saddr 1.2.3.4
-ip test-ip4 output
-  [ meta load nfproto => reg 1 ]
-  [ cmp eq reg 1 0x00000002 ]
-  [ ct load src => reg 1 , dir original ]
-  [ cmp eq reg 1 0x04030201 ]
-
 # ct status expected,seen-reply,assured,confirmed,snat,dnat,dying
 ip test-ip4 output
   [ ct load status => reg 1 ]
