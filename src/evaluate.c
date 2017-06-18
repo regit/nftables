@@ -1150,6 +1150,7 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 		    i->key->ops->type == EXPR_SET) {
 			struct expr *new = expr_clone(i->key);
 
+			set->set_flags |= i->key->set_flags;
 			list_replace(&i->list, &new->list);
 			expr_free(i);
 			i = new;
