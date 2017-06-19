@@ -192,8 +192,9 @@ static int expr_evaluate_symbol(struct eval_ctx *ctx, struct expr **expr)
 
 		set = set_lookup(table, (*expr)->identifier);
 		if (set == NULL)
-			return cmd_error(ctx, "Could not process rule: Set '%s' does not exist",
-					 (*expr)->identifier);
+			return expr_error(ctx->msgs, *expr,
+					  "Set '%s' does not exist",
+					  (*expr)->identifier);
 		new = set_ref_expr_alloc(&(*expr)->location, set);
 		break;
 	}
