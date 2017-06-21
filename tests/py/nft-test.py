@@ -702,7 +702,7 @@ def rule_add(rule, filename, lineno, force_all_family_option, filename_path):
             ret = execute_cmd(cmd, filename, lineno, payload_log)
 
             state = rule[1].rstrip()
-            if (ret == 0 and state == "fail") or (ret != 0 and state == "ok"):
+            if (ret in [0,134] and state == "fail") or (ret != 0 and state == "ok"):
                 if state == "fail":
                     test_state = "This rule should have failed."
                 else:
