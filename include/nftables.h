@@ -31,6 +31,10 @@ struct output_ctx {
 	unsigned int handle;
 };
 
+struct nft_ctx {
+	struct output_ctx	output;
+};
+
 extern unsigned int max_errors;
 extern unsigned int debug_level;
 extern const char *include_paths[INCLUDE_PATHS_MAX];
@@ -110,7 +114,7 @@ struct input_descriptor {
 
 struct parser_state;
 
-int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs,
-	     struct output_ctx *octx);
+int nft_run(struct nft_ctx *nft, void *scanner, struct parser_state *state,
+	    struct list_head *msgs);
 
 #endif /* NFTABLES_NFTABLES_H */

@@ -5,9 +5,9 @@
 
 struct parser_state;
 #ifdef HAVE_LIBREADLINE
-extern int cli_init(struct parser_state *state, struct output_ctx *octx);
+extern int cli_init(struct nft_ctx *nft, struct parser_state *state);
 #else
-static inline int cli_init(struct parser_state *state, struct output_ctx *octx)
+static inline int cli_init(struct nft_ctx *nft, struct parser_state *state)
 {
         return -1;
 }

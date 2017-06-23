@@ -39,7 +39,7 @@ static const struct input_descriptor indesc_cli = {
 };
 
 static struct parser_state *state;
-static struct output_ctx cli_octx;
+static struct nft_ctx cli_nft;
 static void *scanner;
 
 static char histfile[PATH_MAX];
@@ -130,7 +130,7 @@ static void cli_complete(char *line)
 
 	parser_init(state, &msgs);
 	scanner_push_buffer(scanner, &indesc_cli, line);
-	nft_run(scanner, state, &msgs, &cli_octx);
+	nft_run(&cli_nft, scanner, state, &msgs);
 	erec_print_list(stdout, &msgs);
 	xfree(line);
 	cache_release();
@@ -168,11 +168,11 @@ void __fmtstring(1, 0) cli_display(const char *fmt, va_list ap)
 	rl_forced_update_display();
 }
 
-int cli_init(struct parser_state *_state, struct output_ctx *octx)
+int cli_init(struct nft_ctx *nft, struct parser_state *_state)
 {
 	const char *home;
 
-	cli_octx = *octx;
+	cli_nft = *nft;
 	rl_readline_name = "nft";
 	rl_instream  = stdin;
 	rl_outstream = stdout;
