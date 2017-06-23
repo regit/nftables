@@ -33,6 +33,7 @@ struct output_ctx {
 
 struct nft_ctx {
 	struct output_ctx	output;
+	bool			check;
 };
 
 extern unsigned int max_errors;

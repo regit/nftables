@@ -40,6 +40,7 @@ static unsigned int num_include_paths = 1;
 enum opt_vals {
 	OPT_HELP		= 'h',
 	OPT_VERSION		= 'v',
+	OPT_CHECK		= 'c',
 	OPT_FILE		= 'f',
 	OPT_INTERACTIVE		= 'i',
 	OPT_INCLUDEPATH		= 'I',
@@ -51,7 +52,7 @@ enum opt_vals {
 	OPT_INVALID		= '?',
 };
 
-#define OPTSTRING	"hvf:iI:vnsNa"
+#define OPTSTRING	"hvcf:iI:vnsNa"
 
 static const struct option options[] = {
 	{
@@ -61,6 +62,10 @@ static const struct option options[] = {
 	{
 		.name		= "version",
 		.val		= OPT_VERSION,
+	},
+	{
+		.name		= "check",
+		.val		= OPT_CHECK,
 	},
 	{
 		.name		= "file",
@@ -113,6 +118,7 @@ static void show_help(const char *name)
 "  -h, --help			Show this help\n"
 "  -v, --version			Show version information\n"
 "\n"
+"  -c, --check			Check commands validity without actually applying the changes.\n"
 "  -f, --file <filename>		Read input from <filename>\n"
 "  -i, --interactive		Read input from interactive CLI\n"
 "\n"
@@ -202,7 +208,8 @@ static int nft_netlink(struct nft_ctx *nft, struct parser_state *state,
 		if (ret < 0)
 			goto out;
 	}
-	mnl_batch_end(batch);
+	if (!nft->check)
+		mnl_batch_end(batch);
 
 	if (!mnl_batch_ready(batch))
 		goto out;
@@ -278,6 +285,9 @@ int main(int argc, char * const *argv)
 			printf("%s v%s (%s)\n",
 			       PACKAGE_NAME, PACKAGE_VERSION, RELEASE_NAME);
 			exit(NFT_EXIT_SUCCESS);
+		case OPT_CHECK:
+			nft.check = true;
+			break;
 		case OPT_FILE:
 			filename = optarg;
 			break;

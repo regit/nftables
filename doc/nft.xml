@@ -52,6 +52,9 @@ vi:ts=4 sw=4
 				<option>-s | --stateless</option>
 			</arg>
 			<arg choice="opt">
+				<option>-c | --check</option>
+			</arg>
+			<arg choice="opt">
 				<option>[-I | --includepath]</option>
 				<replaceable>directory</replaceable>
 			</arg>
@@ -126,6 +129,14 @@ vi:ts=4 sw=4
 				<listitem>
 					<para>
 						Omit stateful information of rules and stateful objects.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-c, --check</option></term>
+				<listitem>
+					<para>
+						Check commands validity without actually applying the changes.
 					</para>
 				</listitem>
 			</varlistentry>
