@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Files are included in alphabetical order.
+
 set -e
 
 tmpdir=$(mktemp -d)
@@ -8,13 +10,15 @@ if [ ! -d $tmpdir ] ; then
         exit 0
 fi
 
-tmpfile1=$(mktemp -p $tmpdir)
+tmpfile1="$tmpdir/01_file.nft"
+touch $tmpfile1
 if [ ! -w $tmpfile1 ] ; then
         echo "Failed to create tmp file" >&2
         exit 0
 fi
 
-tmpfile2=$(mktemp -p $tmpdir)
+tmpfile2="$tmpdir/02_file.nft"
+touch $tmpfile2
 if [ ! -w $tmpfile2 ] ; then
         echo "Failed to create tmp file" >&2
         exit 0
@@ -29,11 +33,10 @@ fi
 # cleanup if aborted
 trap "rm -rf $tmpfile1 $tmpfile2 $tmpfile3 && rmdir $tmpdir" EXIT
 
+# add interdependent rulesets
 RULESET1="add table x"
-
-# do an error in a file
-RULESET2="intentionally broken file"
-RULESET3="include \"$tmpdir/\""
+RULESET2="add chain x y"
+RULESET3="include \"$tmpdir/*\""
 
 echo "$RULESET1" > $tmpfile1
 echo "$RULESET2" > $tmpfile2
@@ -41,7 +44,7 @@ echo "$RULESET3" > $tmpfile3
 
 $NFT -f $tmpfile3
 
-if [ $? -eq 0 ] ; then
-        echo "E: didn't catch a broken file in directory" >&2
+if [ $? -ne 0 ] ; then
+        echo "E: unable to load good ruleset" >&2
         exit 1
 fi

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Files are included in alphabetical order.
+
 set -e
 
 tmpdir=$(mktemp -d)
@@ -34,15 +36,17 @@ trap "rm -rf $tmpfile1 $tmpfile2 $tmpfile3 && rmdir $tmpdir" EXIT
 # add interdependent rulesets
 RULESET1="add table x"
 RULESET2="add chain x y"
-RULESET3="include \"$tmpdir/\""
+RULESET3="include \"$tmpdir/*\""
 
-echo "$RULESET1" > $tmpfile1
-echo "$RULESET2" > $tmpfile2
+# Note different order when compared with 0011dir_depencency_0. The idea
+# here is to introduce wrong order to get the loading fail.
+echo "$RULESET1" > $tmpfile2
+echo "$RULESET2" > $tmpfile1
 echo "$RULESET3" > $tmpfile3
 
 $NFT -f $tmpfile3
 
-if [ $? -ne 0 ] ; then
-        echo "E: unable to load good ruleset" >&2
+if [ $? -eq 0 ] ; then
+        echo "E: did not catch wrong file order in include directory" >&2
         exit 1
 fi

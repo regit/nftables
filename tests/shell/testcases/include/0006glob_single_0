@@ -24,7 +24,7 @@ fi
 trap "rm -rf $tmpfile1 $tmpfile2 && rmdir $tmpdir" EXIT
 
 RULESET1="add table x"
-RULESET2="include \"$tmpdir/\""
+RULESET2="include \"$tmpdir/*\""
 
 echo "$RULESET1" > $tmpfile1
 echo "$RULESET2" > $tmpfile2
