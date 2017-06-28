@@ -229,8 +229,13 @@ vi:ts=4 sw=4
 				-h/--help option.
 			</para>
 			<para>
-				If the <literal>filename</literal> parameter is a directory, then all files in
-				the directory are loaded in alphabetical order.
+				Include statements support the usual shell wildcard symbols
+				(<literal>*,?,[]</literal>). Having no matches for an include statement is not
+				an error, if wildcard symbols are used in the include statement. This allows having
+				potentially empty include directories for statements like
+				<literal>include "/etc/firewall/rules/*"</literal>. The wildcard matches are
+				loaded in alphabetical order. Files beginning with dot (<literal>.</literal>) are
+				not matched by include statements.
 			</para>
 		</refsect2>
 		<refsect2>
