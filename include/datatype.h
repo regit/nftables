@@ -152,7 +152,6 @@ struct datatype {
 	const struct symbol_table	*sym_tbl;
 };
 
-extern void datatype_register(const struct datatype *dtype);
 extern const struct datatype *datatype_lookup(enum datatypes type);
 extern const struct datatype *datatype_lookup_byname(const char *name);
 

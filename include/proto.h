@@ -322,4 +322,12 @@ extern const struct proto_desc proto_netdev;
 extern const struct proto_desc proto_unknown;
 extern const struct proto_hdr_template proto_unknown_template;
 
+extern const struct datatype icmp_type_type;
+extern const struct datatype tcp_flag_type;
+extern const struct datatype dccp_pkttype_type;
+extern const struct datatype arpop_type;
+extern const struct datatype icmp6_type_type;
+extern const struct datatype dscp_type;
+extern const struct datatype ecn_type;
+
 #endif /* NFTABLES_PROTO_H */

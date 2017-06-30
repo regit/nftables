@@ -406,7 +406,7 @@ static const struct symbol_table tcp_flag_tbl = {
 	},
 };
 
-static const struct datatype tcp_flag_type = {
+const struct datatype tcp_flag_type = {
 	.type		= TYPE_TCP_FLAG,
 	.name		= "tcp_flag",
 	.desc		= "TCP flag",
@@ -467,7 +467,7 @@ static const struct symbol_table dccp_pkttype_tbl = {
 	},
 };
 
-static const struct datatype dccp_pkttype_type = {
+const struct datatype dccp_pkttype_type = {
 	.type		= TYPE_DCCP_PKTTYPE,
 	.name		= "dccp_pkttype",
 	.desc		= "DCCP packet type",
@@ -545,7 +545,7 @@ static const struct symbol_table dscp_type_tbl = {
 	},
 };
 
-static const struct datatype dscp_type = {
+const struct datatype dscp_type = {
 	.type		= TYPE_DSCP,
 	.name		= "dscp",
 	.desc		= "Differentiated Services Code Point",
@@ -567,7 +567,7 @@ static const struct symbol_table ecn_type_tbl = {
 	},
 };
 
-static const struct datatype ecn_type = {
+const struct datatype ecn_type = {
 	.type		= TYPE_ECN,
 	.name		= "ecn",
 	.desc		= "Explicit Congestion Notification",
@@ -662,7 +662,7 @@ static const struct symbol_table icmp6_type_tbl = {
 	},
 };
 
-static const struct datatype icmp6_type_type = {
+const struct datatype icmp6_type_type = {
 	.type		= TYPE_ICMP6_TYPE,
 	.name		= "icmpv6_type",
 	.desc		= "ICMPv6 type",
@@ -807,7 +807,7 @@ static const struct symbol_table arpop_tbl = {
 	},
 };
 
-static const struct datatype arpop_type = {
+const struct datatype arpop_type = {
 	.type		= TYPE_ARPOP,
 	.name		= "arp_op",
 	.desc		= "ARP operation",
@@ -960,15 +960,3 @@ const struct proto_desc proto_netdev = {
 		[0]	= PROTO_META_TEMPLATE("protocol", &ethertype_type, NFT_META_PROTOCOL, 16),
 	},
 };
-
-static void __init proto_init(void)
-{
-	datatype_register(&icmp_type_type);
-	datatype_register(&tcp_flag_type);
-	datatype_register(&dccp_pkttype_type);
-	datatype_register(&arpop_type);
-	datatype_register(&ethertype_type);
-	datatype_register(&icmp6_type_type);
-	datatype_register(&dscp_type);
-	datatype_register(&ecn_type);
-}

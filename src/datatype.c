@@ -40,25 +40,40 @@ static const struct datatype *datatypes[TYPE_MAX + 1] = {
 	[TYPE_IP6ADDR]		= &ip6addr_type,
 	[TYPE_ETHERADDR]	= &etheraddr_type,
 	[TYPE_ETHERTYPE]	= &ethertype_type,
+	[TYPE_ARPOP]		= &arpop_type,
 	[TYPE_INET_PROTOCOL]	= &inet_protocol_type,
 	[TYPE_INET_SERVICE]	= &inet_service_type,
+	[TYPE_ICMP_TYPE]	= &icmp_type_type,
+	[TYPE_TCP_FLAG]		= &tcp_flag_type,
+	[TYPE_DCCP_PKTTYPE]	= &dccp_pkttype_type,
+	[TYPE_MH_TYPE]		= &mh_type_type,
 	[TYPE_TIME]		= &time_type,
 	[TYPE_MARK]		= &mark_type,
+	[TYPE_IFINDEX]		= &ifindex_type,
 	[TYPE_ARPHRD]		= &arphrd_type,
+	[TYPE_REALM]		= &realm_type,
+	[TYPE_CLASSID]		= &tchandle_type,
+	[TYPE_UID]		= &uid_type,
+	[TYPE_GID]		= &gid_type,
+	[TYPE_CT_STATE]		= &ct_state_type,
+	[TYPE_CT_DIR]		= &ct_dir_type,
+	[TYPE_CT_STATUS]	= &ct_status_type,
+	[TYPE_ICMP6_TYPE]	= &icmp6_type_type,
+	[TYPE_PKTTYPE]		= &pkttype_type,
 	[TYPE_ICMP_CODE]	= &icmp_code_type,
 	[TYPE_ICMPV6_CODE]	= &icmpv6_code_type,
 	[TYPE_ICMPX_CODE]	= &icmpx_code_type,
+	[TYPE_DEVGROUP]		= &devgroup_type,
+	[TYPE_DSCP]		= &dscp_type,
+	[TYPE_ECN]		= &ecn_type,
+	[TYPE_FIB_ADDR]         = &fib_addr_type,
 	[TYPE_BOOLEAN]		= &boolean_type,
 };
 
-void datatype_register(const struct datatype *dtype)
-{
-	BUILD_BUG_ON(TYPE_MAX & ~TYPE_MASK);
-	datatypes[dtype->type] = dtype;
-}
-
 const struct datatype *datatype_lookup(enum datatypes type)
 {
+	BUILD_BUG_ON(TYPE_MAX & ~TYPE_MASK);
+
 	if (type > TYPE_MAX)
 		return NULL;
 	return datatypes[type];

@@ -30,4 +30,6 @@ extern struct expr *rt_expr_alloc(const struct location *loc,
 				  enum nft_rt_keys key, bool invalid);
 extern void rt_expr_update_type(struct proto_ctx *ctx, struct expr *expr);
 
+extern const struct datatype realm_type;
+
 #endif /* NFTABLES_RT_H */

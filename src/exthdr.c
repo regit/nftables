@@ -322,7 +322,7 @@ static const struct symbol_table mh_type_tbl = {
 	},
 };
 
-static const struct datatype mh_type_type = {
+const struct datatype mh_type_type = {
 	.type		= TYPE_MH_TYPE,
 	.name		= "mh_type",
 	.desc		= "Mobility Header Type",
@@ -343,8 +343,3 @@ const struct exthdr_desc exthdr_mh = {
 		[MHHDR_CHECKSUM]	= MH_FIELD("checksum", ip6mh_cksum, &integer_type),
 	},
 };
-
-static void __init exthdr_init(void)
-{
-	datatype_register(&mh_type_type);
-}

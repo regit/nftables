@@ -44,7 +44,7 @@ static const struct symbol_table ct_state_tbl = {
 	}
 };
 
-static const struct datatype ct_state_type = {
+const struct datatype ct_state_type = {
 	.type		= TYPE_CT_STATE,
 	.name		= "ct_state",
 	.desc		= "conntrack state",
@@ -63,7 +63,7 @@ static const struct symbol_table ct_dir_tbl = {
 	}
 };
 
-static const struct datatype ct_dir_type = {
+const struct datatype ct_dir_type = {
 	.type		= TYPE_CT_DIR,
 	.name		= "ct_dir",
 	.desc		= "conntrack direction",
@@ -90,7 +90,7 @@ static const struct symbol_table ct_status_tbl = {
 	},
 };
 
-static const struct datatype ct_status_type = {
+const struct datatype ct_status_type = {
 	.type		= TYPE_CT_STATUS,
 	.name		= "ct_status",
 	.desc		= "conntrack status",
@@ -484,11 +484,4 @@ static const struct stmt_ops notrack_stmt_ops = {
 struct stmt *notrack_stmt_alloc(const struct location *loc)
 {
 	return stmt_alloc(loc, &notrack_stmt_ops);
-}
-
-static void __init ct_init(void)
-{
-	datatype_register(&ct_state_type);
-	datatype_register(&ct_dir_type);
-	datatype_register(&ct_status_type);
 }

@@ -28,10 +28,15 @@ extern struct expr *meta_expr_alloc(const struct location *loc,
 
 struct stmt *meta_stmt_meta_iiftype(const struct location *loc, uint16_t type);
 
-const struct datatype ifindex_type;
-
 struct error_record *meta_key_parse(const struct location *loc,
 				    const char *name,
 				    unsigned int *value);
+
+extern const struct datatype ifindex_type;
+extern const struct datatype tchandle_type;
+extern const struct datatype gid_type;
+extern const struct datatype uid_type;
+extern const struct datatype devgroup_type;
+extern const struct datatype pkttype_type;
 
 #endif /* NFTABLES_META_H */

@@ -45,7 +45,7 @@ static struct error_record *realm_type_parse(const struct expr *sym,
 	return symbolic_constant_parse(sym, realm_tbl, res);
 }
 
-static const struct datatype realm_type = {
+const struct datatype realm_type = {
 	.type		= TYPE_REALM,
 	.name		= "realm",
 	.desc		= "routing realm",
@@ -133,9 +133,4 @@ void rt_expr_update_type(struct proto_ctx *ctx, struct expr *expr)
 	default:
 		break;
 	}
-}
-
-static void __init rt_init(void)
-{
-	datatype_register(&realm_type);
 }

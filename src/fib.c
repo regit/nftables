@@ -42,7 +42,7 @@ static const struct symbol_table addrtype_tbl = {
 	}
 };
 
-static const struct datatype fib_addr_type = {
+const struct datatype fib_addr_type = {
 	.type		= TYPE_FIB_ADDR,
 	.name		= "fib_addrtype",
 	.desc		= "fib address type",
@@ -140,9 +140,4 @@ struct expr *fib_expr_alloc(const struct location *loc,
 	expr->fib.flags	= flags;
 
 	return expr;
-}
-
-static void __init fib_init(void)
-{
-	datatype_register(&fib_addr_type);
 }

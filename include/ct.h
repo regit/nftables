@@ -35,4 +35,8 @@ extern struct error_record *ct_objtype_parse(const struct location *loc, const c
 
 extern struct stmt *notrack_stmt_alloc(const struct location *loc);
 
+extern const struct datatype ct_dir_type;
+extern const struct datatype ct_state_type;
+extern const struct datatype ct_status_type;
+
 #endif /* NFTABLES_CT_H */

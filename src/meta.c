@@ -47,29 +47,6 @@ static void __exit realm_table_exit(void)
 	rt_symbol_table_free(realm_tbl);
 }
 
-static void realm_type_print(const struct expr *expr, struct output_ctx *octx)
-{
-	return symbolic_constant_print(realm_tbl, expr, true, octx);
-}
-
-static struct error_record *realm_type_parse(const struct expr *sym,
-					     struct expr **res)
-{
-	return symbolic_constant_parse(sym, realm_tbl, res);
-}
-
-static const struct datatype realm_type = {
-	.type		= TYPE_REALM,
-	.name		= "realm",
-	.desc		= "routing realm",
-	.byteorder	= BYTEORDER_HOST_ENDIAN,
-	.size		= 4 * BITS_PER_BYTE,
-	.basetype	= &integer_type,
-	.print		= realm_type_print,
-	.parse		= realm_type_parse,
-	.flags		= DTYPE_F_PREFIX,
-};
-
 static void tchandle_type_print(const struct expr *expr,
 				struct output_ctx *octx)
 {
@@ -139,7 +116,7 @@ err:
 	return error(&sym->location, "Could not parse %s", sym->dtype->desc);
 }
 
-static const struct datatype tchandle_type = {
+const struct datatype tchandle_type = {
 	.type		= TYPE_CLASSID,
 	.name		= "classid",
 	.desc		= "TC classid",
@@ -264,7 +241,7 @@ static struct error_record *uid_type_parse(const struct expr *sym,
 	return NULL;
 }
 
-static const struct datatype uid_type = {
+const struct datatype uid_type = {
 	.type		= TYPE_UID,
 	.name		= "uid",
 	.desc		= "user ID",
@@ -316,7 +293,7 @@ static struct error_record *gid_type_parse(const struct expr *sym,
 	return NULL;
 }
 
-static const struct datatype gid_type = {
+const struct datatype gid_type = {
 	.type		= TYPE_GID,
 	.name		= "gid",
 	.desc		= "group ID",
@@ -344,7 +321,7 @@ static void pkttype_type_print(const struct expr *expr, struct output_ctx *octx)
 	return symbolic_constant_print(&pkttype_type_tbl, expr, false, octx);
 }
 
-static const struct datatype pkttype_type = {
+const struct datatype pkttype_type = {
 	.type		= TYPE_PKTTYPE,
 	.name		= "pkt_type",
 	.desc		= "packet type",
@@ -378,7 +355,7 @@ static struct error_record *devgroup_type_parse(const struct expr *sym,
 	return symbolic_constant_parse(sym, devgroup_tbl, res);
 }
 
-static const struct datatype devgroup_type = {
+const struct datatype devgroup_type = {
 	.type		= TYPE_DEVGROUP,
 	.name		= "devgroup",
 	.desc		= "devgroup name",
@@ -619,17 +596,6 @@ struct stmt *meta_stmt_alloc(const struct location *loc, enum nft_meta_keys key,
 	stmt->meta.tmpl	= &meta_templates[key];
 	stmt->meta.expr	= expr;
 	return stmt;
-}
-
-static void __init meta_init(void)
-{
-	datatype_register(&ifindex_type);
-	datatype_register(&realm_type);
-	datatype_register(&tchandle_type);
-	datatype_register(&uid_type);
-	datatype_register(&gid_type);
-	datatype_register(&devgroup_type);
-	datatype_register(&pkttype_type);
 }
 
 /*
