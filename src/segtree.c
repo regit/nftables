@@ -602,10 +602,12 @@ static int expr_value_cmp(const void *p1, const void *p2)
 	int ret;
 
 	ret = mpz_cmp(expr_value(e1)->value, expr_value(e2)->value);
-	if (ret == 0 && (e1->flags & EXPR_F_INTERVAL_END))
-		return -1;
-	else
-		return 1;
+	if (ret == 0) {
+		if (e1->flags & EXPR_F_INTERVAL_END)
+			return -1;
+		else if (e2->flags & EXPR_F_INTERVAL_END)
+			return 1;
+	}
 
 	return ret;
 }
