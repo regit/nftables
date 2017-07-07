@@ -457,6 +457,7 @@ extern void cmd_free(struct cmd *cmd);
 /**
  * struct eval_ctx - evaluation context
  *
+ * @nf_sock:	netlink socket (for caching)
  * @msgs:	message queue
  * @cmd:	current command
  * @table:	current table
@@ -467,6 +468,7 @@ extern void cmd_free(struct cmd *cmd);
  * @pctx:	payload context
  */
 struct eval_ctx {
+	struct mnl_socket	*nf_sock;
 	struct list_head	*msgs;
 	struct cmd		*cmd;
 	struct table		*table;
@@ -484,7 +486,8 @@ extern struct error_record *rule_postprocess(struct rule *rule);
 struct netlink_ctx;
 extern int do_command(struct netlink_ctx *ctx, struct cmd *cmd);
 
-extern int cache_update(enum cmd_ops cmd, struct list_head *msgs);
+extern int cache_update(struct mnl_socket *nf_sock, enum cmd_ops cmd,
+			struct list_head *msgs);
 extern void cache_flush(void);
 extern void cache_release(void);
 

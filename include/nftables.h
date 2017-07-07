@@ -114,8 +114,9 @@ struct input_descriptor {
 };
 
 struct parser_state;
+struct mnl_socket;
 
-int nft_run(struct nft_ctx *nft, void *scanner, struct parser_state *state,
-	    struct list_head *msgs);
+int nft_run(struct nft_ctx *nft, struct mnl_socket *nf_sock, void *scanner,
+	    struct parser_state *state, struct list_head *msgs);
 
 #endif /* NFTABLES_NFTABLES_H */

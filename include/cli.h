@@ -5,9 +5,11 @@
 
 struct parser_state;
 #ifdef HAVE_LIBREADLINE
-extern int cli_init(struct nft_ctx *nft, struct parser_state *state);
+extern int cli_init(struct nft_ctx *nft, struct mnl_socket *nf_sock,
+		    struct parser_state *state);
 #else
-static inline int cli_init(struct nft_ctx *nft, struct parser_state *state)
+static inline int cli_init(struct nft_ctx *nft, struct mnl_socket *nf_sock,
+			   struct parser_state *state)
 {
         return -1;
 }

@@ -31,6 +31,8 @@
 #include <iface.h>
 #include <cli.h>
 
+#include <libmnl/libmnl.h>
+
 #define CMDLINE_HISTFILE	".nft.history"
 
 static const struct input_descriptor indesc_cli = {
@@ -40,6 +42,7 @@ static const struct input_descriptor indesc_cli = {
 
 static struct parser_state *state;
 static struct nft_ctx cli_nft;
+static struct mnl_socket *cli_nf_sock;
 static void *scanner;
 
 static char histfile[PATH_MAX];
@@ -128,9 +131,9 @@ static void cli_complete(char *line)
 	xfree(line);
 	line = s;
 
-	parser_init(state, &msgs);
+	parser_init(cli_nf_sock, state, &msgs);
 	scanner_push_buffer(scanner, &indesc_cli, line);
-	nft_run(&cli_nft, scanner, state, &msgs);
+	nft_run(&cli_nft, cli_nf_sock, scanner, state, &msgs);
 	erec_print_list(stdout, &msgs);
 	xfree(line);
 	cache_release();
@@ -168,10 +171,12 @@ void __fmtstring(1, 0) cli_display(const char *fmt, va_list ap)
 	rl_forced_update_display();
 }
 
-int cli_init(struct nft_ctx *nft, struct parser_state *_state)
+int cli_init(struct nft_ctx *nft, struct mnl_socket *nf_sock,
+	     struct parser_state *_state)
 {
 	const char *home;
 
+	cli_nf_sock = nf_sock;
 	cli_nft = *nft;
 	rl_readline_name = "nft";
 	rl_instream  = stdin;

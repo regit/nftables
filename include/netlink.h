@@ -41,6 +41,7 @@ extern const struct location netlink_location;
  * @octx:	output context
  */
 struct netlink_ctx {
+	struct mnl_socket	*nf_sock;
 	struct list_head	*msgs;
 	struct list_head	list;
 	struct set		*set;
@@ -191,8 +192,8 @@ extern void netlink_dump_obj(struct nftnl_obj *nlo);
 
 extern int netlink_batch_send(struct netlink_ctx *ctx, struct list_head *err_list);
 
-extern void netlink_genid_get(void);
-extern void netlink_restart(void);
+extern void netlink_genid_get(struct mnl_socket *nf_sock);
+extern void netlink_restart(struct mnl_socket *nf_sock);
 #define netlink_abi_error()	\
 	__netlink_abi_error(__FILE__, __LINE__, strerror(errno));
 extern void __noreturn __netlink_abi_error(const char *file, int line, const char *reason);
@@ -218,6 +219,6 @@ struct netlink_mon_handler {
 };
 
 extern int netlink_monitor(struct netlink_mon_handler *monhandler);
-bool netlink_batch_supported(void);
+bool netlink_batch_supported(struct mnl_socket *nf_sock);
 
 #endif /* NFTABLES_NETLINK_H */

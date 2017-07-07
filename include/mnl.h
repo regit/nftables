@@ -5,6 +5,9 @@
 
 struct mnl_socket;
 
+struct mnl_socket *netlink_open_sock(void);
+void netlink_close_sock(struct mnl_socket *nf_sock);
+
 uint32_t mnl_seqnum_alloc(void);
 void mnl_genid_get(struct mnl_socket *nf_sock);
 

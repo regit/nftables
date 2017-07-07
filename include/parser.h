@@ -29,7 +29,10 @@ struct parser_state {
 	struct eval_ctx			ectx;
 };
 
-extern void parser_init(struct parser_state *state, struct list_head *msgs);
+struct mnl_socket;
+
+extern void parser_init(struct mnl_socket *nf_sock, struct parser_state *state,
+			struct list_head *msgs);
 extern int nft_parse(void *, struct parser_state *state);
 
 extern void *scanner_init(struct parser_state *state);

@@ -122,7 +122,8 @@ static int cache_init_objects(struct netlink_ctx *ctx, enum cmd_ops cmd)
 	return 0;
 }
 
-static int cache_init(enum cmd_ops cmd, struct list_head *msgs)
+static int cache_init(struct mnl_socket *nf_sock, enum cmd_ops cmd,
+		      struct list_head *msgs)
 {
 	struct handle handle = {
 		.family = NFPROTO_UNSPEC,
@@ -132,6 +133,7 @@ static int cache_init(enum cmd_ops cmd, struct list_head *msgs)
 
 	memset(&ctx, 0, sizeof(ctx));
 	init_list_head(&ctx.list);
+	ctx.nf_sock = nf_sock;
 	ctx.msgs = msgs;
 
 	ret = cache_init_tables(&ctx, &handle);
@@ -146,19 +148,20 @@ static int cache_init(enum cmd_ops cmd, struct list_head *msgs)
 
 static bool cache_initialized;
 
-int cache_update(enum cmd_ops cmd, struct list_head *msgs)
+int cache_update(struct mnl_socket *nf_sock, enum cmd_ops cmd,
+		 struct list_head *msgs)
 {
 	int ret;
 
 	if (cache_initialized)
 		return 0;
 replay:
-	netlink_genid_get();
-	ret = cache_init(cmd, msgs);
+	netlink_genid_get(nf_sock);
+	ret = cache_init(nf_sock, cmd, msgs);
 	if (ret < 0) {
 		cache_release();
 		if (errno == EINTR) {
-			netlink_restart();
+			netlink_restart(nf_sock);
 			goto replay;
 		}
 		return -1;
