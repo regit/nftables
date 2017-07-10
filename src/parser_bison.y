@@ -1456,8 +1456,10 @@ type_identifier_list	:	type_identifier
 				if (dtype == NULL) {
 					erec_queue(error(&@1, "unknown datatype %s", $1),
 						   state->msgs);
+					xfree($1);
 					YYERROR;
 				}
+				xfree($1);
 				$$ = dtype->type;
 			}
 			|	type_identifier_list	DOT	type_identifier
