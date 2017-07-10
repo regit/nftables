@@ -760,6 +760,8 @@ line			:	common_block			{ $$ = NULL; }
 					} else
 						list_splice_tail(&list, &state->cmds);
 				}
+				if (state->nerrs)
+					YYABORT;
 				$$ = NULL;
 
 				YYACCEPT;
