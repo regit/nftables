@@ -61,6 +61,10 @@ static char *cli_append_multiline(char *line)
 	}
 
 	len = strlen(line);
+
+	if (len == 0)
+		return NULL;
+
 	if (line[len - 1] == '\\') {
 		line[len - 1] = '\0';
 		len--;
