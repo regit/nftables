@@ -446,8 +446,7 @@ static int __expr_evaluate_exthdr(struct eval_ctx *ctx, struct expr **exprp)
 
 	switch (expr->exthdr.op) {
 	case NFT_EXTHDR_OP_TCPOPT: {
-		static const uint8_t tcphdrlen = 20 * BITS_PER_BYTE;
-		static const unsigned int max_tcpoptlen = 15 * 4 * BITS_PER_BYTE - tcphdrlen;
+		static const unsigned int max_tcpoptlen = (15 * 4 - 20) * BITS_PER_BYTE;
 		unsigned int totlen = 0;
 
 		totlen += expr->exthdr.tmpl->offset;
