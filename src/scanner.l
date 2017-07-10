@@ -835,6 +835,7 @@ void scanner_push_buffer(void *scanner, const struct input_descriptor *indesc,
 	state->indesc = &state->indescs[state->indesc_idx++];
 	memcpy(state->indesc, indesc, sizeof(*state->indesc));
 	state->indesc->data = buffer;
+	state->indesc->name = NULL;
 
 	b = yy_scan_string(buffer, scanner);
 	assert(b != NULL);
@@ -858,9 +859,15 @@ void scanner_destroy(struct parser_state *scanner)
 {
 	struct parser_state *state = yyget_extra(scanner);
 
-	/* Can't free indesc name - locations might still be in use */
-	while (state->indesc_idx--)
+	do {
+		struct input_descriptor *inpdesc =
+			&state->indescs[state->indesc_idx];
+		if (inpdesc && inpdesc->name) {
+			xfree(inpdesc->name);
+			inpdesc->name = NULL;
+		}
 		yypop_buffer_state(scanner);
+	} while (state->indesc_idx--);
 
 	yylex_destroy(scanner);
 }

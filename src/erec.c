@@ -39,6 +39,8 @@ static void input_descriptor_destroy(const struct input_descriptor *indesc)
 	    indesc->location.indesc->type != INDESC_INTERNAL) {
 		input_descriptor_destroy(indesc->location.indesc);
 	}
+	if (indesc->name)
+		xfree(indesc->name);
 	xfree(indesc);
 }
 
@@ -52,6 +54,9 @@ static struct input_descriptor *input_descriptor_dup(const struct input_descript
 	if (indesc->location.indesc &&
 	    indesc->location.indesc->type != INDESC_INTERNAL)
 		dup_indesc->location.indesc = input_descriptor_dup(indesc->location.indesc);
+
+	if (indesc->name)
+		dup_indesc->name = xstrdup(indesc->name);
 
 	return dup_indesc;
 }
