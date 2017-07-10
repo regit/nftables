@@ -1093,7 +1093,8 @@ list_cmd		:	TABLE		table_spec
 					if (erec != NULL) {
 						erec_queue(erec, state->msgs);
 						YYERROR;
-					}
+					} else
+						YYERROR;
 				}
 
 				$$ = cmd_alloc(CMD_LIST, cmd, &$4, &@$, NULL);
