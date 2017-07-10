@@ -1388,11 +1388,13 @@ static int do_list_ruleset(struct netlink_ctx *ctx, struct cmd *cmd)
 			continue;
 
 		cmd->handle.family = table->handle.family;
-		cmd->handle.table = xstrdup(table->handle.table);
+		cmd->handle.table = table->handle.table;
 
 		if (do_list_table(ctx, cmd, table) < 0)
 			return -1;
 	}
+
+	cmd->handle.table = NULL;
 
 	return 0;
 }
