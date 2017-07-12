@@ -1796,7 +1796,7 @@ verdict_map_expr	:	'{'	verdict_map_list_expr	'}'
 
 verdict_map_list_expr	:	verdict_map_list_member_expr
 			{
-				$$ = set_expr_alloc(&@$);
+				$$ = set_expr_alloc(&@$, NULL);
 				compound_expr_add($$, $1);
 			}
 			|	verdict_map_list_expr	COMMA	verdict_map_list_member_expr
@@ -2581,7 +2581,7 @@ set_expr		:	'{'	set_list_expr		'}'
 
 set_list_expr		:	set_list_member_expr
 			{
-				$$ = set_expr_alloc(&@$);
+				$$ = set_expr_alloc(&@$, NULL);
 				compound_expr_add($$, $1);
 			}
 			|	set_list_expr		COMMA	set_list_member_expr

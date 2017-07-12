@@ -824,9 +824,17 @@ static const struct expr_ops set_expr_ops = {
 	.destroy	= compound_expr_destroy,
 };
 
-struct expr *set_expr_alloc(const struct location *loc)
+struct expr *set_expr_alloc(const struct location *loc, const struct set *set)
 {
-	return compound_expr_alloc(loc, &set_expr_ops);
+	struct expr *set_expr = compound_expr_alloc(loc, &set_expr_ops);
+
+	if (!set)
+		return set_expr;
+
+	set_expr->set_flags = set->flags;
+	set_expr->dtype = set->keytype;
+
+	return set_expr;
 }
 
 static void mapping_expr_print(const struct expr *expr, struct output_ctx *octx)

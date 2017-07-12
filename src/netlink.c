@@ -1734,10 +1734,8 @@ int netlink_get_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	}
 
 	ctx->set = set;
-	set->init = set_expr_alloc(loc);
+	set->init = set_expr_alloc(loc, set);
 	nftnl_set_elem_foreach(nls, list_setelem_cb, ctx);
-	set->init->set_flags = set->flags;
-	set->init->dtype = set->keytype;
 
 	if (!(set->flags & NFT_SET_INTERVAL))
 		list_expr_sort(&ctx->set->init->expressions);
@@ -2234,7 +2232,7 @@ static int netlink_events_setelem_cb(const struct nlmsghdr *nlh, int type,
 		dummyset = set_alloc(monh->loc);
 		dummyset->keytype = set->keytype;
 		dummyset->datatype = set->datatype;
-		dummyset->init = set_expr_alloc(monh->loc);
+		dummyset->init = set_expr_alloc(monh->loc, set);
 
 		nlsei = nftnl_set_elems_iter_create(nls);
 		if (nlsei == NULL)
@@ -2432,7 +2430,7 @@ static void netlink_events_cache_addset(struct netlink_mon_handler *monh,
 	s = netlink_delinearize_set(&set_tmpctx, nls);
 	if (s == NULL)
 		goto out;
-	s->init = set_expr_alloc(monh->loc);
+	s->init = set_expr_alloc(monh->loc, s);
 
 	t = table_lookup(&s->handle);
 	if (t == NULL) {

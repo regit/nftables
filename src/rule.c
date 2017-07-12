@@ -1629,7 +1629,7 @@ static int do_command_monitor(struct netlink_ctx *ctx, struct cmd *cmd)
 
 		list_for_each_entry(t, &table_list, list) {
 			list_for_each_entry(s, &t->sets, list)
-				s->init = set_expr_alloc(&cmd->location);
+				s->init = set_expr_alloc(&cmd->location, s);
 
 			if (!(cmd->monitor->flags & (1 << NFT_MSG_TRACE)))
 				continue;

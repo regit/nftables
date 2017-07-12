@@ -1955,7 +1955,7 @@ static int stmt_evaluate_flow(struct eval_ctx *ctx, struct stmt *stmt)
 
 	/* Declare an empty set */
 	key = stmt->flow.key;
-	set = set_expr_alloc(&key->location);
+	set = set_expr_alloc(&key->location, NULL);
 	set->set_flags |= NFT_SET_EVAL;
 	if (key->timeout)
 		set->set_flags |= NFT_SET_TIMEOUT;
