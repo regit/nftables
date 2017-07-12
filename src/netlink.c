@@ -2879,12 +2879,51 @@ static int netlink_events_trace_cb(const struct nlmsghdr *nlh, int type,
 	return MNL_CB_OK;
 }
 
+#ifdef DEBUG
+/* only those which could be useful listening to events */
+static const char *const nftnl_msg_types[NFT_MSG_MAX] = {
+	[NFT_MSG_NEWTABLE]	= "NFT_MSG_NEWTABLE",
+	[NFT_MSG_DELTABLE]	= "NFT_MSG_DELTABLE",
+	[NFT_MSG_NEWCHAIN]	= "NFT_MSG_NEWCHAIN",
+	[NFT_MSG_DELCHAIN]	= "NFT_MSG_DELCHAIN",
+	[NFT_MSG_NEWSET]	= "NFT_MSG_NEWSET",
+	[NFT_MSG_DELSET]	= "NFT_MSG_DELSET",
+	[NFT_MSG_NEWSETELEM]	= "NFT_MSG_NEWSETELEM",
+	[NFT_MSG_DELSETELEM]	= "NFT_MSG_DELSETELEM",
+	[NFT_MSG_NEWRULE]	= "NFT_MSG_NEWRULE",
+	[NFT_MSG_DELRULE]	= "NFT_MSG_DELRULE",
+	[NFT_MSG_TRACE]		= "NFT_MSG_TRACE",
+	[NFT_MSG_NEWGEN]	= "NFT_MSG_NEWGEN",
+	[NFT_MSG_NEWOBJ]	= "NFT_MSG_NEWOBJ",
+	[NFT_MSG_DELOBJ]	= "NFT_MSG_DELOBJ",
+};
+
+static const char *nftnl_msgtype2str(uint16_t type)
+{
+	if (type >= NFT_MSG_MAX || !nftnl_msg_types[type])
+		return "unknown";
+
+	return nftnl_msg_types[type];
+}
+#endif /* DEBUG */
+
+static void netlink_events_debug(uint16_t type)
+{
+#ifdef DEBUG
+	if (!(debug_level & DEBUG_NETLINK))
+		return;
+
+	printf("netlink event: %s\n", nftnl_msgtype2str(type));
+#endif /* DEBUG */
+}
+
 static int netlink_events_cb(const struct nlmsghdr *nlh, void *data)
 {
 	int ret = MNL_CB_OK;
 	uint16_t type = NFNL_MSG_TYPE(nlh->nlmsg_type);
 	struct netlink_mon_handler *monh = (struct netlink_mon_handler *)data;
 
+	netlink_events_debug(type);
 	netlink_events_cache_update(monh, nlh, type);
 
 	if (!(monh->monitor_flags & (1 << type)))

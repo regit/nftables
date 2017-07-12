@@ -1139,6 +1139,13 @@ int mnl_nft_event_listener(struct mnl_socket *nf_sock,
 			fprintf(stdout, "# ERROR: %s\n", strerror(errno));
 			break;
 		}
+
+#ifdef DEBUG
+		if (debug_level & DEBUG_MNL) {
+			mnl_nlmsg_fprintf(stdout, buf, sizeof(buf),
+					  sizeof(struct nfgenmsg));
+		}
+#endif /* DEBUG */
 		ret = mnl_cb_run(buf, ret, 0, 0, cb, cb_data);
 		if (ret <= 0)
 			break;
