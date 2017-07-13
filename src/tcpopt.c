@@ -18,7 +18,7 @@ static const struct proto_hdr_template tcpopt_unknown_template =
 #define PHT(__token, __offset, __len) \
 	PROTO_HDR_TEMPLATE(__token, &integer_type, BYTEORDER_BIG_ENDIAN, \
 			   __offset, __len)
-const struct exthdr_desc tcpopt_eol = {
+static const struct exthdr_desc tcpopt_eol = {
 	.name		= "eol",
 	.type		= TCPOPT_EOL,
 	.templates	= {
@@ -26,7 +26,7 @@ const struct exthdr_desc tcpopt_eol = {
 	},
 };
 
-const struct exthdr_desc tcpopt_nop = {
+static const struct exthdr_desc tcpopt_nop = {
 	.name		= "noop",
 	.type		= TCPOPT_NOP,
 	.templates	= {
@@ -34,7 +34,7 @@ const struct exthdr_desc tcpopt_nop = {
 	},
 };
 
-const struct exthdr_desc tcptopt_maxseg = {
+static const struct exthdr_desc tcptopt_maxseg = {
 	.name		= "maxseg",
 	.type		= TCPOPT_MAXSEG,
 	.templates	= {
@@ -44,7 +44,7 @@ const struct exthdr_desc tcptopt_maxseg = {
 	},
 };
 
-const struct exthdr_desc tcpopt_window = {
+static const struct exthdr_desc tcpopt_window = {
 	.name		= "window",
 	.type		= TCPOPT_WINDOW,
 	.templates	= {
@@ -54,7 +54,7 @@ const struct exthdr_desc tcpopt_window = {
 	},
 };
 
-const struct exthdr_desc tcpopt_sack_permitted = {
+static const struct exthdr_desc tcpopt_sack_permitted = {
 	.name		= "sack-permitted",
 	.type		= TCPOPT_SACK_PERMITTED,
 	.templates	= {
@@ -63,7 +63,7 @@ const struct exthdr_desc tcpopt_sack_permitted = {
 	},
 };
 
-const struct exthdr_desc tcpopt_sack = {
+static const struct exthdr_desc tcpopt_sack = {
 	.name		= "sack",
 	.type		= TCPOPT_SACK,
 	.templates	= {
@@ -74,7 +74,7 @@ const struct exthdr_desc tcpopt_sack = {
 	},
 };
 
-const struct exthdr_desc tcpopt_timestamp = {
+static const struct exthdr_desc tcpopt_timestamp = {
 	.name		= "timestamp",
 	.type		= TCPOPT_TIMESTAMP,
 	.templates	= {
@@ -89,7 +89,7 @@ const struct exthdr_desc tcpopt_timestamp = {
 #define TCPOPT_OBSOLETE ((struct exthdr_desc *)NULL)
 #define TCPOPT_ECHO 6
 #define TCPOPT_ECHO_REPLY 7
-const struct exthdr_desc *tcpopt_protocols[] = {
+static const struct exthdr_desc *tcpopt_protocols[] = {
 	[TCPOPT_EOL]		= &tcpopt_eol,
 	[TCPOPT_NOP]		= &tcpopt_nop,
 	[TCPOPT_MAXSEG]		= &tcptopt_maxseg,

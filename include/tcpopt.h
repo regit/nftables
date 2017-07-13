@@ -41,13 +41,4 @@ enum tcpopt_hdr_fields {
 	TCPOPTHDR_FIELD_TSVAL,
 	TCPOPTHDR_FIELD_TSECR,
 };
-
-extern const struct exthdr_desc tcpopt_eol;
-extern const struct exthdr_desc tcpopt_nop;
-extern const struct exthdr_desc tcpopt_maxseg;
-extern const struct exthdr_desc tcpopt_window;
-extern const struct exthdr_desc tcpopt_sack_permitted;
-extern const struct exthdr_desc tcpopt_sack;
-extern const struct exthdr_desc tcpopt_timestamp;
-
 #endif /* NFTABLES_TCPOPT_H */
