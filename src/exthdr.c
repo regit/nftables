@@ -30,7 +30,7 @@ static void exthdr_expr_print(const struct expr *expr, struct output_ctx *octx)
 		 * multiplicator
 		 */
 		unsigned int offset = expr->exthdr.offset / 64;
-		char buf[3] = {0};
+		char buf[9] = {0};
 
 		if (expr->exthdr.flags & NFT_EXTHDR_F_PRESENT) {
 			printf("tcp option %s", expr->exthdr.desc->name);
