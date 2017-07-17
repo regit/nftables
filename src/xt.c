@@ -351,7 +351,7 @@ static struct xtables_globals xt_nft_globals = {
 	.compat_rev		= nft_xt_compatible_revision,
 };
 
-static void __init xt_init(void)
+void xt_init(void)
 {
 	/* Default to IPv4, but this changes in runtime */
 	xtables_init_all(&xt_nft_globals, NFPROTO_IPV4);

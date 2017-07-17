@@ -24,12 +24,12 @@
 #include <rule.h>
 
 static struct symbol_table *realm_tbl;
-static void __init realm_table_init(void)
+void realm_table_rt_init(void)
 {
 	realm_tbl = rt_symbol_table_init("/etc/iproute2/rt_realms");
 }
 
-static void __exit realm_table_exit(void)
+void realm_table_rt_exit(void)
 {
 	rt_symbol_table_free(realm_tbl);
 }

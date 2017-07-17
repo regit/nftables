@@ -32,8 +32,6 @@
 #define __gmp_fmtstring(x, y)
 #endif
 
-#define __init			__attribute__((constructor))
-#define __exit			__attribute__((destructor))
 #define __must_check		__attribute__((warn_unused_result))
 #define __noreturn		__attribute__((__noreturn__))
 

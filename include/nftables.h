@@ -119,4 +119,20 @@ struct mnl_socket;
 int nft_run(struct nft_ctx *nft, struct mnl_socket *nf_sock, void *scanner,
 	    struct parser_state *state, struct list_head *msgs);
 
+void ct_label_table_init(void);
+void mark_table_init(void);
+void gmp_init(void);
+void realm_table_rt_init(void);
+void devgroup_table_init(void);
+void realm_table_meta_init(void);
+void xt_init(void);
+void nft_init(void);
+
+void ct_label_table_exit(void);
+void mark_table_exit(void);
+void realm_table_meta_exit(void);
+void devgroup_table_exit(void);
+void realm_table_rt_exit(void);
+void nft_exit(void);
+
 #endif /* NFTABLES_NFTABLES_H */

@@ -37,12 +37,12 @@
 #include <iface.h>
 
 static struct symbol_table *realm_tbl;
-static void __init realm_table_init(void)
+void realm_table_meta_init(void)
 {
 	realm_tbl = rt_symbol_table_init("/etc/iproute2/rt_realms");
 }
 
-static void __exit realm_table_exit(void)
+void realm_table_meta_exit(void)
 {
 	rt_symbol_table_free(realm_tbl);
 }
@@ -333,12 +333,12 @@ const struct datatype pkttype_type = {
 };
 
 static struct symbol_table *devgroup_tbl;
-static void __init devgroup_table_init(void)
+void devgroup_table_init(void)
 {
 	devgroup_tbl = rt_symbol_table_init("/etc/iproute2/group");
 }
 
-static void __exit devgroup_table_exit(void)
+void devgroup_table_exit(void)
 {
 	rt_symbol_table_free(devgroup_tbl);
 }
