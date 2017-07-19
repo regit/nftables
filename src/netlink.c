@@ -204,7 +204,7 @@ static struct nftnl_set_elem *alloc_nftnl_setelem(const struct expr *set,
 	const struct expr *elem, *key, *data;
 	struct nftnl_set_elem *nlse;
 	struct nft_data_linearize nld;
-	struct nftnl_udata_buf *udbuf;
+	struct nftnl_udata_buf *udbuf = NULL;
 
 	nlse = nftnl_set_elem_alloc();
 	if (nlse == NULL)
@@ -225,13 +225,22 @@ static struct nftnl_set_elem *alloc_nftnl_setelem(const struct expr *set,
 	if (elem->timeout)
 		nftnl_set_elem_set_u64(nlse, NFTNL_SET_ELEM_TIMEOUT,
 				       elem->timeout);
-	if (elem->comment) {
+	if (elem->comment || expr->elem_flags) {
 		udbuf = nftnl_udata_buf_alloc(NFT_USERDATA_MAXLEN);
 		if (!udbuf)
 			memory_allocation_error();
-		if (!nftnl_udata_put_strz(udbuf, UDATA_TYPE_COMMENT,
+	}
+	if (elem->comment) {
+		if (!nftnl_udata_put_strz(udbuf, UDATA_SET_ELEM_COMMENT,
 					  elem->comment))
 			memory_allocation_error();
+	}
+	if (expr->elem_flags) {
+		if (!nftnl_udata_put_u32(udbuf, UDATA_SET_ELEM_FLAGS,
+					 expr->elem_flags))
+			memory_allocation_error();
+	}
+	if (udbuf) {
 		nftnl_set_elem_set(nlse, NFTNL_SET_ELEM_USERDATA,
 				   nftnl_udata_buf_data(udbuf),
 				   nftnl_udata_buf_len(udbuf));
@@ -1577,16 +1586,20 @@ static struct expr *netlink_parse_concat_elem(const struct datatype *dtype,
 	return concat;
 }
 
-static int parse_udata_cb(const struct nftnl_udata *attr, void *data)
+static int set_elem_parse_udata_cb(const struct nftnl_udata *attr, void *data)
 {
+	const struct nftnl_udata **tb = data;
 	unsigned char *value = nftnl_udata_get(attr);
 	uint8_t type = nftnl_udata_type(attr);
 	uint8_t len = nftnl_udata_len(attr);
-	const struct nftnl_udata **tb = data;
 
 	switch (type) {
-	case UDATA_TYPE_COMMENT:
+	case UDATA_SET_ELEM_COMMENT:
 		if (value[len - 1] != '\0')
+			return -1;
+		break;
+	case UDATA_SET_ELEM_FLAGS:
+		if (len != sizeof(uint32_t))
 			return -1;
 		break;
 	default:
@@ -1596,17 +1609,22 @@ static int parse_udata_cb(const struct nftnl_udata *attr, void *data)
 	return 0;
 }
 
-static char *udata_get_comment(const void *data, uint32_t data_len)
+static void set_elem_parse_udata(struct nftnl_set_elem *nlse,
+				 struct expr *expr)
 {
-	const struct nftnl_udata *tb[UDATA_TYPE_MAX + 1] = {};
+	const struct nftnl_udata *ud[UDATA_SET_ELEM_MAX + 1] = {};
+	const void *data;
+	uint32_t len;
 
-	if (nftnl_udata_parse(data, data_len, parse_udata_cb, tb) < 0)
-		return NULL;
+	data = nftnl_set_elem_get(nlse, NFTNL_SET_ELEM_USERDATA, &len);
+	if (nftnl_udata_parse(data, len, set_elem_parse_udata_cb, ud))
+		return;
 
-	if (!tb[UDATA_TYPE_COMMENT])
-		return NULL;
-
-	return xstrdup(nftnl_udata_get(tb[UDATA_TYPE_COMMENT]));
+	if (ud[UDATA_SET_ELEM_COMMENT])
+		expr->comment =
+			xstrdup(nftnl_udata_get(ud[UDATA_SET_ELEM_COMMENT]));
+	if (ud[UDATA_SET_ELEM_FLAGS])
+		expr->elem_flags = nftnl_udata_get_u32(ud[UDATA_SET_ELEM_FLAGS]);
 }
 
 static int netlink_delinearize_setelem(struct nftnl_set_elem *nlse,
@@ -1640,13 +1658,8 @@ static int netlink_delinearize_setelem(struct nftnl_set_elem *nlse,
 		expr->timeout	 = nftnl_set_elem_get_u64(nlse, NFTNL_SET_ELEM_TIMEOUT);
 	if (nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_EXPIRATION))
 		expr->expiration = nftnl_set_elem_get_u64(nlse, NFTNL_SET_ELEM_EXPIRATION);
-	if (nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_USERDATA)) {
-		const void *data;
-		uint32_t len;
-
-		data = nftnl_set_elem_get(nlse, NFTNL_SET_ELEM_USERDATA, &len);
-		expr->comment = udata_get_comment(data, len);
-	}
+	if (nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_USERDATA))
+		set_elem_parse_udata(nlse, expr);
 	if (nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_EXPR)) {
 		const struct nftnl_expr *nle;
 

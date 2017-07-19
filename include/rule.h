@@ -506,4 +506,20 @@ enum udata_set_type {
 };
 #define UDATA_SET_MAX (__UDATA_SET_MAX - 1)
 
+enum udata_set_elem_type {
+	UDATA_SET_ELEM_COMMENT,
+	UDATA_SET_ELEM_FLAGS,
+	__UDATA_SET_ELEM_MAX,
+};
+#define UDATA_SET_ELEM_MAX (__UDATA_SET_ELEM_MAX - 1)
+
+/**
+ * enum udata_set_elem_flags - meaning of bits in UDATA_SET_ELEM_FLAGS
+ *
+ * @SET_ELEM_F_INTERVAL_OPEN:	set element denotes a half-open range
+ */
+enum udata_set_elem_flags {
+	SET_ELEM_F_INTERVAL_OPEN	= 0x1,
+};
+
 #endif /* NFTABLES_RULE_H */

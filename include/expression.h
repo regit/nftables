@@ -256,6 +256,7 @@ struct expr {
 			uint64_t		expiration;
 			const char		*comment;
 			struct stmt		*stmt;
+			uint32_t		elem_flags;
 		};
 		struct {
 			/* EXPR_UNARY */

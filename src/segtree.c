@@ -37,6 +37,7 @@ struct seg_tree {
 
 enum elementary_interval_flags {
 	EI_F_INTERVAL_END	= 0x1,
+	EI_F_INTERVAL_OPEN	= 0x2,
 };
 
 /**
@@ -512,6 +513,8 @@ static void segtree_linearize(struct list_head *list, const struct set *set,
 		mpz_bitmask(q, tree->keylen);
 		nei = ei_alloc(p, q, NULL, EI_F_INTERVAL_END);
 		list_add_tail(&nei->list, list);
+	} else {
+		prev->flags |= EI_F_INTERVAL_OPEN;
 	}
 
 	mpz_clear(p);
@@ -538,6 +541,8 @@ static void set_insert_interval(struct expr *set, struct seg_tree *tree,
 
 	if (ei->flags & EI_F_INTERVAL_END)
 		expr->flags |= EXPR_F_INTERVAL_END;
+	if (ei->flags & EI_F_INTERVAL_OPEN)
+		expr->elem_flags |= SET_ELEM_F_INTERVAL_OPEN;
 
 	compound_expr_add(set, expr);
 }
