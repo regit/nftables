@@ -2987,6 +2987,45 @@ static void netlink_events_debug(uint16_t type)
 #endif /* DEBUG */
 }
 
+static int netlink_events_newgen_cb(const struct nlmsghdr *nlh, int type,
+				    struct netlink_mon_handler *monh)
+{
+	const struct nlattr *attr;
+	char name[256] = "";
+	int genid = -1, pid = -1;
+
+	mnl_attr_for_each(attr, nlh, sizeof(struct nfgenmsg)) {
+		switch (mnl_attr_get_type(attr)) {
+		case NFTA_GEN_ID:
+			if (mnl_attr_validate(attr, MNL_TYPE_U32) < 0)
+				break;
+			genid = ntohl(mnl_attr_get_u32(attr));
+			break;
+		case NFTA_GEN_PROC_NAME:
+			if (mnl_attr_validate(attr, MNL_TYPE_NUL_STRING) < 0)
+				break;
+			strncpy(name, mnl_attr_get_str(attr), sizeof(name));
+			break;
+		case NFTA_GEN_PROC_ID:
+			if (mnl_attr_validate(attr, MNL_TYPE_U32) < 0)
+				break;
+			pid = ntohl(mnl_attr_get_u32(attr));
+			break;
+		}
+	}
+	if (genid >= 0) {
+		printf("# new generation %d", genid);
+		if (pid >= 0) {
+			printf(" by process %d", pid);
+			if (!monh->ctx->octx->numeric)
+				printf(" (%s)", name);
+		}
+		printf("\n");
+	}
+
+	return MNL_CB_OK;
+}
+
 static int netlink_events_cb(const struct nlmsghdr *nlh, void *data)
 {
 	int ret = MNL_CB_OK;
@@ -3026,6 +3065,9 @@ static int netlink_events_cb(const struct nlmsghdr *nlh, void *data)
 	case NFT_MSG_NEWOBJ:
 	case NFT_MSG_DELOBJ:
 		ret = netlink_events_obj_cb(nlh, type, monh);
+		break;
+	case NFT_MSG_NEWGEN:
+		ret = netlink_events_newgen_cb(nlh, type, monh);
 		break;
 	}
 	fflush(stdout);
