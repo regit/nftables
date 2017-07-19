@@ -1659,7 +1659,7 @@ static int do_command_monitor(struct netlink_ctx *ctx, struct cmd *cmd)
 	monhandler.ctx = ctx;
 	monhandler.loc = &cmd->location;
 
-	return netlink_monitor(&monhandler);
+	return netlink_monitor(&monhandler, ctx->nf_sock);
 }
 
 static int do_command_describe(struct netlink_ctx *ctx, struct cmd *cmd)

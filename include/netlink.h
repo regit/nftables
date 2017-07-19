@@ -218,7 +218,8 @@ struct netlink_mon_handler {
 	bool			cache_needed;
 };
 
-extern int netlink_monitor(struct netlink_mon_handler *monhandler);
+extern int netlink_monitor(struct netlink_mon_handler *monhandler,
+			    struct mnl_socket *nf_sock);
 bool netlink_batch_supported(struct mnl_socket *nf_sock);
 
 #endif /* NFTABLES_NETLINK_H */

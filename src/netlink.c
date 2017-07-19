@@ -39,8 +39,6 @@
 #include <erec.h>
 #include <iface.h>
 
-static struct mnl_socket *nf_mon_sock;
-
 const struct input_descriptor indesc_netlink = {
 	.name	= "netlink",
 	.type	= INDESC_NETLINK,
@@ -73,8 +71,6 @@ void netlink_close_sock(struct mnl_socket *nf_sock)
 {
 	if (nf_sock)
 		mnl_socket_close(nf_sock);
-	if (nf_mon_sock)
-		mnl_socket_close(nf_mon_sock);
 }
 
 void netlink_restart(struct mnl_socket *nf_sock)
@@ -86,11 +82,6 @@ void netlink_restart(struct mnl_socket *nf_sock)
 void netlink_genid_get(struct mnl_socket *nf_sock)
 {
 	mnl_genid_get(nf_sock);
-}
-
-static void netlink_open_mon_sock(void)
-{
-	nf_mon_sock = nfsock_open();
 }
 
 void __noreturn __netlink_abi_error(const char *file, int line,
@@ -2961,18 +2952,26 @@ static int netlink_events_cb(const struct nlmsghdr *nlh, void *data)
 	return ret;
 }
 
-int netlink_monitor(struct netlink_mon_handler *monhandler)
+int netlink_monitor(struct netlink_mon_handler *monhandler,
+		     struct mnl_socket *nf_sock)
 {
-	netlink_open_mon_sock();
+	int group;
 
-	if (mnl_socket_bind(nf_mon_sock, (1 << (NFNLGRP_NFTABLES-1)) |
-					 (1 << (NFNLGRP_NFTRACE-1)),
-			    MNL_SOCKET_AUTOPID) < 0)
+	group = NFNLGRP_NFTABLES;
+	if (mnl_socket_setsockopt(nf_sock, NETLINK_ADD_MEMBERSHIP, &group,
+				  sizeof(int)) < 0)
 		return netlink_io_error(monhandler->ctx, monhandler->loc,
 					"Could not bind to netlink socket %s",
 					strerror(errno));
 
-	return mnl_nft_event_listener(nf_mon_sock, netlink_events_cb,
+	group = NFNLGRP_NFTRACE;
+	if (mnl_socket_setsockopt(nf_sock, NETLINK_ADD_MEMBERSHIP, &group,
+				  sizeof(int)) < 0)
+		return netlink_io_error(monhandler->ctx, monhandler->loc,
+					"Could not bind to netlink socket %s",
+					strerror(errno));
+
+	return mnl_nft_event_listener(nf_sock, netlink_events_cb,
 				      monhandler);
 }
 
