@@ -2202,6 +2202,63 @@ out:
 	return MNL_CB_OK;
 }
 
+/* returns true if the event should be ignored (i.e. null element) */
+static bool netlink_event_ignore_range_event(struct nftnl_set_elem *nlse)
+{
+        uint32_t flags = 0;
+
+	if (nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_FLAGS))
+		flags = nftnl_set_elem_get_u32(nlse, NFTNL_SET_ELEM_FLAGS);
+	if (!(flags & NFT_SET_ELEM_INTERVAL_END))
+		return false;
+
+	if (nftnl_set_elem_get_u32(nlse, NFTNL_SET_ELEM_KEY) != 0)
+		return false;
+
+	return true;
+}
+
+static bool set_elem_is_open_interval(struct expr *elem)
+{
+	switch (elem->ops->type) {
+	case EXPR_SET_ELEM:
+		return elem->elem_flags & SET_ELEM_F_INTERVAL_OPEN;
+	case EXPR_MAPPING:
+		return set_elem_is_open_interval(elem->left);
+	default:
+		return false;
+	}
+}
+
+/* returns true if the we cached the range element */
+static bool netlink_event_range_cache(struct set *cached_set,
+				      struct set *dummyset)
+{
+	struct expr *elem;
+
+	/* not an interval ? */
+	if (!(cached_set->flags & NFT_SET_INTERVAL))
+		return false;
+
+	/* if cache exists, dummyset must contain the other end of the range */
+	if (cached_set->rg_cache) {
+		compound_expr_add(dummyset->init, cached_set->rg_cache);
+		cached_set->rg_cache = NULL;
+		goto out_decompose;
+	}
+
+	/* don't cache half-open range elements */
+	elem = list_entry(dummyset->init->expressions.prev, struct expr, list);
+	if (!set_elem_is_open_interval(elem)) {
+		cached_set->rg_cache = expr_clone(elem);
+		return true;
+	}
+
+out_decompose:
+	interval_map_decompose(dummyset->init);
+	return false;
+}
+
 static int netlink_events_setelem_cb(const struct nlmsghdr *nlh, int type,
 				     struct netlink_mon_handler *monh)
 {
@@ -2236,6 +2293,7 @@ static int netlink_events_setelem_cb(const struct nlmsghdr *nlh, int type,
 		dummyset = set_alloc(monh->loc);
 		dummyset->keytype = set->keytype;
 		dummyset->datatype = set->datatype;
+		dummyset->flags = set->flags;
 		dummyset->init = set_expr_alloc(monh->loc, set);
 
 		nlsei = nftnl_set_elems_iter_create(nls);
@@ -2244,6 +2302,11 @@ static int netlink_events_setelem_cb(const struct nlmsghdr *nlh, int type,
 
 		nlse = nftnl_set_elems_iter_next(nlsei);
 		while (nlse != NULL) {
+			if (netlink_event_ignore_range_event(nlse)) {
+				set_free(dummyset);
+				nftnl_set_elems_iter_destroy(nlsei);
+				goto out;
+			}
 			if (netlink_delinearize_setelem(nlse, dummyset) < 0) {
 				set_free(dummyset);
 				nftnl_set_elems_iter_destroy(nlsei);
@@ -2252,6 +2315,11 @@ static int netlink_events_setelem_cb(const struct nlmsghdr *nlh, int type,
 			nlse = nftnl_set_elems_iter_next(nlsei);
 		}
 		nftnl_set_elems_iter_destroy(nlsei);
+
+		if (netlink_event_range_cache(set, dummyset)) {
+			set_free(dummyset);
+			goto out;
+		}
 
 		switch (type) {
 		case NFT_MSG_NEWSETELEM:

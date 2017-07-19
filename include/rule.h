@@ -217,6 +217,7 @@ extern struct rule *rule_lookup(const struct chain *chain, uint64_t handle);
  * @datalen:	mapping data len
  * @objtype:	mapping object type
  * @init:	initializer
+ * @rg_cache:	cached range element (left)
  * @policy:	set mechanism policy
  * @desc:	set mechanism desc
  */
@@ -234,6 +235,7 @@ struct set {
 	unsigned int		datalen;
 	uint32_t		objtype;
 	struct expr		*init;
+	struct expr		*rg_cache;
 	uint32_t		policy;
 	struct {
 		uint32_t	size;
