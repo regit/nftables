@@ -10,6 +10,9 @@ fi
 trap "rm -rf $testdir" EXIT
 
 nft=../../src/nft
+mydiff() {
+	diff -w -I '^# ' "$@"
+}
 command_file=$(mktemp -p $testdir)
 output_file=$(mktemp -p $testdir)
 
@@ -35,9 +38,9 @@ run_test() {
 	sleep 0.5
 	kill $monitor_pid
 	wait >/dev/null 2>&1
-	if ! diff -Z -q $monitor_output $output_file >/dev/null 2>&1; then
+	if ! mydiff -q $monitor_output $output_file >/dev/null 2>&1; then
 		echo "monitor output differs!"
-		diff -Z -u $output_file $monitor_output
+		mydiff -u $output_file $monitor_output
 		exit 1
 	fi
 	rm $command_file
