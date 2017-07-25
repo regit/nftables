@@ -2,7 +2,7 @@
 I add table ip t
 O add table ip t
 I add set ip t portrange { type inet_service; flags interval; }
-O add set ip t portrange { type inet_service;flags interval }
+O add set ip t portrange { type inet_service;flags interval; }
 
 # adding some ranges
 I add element ip t portrange { 1-10 }

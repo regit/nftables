@@ -335,18 +335,18 @@ static void set_print_declaration(const struct set *set,
 			printf("%stimeout", delim);
 			delim = ",";
 		}
-		printf("%s", opts->nl);
+		printf("%s", opts->stmt_separator);
 	}
 
 	if (set->timeout) {
 		printf("%s%stimeout ", opts->tab, opts->tab);
 		time_print(set->timeout / 1000);
-		printf("%s", opts->nl);
+		printf("%s", opts->stmt_separator);
 	}
 	if (set->gc_int) {
 		printf("%s%sgc-interval ", opts->tab, opts->tab);
 		time_print(set->gc_int / 1000);
-		printf("%s", opts->nl);
+		printf("%s", opts->stmt_separator);
 	}
 }
 
@@ -381,7 +381,7 @@ void set_print_plain(const struct set *s, struct output_ctx *octx)
 		.nl		= " ",
 		.table		= s->handle.table,
 		.family		= family2str(s->handle.family),
-		.stmt_separator	= ";",
+		.stmt_separator	= "; ",
 	};
 
 	do_set_print(s, &opts, octx);
