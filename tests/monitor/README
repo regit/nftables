@@ -1,0 +1,48 @@
+Simple NFT MONITOR Testsuite
+============================
+
+The purpose of this suite of tests is to assert correct 'nft monitor' output for
+known input. The suite consists of the single shell script 'run-tests.sh' which
+performs the tests and a number of test definition files in 'testcases/'. The
+latter have to be suffixed '.t' in order to be recognized as such.
+
+Test Case Syntax
+----------------
+
+Each testcase defines a number of commands to pass on to 'nft' binary and an
+associated 'nft monitor' output definition. Prerequisites for each command have
+to be established manually, i.e. in order to test monitor output when adding a
+chain, the table containing it has to be created first. In between each
+testcase, rule set is flushed completely.
+
+Input and output lines are prefixed by 'I' and 'O', respectively. The prefix has
+to be separated from the rest of the line by whitespace. Consecutive input lines
+are passed to 'nft' together, hence lead to a single transaction.
+
+Since in most cases output should be equal to input, there is a shortcut: If a
+line consists of 'O -' only, the test script uses all previous input lines as
+expected output directly.
+
+Empty lines and those starting with '#' are ignored.
+
+Test Script Semantics
+---------------------
+
+The script iterates over all test case files, reading them line by line. It
+assumes that sections of 'I' lines alternate with sections of 'O' lines. After
+stripping the prefix, each line is appended to a temporary file. There are
+separate files for input and output lines.
+
+If a set of input and output lines is complete (i.e. upon encountering either a
+new input line or end of file), a testrun is performed: 'nft monitor' is run in
+background, redirecting the output into a third file. The input file is passed
+to 'nft -f'. Finally 'nft monitor' is killed and it's output compared to the
+output file created earlier. If the files differ, a unified diff is printed and
+test execution aborts.
+
+After each testrun, input and output files are cleared.
+
+Note: Running 'nft monitor' in background is prone to race conditions. Hence
+an artificial delay is introduced before calling 'nft -f' to allow for 'nft
+monitor' to complete initialization and another one before comparing the output
+to allow for 'nft monitor' to process the netlink events.
