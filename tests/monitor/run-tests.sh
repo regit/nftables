@@ -20,6 +20,10 @@ cmd_append() {
 	echo "$*" >>$command_file
 }
 output_append() {
+	[[ "$*" == '-' ]] && {
+		cat $command_file >>$output_file
+		return
+	}
 	echo "$*" >>$output_file
 }
 run_test() {
