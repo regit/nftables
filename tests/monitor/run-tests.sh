@@ -2,17 +2,18 @@
 
 cd $(dirname $0)
 
+nft=../../src/nft
+mydiff() {
+	diff -w -I '^# ' "$@"
+}
+
 testdir=$(mktemp -d)
 if [ ! -d $testdir ]; then
 	echo "Failed to create test directory" >&2
 	exit 0
 fi
-trap "rm -rf $testdir" EXIT
+trap "rm -rf $testdir; $nft flush ruleset" EXIT
 
-nft=../../src/nft
-mydiff() {
-	diff -w -I '^# ' "$@"
-}
 command_file=$(mktemp -p $testdir)
 output_file=$(mktemp -p $testdir)
 
