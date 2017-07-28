@@ -1195,6 +1195,7 @@ monitor_object		:	/* empty */	{ $$ = CMD_MONITOR_OBJ_ANY; }
 			| 	SETS		{ $$ = CMD_MONITOR_OBJ_SETS; }
 			|	RULES		{ $$ = CMD_MONITOR_OBJ_RULES; }
 			|	ELEMENTS	{ $$ = CMD_MONITOR_OBJ_ELEMS; }
+			|	RULESET		{ $$ = CMD_MONITOR_OBJ_RULESET; }
 			;
 
 monitor_format		:	/* empty */	{ $$ = NFTNL_OUTPUT_DEFAULT; }
