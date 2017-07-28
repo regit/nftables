@@ -2,6 +2,7 @@
 #define _NFTABLES_MNL_H_
 
 #include <list.h>
+#include <netlink.h>
 
 struct mnl_socket;
 
@@ -24,8 +25,7 @@ bool mnl_batch_ready(struct nftnl_batch *batch);
 void mnl_batch_reset(struct nftnl_batch *batch);
 uint32_t mnl_batch_begin(struct nftnl_batch *batch);
 void mnl_batch_end(struct nftnl_batch *batch);
-int mnl_batch_talk(struct mnl_socket *nl, struct nftnl_batch *batch,
-		   struct list_head *err_list);
+int mnl_batch_talk(struct netlink_ctx *ctx, struct list_head *err_list);
 int mnl_nft_rule_batch_add(struct nftnl_rule *nlr, struct nftnl_batch *batch,
 			   unsigned int flags, uint32_t seqnum);
 int mnl_nft_rule_batch_del(struct nftnl_rule *nlr, struct nftnl_batch *batch,

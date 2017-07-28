@@ -246,9 +246,9 @@ static ssize_t mnl_nft_socket_sendmsg(const struct mnl_socket *nl,
 	return sendmsg(mnl_socket_get_fd(nl), &msg, 0);
 }
 
-int mnl_batch_talk(struct mnl_socket *nl, struct nftnl_batch *batch,
-		   struct list_head *err_list)
+int mnl_batch_talk(struct netlink_ctx *ctx, struct list_head *err_list)
 {
+	struct mnl_socket *nl = ctx->nf_sock;
 	int ret, fd = mnl_socket_get_fd(nl), portid = mnl_socket_get_portid(nl);
 	char rcv_buf[MNL_SOCKET_BUFFER_SIZE];
 	fd_set readfds;
@@ -257,7 +257,7 @@ int mnl_batch_talk(struct mnl_socket *nl, struct nftnl_batch *batch,
 		.tv_usec	= 0
 	};
 
-	ret = mnl_nft_socket_sendmsg(nl, batch);
+	ret = mnl_nft_socket_sendmsg(nl, ctx->batch);
 	if (ret == -1)
 		return -1;
 

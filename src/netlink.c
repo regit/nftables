@@ -1903,7 +1903,7 @@ int netlink_reset_objs(struct netlink_ctx *ctx, const struct handle *h,
 
 int netlink_batch_send(struct netlink_ctx *ctx, struct list_head *err_list)
 {
-	return mnl_batch_talk(ctx->nf_sock, ctx->batch, err_list);
+	return mnl_batch_talk(ctx, err_list);
 }
 
 int netlink_flush_ruleset(struct netlink_ctx *ctx, const struct handle *h,
