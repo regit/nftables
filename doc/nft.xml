@@ -4385,7 +4385,7 @@ add rule nat prerouting tcp dport 22 redirect to :2222
 				XML, JSON or native nft format.
 			</para>
 			<para>
-				To filter events related to a concrete object, use one of the keywords 'tables', 'chains', 'sets', 'rules', 'elements'.
+				To filter events related to a concrete object, use one of the keywords 'tables', 'chains', 'sets', 'rules', 'elements'				      , 'ruleset'.
 			</para>
 			<para>
 				To filter events related to a concrete action, use keyword 'new' or 'destroy'.
@@ -4415,6 +4415,12 @@ add rule nat prerouting tcp dport 22 redirect to :2222
 				<title>Listen to both new and destroyed chains, in native nft format</title>
 				<programlisting>
 % nft monitor chains
+				</programlisting>
+			</example>
+			<example>
+				<title>Listen to ruleset events such as table, chain, rule, set, counters and quotas, in native nft format</title>
+				<programlisting>
+% nft monitor ruleset
 				</programlisting>
 			</example>
 		</refsect2>
