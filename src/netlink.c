@@ -3080,22 +3080,26 @@ int netlink_monitor(struct netlink_mon_handler *monhandler,
 {
 	int group;
 
-	group = NFNLGRP_NFTABLES;
-	if (mnl_socket_setsockopt(nf_sock, NETLINK_ADD_MEMBERSHIP, &group,
-				  sizeof(int)) < 0)
-		return netlink_io_error(monhandler->ctx, monhandler->loc,
-					"Could not bind to netlink socket %s",
-					strerror(errno));
+	if (monhandler->monitor_flags & (1 << NFT_MSG_TRACE)) {
+		group = NFNLGRP_NFTRACE;
+		if (mnl_socket_setsockopt(nf_sock, NETLINK_ADD_MEMBERSHIP,
+					  &group, sizeof(int)) < 0)
+			return netlink_io_error(monhandler->ctx,
+						monhandler->loc,
+						"Could not bind to netlink socket %s",
+						strerror(errno));
+	}
+	if (monhandler->monitor_flags & ~(1 << NFT_MSG_TRACE)) {
+		group = NFNLGRP_NFTABLES;
+		if (mnl_socket_setsockopt(nf_sock, NETLINK_ADD_MEMBERSHIP,
+					  &group, sizeof(int)) < 0)
+			return netlink_io_error(monhandler->ctx,
+						monhandler->loc,
+						"Could not bind to netlink socket %s",
+						strerror(errno));
+	}
 
-	group = NFNLGRP_NFTRACE;
-	if (mnl_socket_setsockopt(nf_sock, NETLINK_ADD_MEMBERSHIP, &group,
-				  sizeof(int)) < 0)
-		return netlink_io_error(monhandler->ctx, monhandler->loc,
-					"Could not bind to netlink socket %s",
-					strerror(errno));
-
-	return mnl_nft_event_listener(nf_sock, netlink_events_cb,
-				      monhandler);
+	return mnl_nft_event_listener(nf_sock, netlink_events_cb, monhandler);
 }
 
 bool netlink_batch_supported(struct mnl_socket *nf_sock)
