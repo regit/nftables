@@ -194,6 +194,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token MAPS			"maps"
 %token HANDLE			"handle"
 %token RULESET			"ruleset"
+%token TRACE			"trace"
 
 %token INET			"inet"
 %token NETDEV			"netdev"
@@ -1196,6 +1197,7 @@ monitor_object		:	/* empty */	{ $$ = CMD_MONITOR_OBJ_ANY; }
 			|	RULES		{ $$ = CMD_MONITOR_OBJ_RULES; }
 			|	ELEMENTS	{ $$ = CMD_MONITOR_OBJ_ELEMS; }
 			|	RULESET		{ $$ = CMD_MONITOR_OBJ_RULESET; }
+			|	TRACE		{ $$ = CMD_MONITOR_OBJ_TRACE; }
 			;
 
 monitor_format		:	/* empty */	{ $$ = NFTNL_OUTPUT_DEFAULT; }

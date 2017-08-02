@@ -3218,7 +3218,6 @@ enum {
 	CMD_MONITOR_EVENT_ANY,
 	CMD_MONITOR_EVENT_NEW,
 	CMD_MONITOR_EVENT_DEL,
-	CMD_MONITOR_EVENT_TRACE,
 	CMD_MONITOR_EVENT_MAX
 };
 
@@ -3247,6 +3246,7 @@ static uint32_t monitor_flags[CMD_MONITOR_EVENT_MAX][CMD_MONITOR_OBJ_MAX] = {
 						  (1 << NFT_MSG_DELSETELEM) |
 						  (1 << NFT_MSG_NEWOBJ)	  |
 						  (1 << NFT_MSG_DELOBJ),
+		[CMD_MONITOR_OBJ_TRACE]		= (1 << NFT_MSG_TRACE),
 	},
 	[CMD_MONITOR_EVENT_NEW] = {
 		[CMD_MONITOR_OBJ_ANY]		= (1 << NFT_MSG_NEWTABLE) |
@@ -3264,7 +3264,8 @@ static uint32_t monitor_flags[CMD_MONITOR_EVENT_MAX][CMD_MONITOR_OBJ_MAX] = {
 						  (1 << NFT_MSG_NEWRULE)  |
 						  (1 << NFT_MSG_NEWSET)   |
 						  (1 << NFT_MSG_NEWSETELEM) |
-						  (1 << NFT_MSG_NEWOBJ)
+						  (1 << NFT_MSG_NEWOBJ),
+		[CMD_MONITOR_OBJ_TRACE]		= 0,
 	},
 	[CMD_MONITOR_EVENT_DEL] = {
 		[CMD_MONITOR_OBJ_ANY]		= (1 << NFT_MSG_DELTABLE) |
@@ -3283,29 +3284,7 @@ static uint32_t monitor_flags[CMD_MONITOR_EVENT_MAX][CMD_MONITOR_OBJ_MAX] = {
 						  (1 << NFT_MSG_DELSET)   |
 						  (1 << NFT_MSG_DELSETELEM) |
 						  (1 << NFT_MSG_DELOBJ),
-	},
-	[CMD_MONITOR_EVENT_TRACE] = {
-		[CMD_MONITOR_OBJ_ANY]		= (1 << NFT_MSG_NEWTABLE) |
-						  (1 << NFT_MSG_NEWCHAIN) |
-						  (1 << NFT_MSG_NEWRULE)  |
-						  (1 << NFT_MSG_DELTABLE) |
-						  (1 << NFT_MSG_DELCHAIN) |
-						  (1 << NFT_MSG_DELRULE)  |
-						  (1 << NFT_MSG_TRACE),
-		[CMD_MONITOR_OBJ_TABLES]	= (1 << NFT_MSG_NEWTABLE) |
-						  (1 << NFT_MSG_DELTABLE),
-		[CMD_MONITOR_OBJ_CHAINS]	= (1 << NFT_MSG_NEWCHAIN) |
-						  (1 << NFT_MSG_DELCHAIN),
-		[CMD_MONITOR_OBJ_RULES]		= (1 << NFT_MSG_NEWRULE) |
-						  (1 << NFT_MSG_DELRULE),
-		[CMD_MONITOR_OBJ_RULESET]       = (1 << NFT_MSG_NEWTABLE) |
-						  (1 << NFT_MSG_NEWCHAIN) |
-						  (1 << NFT_MSG_NEWRULE)  |
-						  (1 << NFT_MSG_NEWOBJ)	  |
-						  (1 << NFT_MSG_DELTABLE) |
-						  (1 << NFT_MSG_DELCHAIN) |
-						  (1 << NFT_MSG_DELRULE)  |
-						  (1 << NFT_MSG_DELOBJ),
+		[CMD_MONITOR_OBJ_TRACE]		= 0,
 	},
 };
 
@@ -3324,8 +3303,6 @@ static int cmd_evaluate_monitor(struct eval_ctx *ctx, struct cmd *cmd)
 		event = CMD_MONITOR_EVENT_NEW;
 	else if (strcmp(cmd->monitor->event, "destroy") == 0)
 		event = CMD_MONITOR_EVENT_DEL;
-	else if (strcmp(cmd->monitor->event, "trace") == 0)
-		event = CMD_MONITOR_EVENT_TRACE;
 	else {
 		return monitor_error(ctx, cmd->monitor, "invalid event %s",
 				     cmd->monitor->event);
