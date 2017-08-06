@@ -4952,7 +4952,7 @@ add rule nat prerouting tcp dport 22 redirect to :2222
 			<para>
 				The monitor command allows you to listen to Netlink events produced
 				by the nf_tables subsystem, related to creation and deletion of objects.
-				When they ocurr, nft will print to stdout the monitored events in either
+				When they occur, nft will print to stdout the monitored events in either
 				XML, JSON or native nft format.
 			</para>
 			<para>
