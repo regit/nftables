@@ -1,6 +1,5 @@
-# filter chains available are: input, output, forward
+# filter chains available are: input, output
 :input;type filter hook input priority 0
-:forward;type filter hook forward priority 0
 :output;type filter hook output priority 0
 
-*arp;test-arp;input,forward,output
+*arp;test-arp;input,output
