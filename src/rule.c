@@ -972,17 +972,17 @@ void cmd_free(struct cmd *cmd)
 #include <netlink.h>
 
 static int __do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
-			     struct set *set, struct expr *expr, bool excl)
+			     struct set *set, struct expr *expr, uint32_t flags)
 {
 	expr->set_flags |= set->flags;
-	if (netlink_add_setelems(ctx, h, expr, excl) < 0)
+	if (netlink_add_setelems(ctx, h, expr, flags) < 0)
 		return -1;
 
 	return 0;
 }
 
 static int do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
-			   struct expr *init, bool excl)
+			   struct expr *init, uint32_t flags)
 {
 	struct table *table;
 	struct set *set;
@@ -994,18 +994,18 @@ static int do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	    set_to_intervals(ctx->msgs, set, init, true) < 0)
 		return -1;
 
-	return __do_add_setelems(ctx, h, set, init, excl);
+	return __do_add_setelems(ctx, h, set, init, flags);
 }
 
 static int do_add_set(struct netlink_ctx *ctx, const struct handle *h,
-		      struct set *set, bool excl)
+		      struct set *set, uint32_t flags)
 {
 	if (set->init != NULL) {
 		if (set->flags & NFT_SET_INTERVAL &&
 		    set_to_intervals(ctx->msgs, set, set->init, true) < 0)
 			return -1;
 	}
-	if (netlink_add_set(ctx, h, set, excl) < 0)
+	if (netlink_add_set(ctx, h, set, flags) < 0)
 		return -1;
 	if (set->init != NULL) {
 		return __do_add_setelems(ctx, &set->handle, set, set->init,
@@ -1016,24 +1016,26 @@ static int do_add_set(struct netlink_ctx *ctx, const struct handle *h,
 
 static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd, bool excl)
 {
+	uint32_t flags = excl ? NLM_F_EXCL : 0;
+
 	switch (cmd->obj) {
 	case CMD_OBJ_TABLE:
 		return netlink_add_table(ctx, &cmd->handle, &cmd->location,
-					 cmd->table, excl);
+					 cmd->table, flags);
 	case CMD_OBJ_CHAIN:
 		return netlink_add_chain(ctx, &cmd->handle, &cmd->location,
-					 cmd->chain, excl);
+					 cmd->chain, flags);
 	case CMD_OBJ_RULE:
 		return netlink_add_rule_batch(ctx, &cmd->handle,
-					      cmd->rule, NLM_F_APPEND);
+					      cmd->rule, flags | NLM_F_APPEND);
 	case CMD_OBJ_SET:
-		return do_add_set(ctx, &cmd->handle, cmd->set, excl);
+		return do_add_set(ctx, &cmd->handle, cmd->set, flags);
 	case CMD_OBJ_SETELEM:
-		return do_add_setelems(ctx, &cmd->handle, cmd->expr, excl);
+		return do_add_setelems(ctx, &cmd->handle, cmd->expr, flags);
 	case CMD_OBJ_COUNTER:
 	case CMD_OBJ_QUOTA:
 	case CMD_OBJ_CT_HELPER:
-		return netlink_add_obj(ctx, &cmd->handle, cmd->object, excl);
+		return netlink_add_obj(ctx, &cmd->handle, cmd->object, flags);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
