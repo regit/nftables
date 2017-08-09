@@ -464,11 +464,11 @@ int netlink_replace_rule_batch(struct netlink_ctx *ctx, const struct handle *h,
 			       const struct location *loc)
 {
 	struct nftnl_rule *nlr;
-	int err;
+	int err, flags = ctx->octx->echo ? NLM_F_ECHO : 0;
 
 	nlr = alloc_nftnl_rule(&rule->handle);
 	netlink_linearize_rule(ctx, nlr, rule);
-	err = mnl_nft_rule_batch_replace(nlr, ctx->batch, 0, ctx->seqnum);
+	err = mnl_nft_rule_batch_replace(nlr, ctx->batch, flags, ctx->seqnum);
 	nftnl_rule_free(nlr);
 
 	if (err < 0)
@@ -3067,6 +3067,22 @@ static int netlink_events_cb(const struct nlmsghdr *nlh, void *data)
 	fflush(stdout);
 
 	return ret;
+}
+
+int netlink_echo_callback(const struct nlmsghdr *nlh, void *data)
+{
+	struct netlink_mon_handler echo_monh = {
+		.format = NFTNL_OUTPUT_DEFAULT,
+		.ctx = data,
+		.loc = &netlink_location,
+		.monitor_flags = 0xffffffff,
+		.cache_needed = true,
+	};
+
+	if (!echo_monh.ctx->octx->echo)
+		return MNL_CB_OK;
+
+	return netlink_events_cb(nlh, &echo_monh);
 }
 
 int netlink_monitor(struct netlink_mon_handler *monhandler,

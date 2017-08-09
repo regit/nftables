@@ -2962,6 +2962,9 @@ static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 		handle_merge(&cmd->set->handle, &cmd->handle);
 		return set_evaluate(ctx, cmd->set);
 	case CMD_OBJ_RULE:
+		ret = cache_update(ctx->nf_sock, cmd->op, ctx->msgs);
+		if (ret < 0)
+			return ret;
 		handle_merge(&cmd->rule->handle, &cmd->handle);
 		return rule_evaluate(ctx, cmd->rule);
 	case CMD_OBJ_CHAIN:
@@ -2975,6 +2978,10 @@ static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_COUNTER:
 	case CMD_OBJ_QUOTA:
 	case CMD_OBJ_CT_HELPER:
+		ret = cache_update(ctx->nf_sock, cmd->op, ctx->msgs);
+		if (ret < 0)
+			return ret;
+
 		return 0;
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);

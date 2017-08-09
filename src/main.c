@@ -49,10 +49,11 @@ enum opt_vals {
 	OPT_IP2NAME		= 'N',
 	OPT_DEBUG		= 'd',
 	OPT_HANDLE_OUTPUT	= 'a',
+	OPT_ECHO		= 'e',
 	OPT_INVALID		= '?',
 };
 
-#define OPTSTRING	"hvcf:iI:vnsNa"
+#define OPTSTRING	"hvcf:iI:vnsNae"
 
 static const struct option options[] = {
 	{
@@ -105,6 +106,10 @@ static const struct option options[] = {
 		.val		= OPT_HANDLE_OUTPUT,
 	},
 	{
+		.name		= "echo",
+		.val		= OPT_ECHO,
+	},
+	{
 		.name		= NULL
 	}
 };
@@ -128,6 +133,7 @@ static void show_help(const char *name)
 "  -s, --stateless		Omit stateful information of ruleset.\n"
 "  -N				Translate IP addresses to names.\n"
 "  -a, --handle			Output rule handle.\n"
+"  -e, --echo			Echo what has been added, inserted or replaced.\n"
 "  -I, --includepath <directory>	Add <directory> to the paths searched for include files. Default is: %s\n"
 #ifdef DEBUG
 "  --debug <level [,level...]>	Specify debugging level (scanner, parser, eval, netlink, mnl, proto-ctx, segtree, all)\n"
@@ -374,6 +380,9 @@ int main(int argc, char * const *argv)
 #endif
 		case OPT_HANDLE_OUTPUT:
 			nft.output.handle++;
+			break;
+		case OPT_ECHO:
+			nft.output.echo++;
 			break;
 		case OPT_INVALID:
 			exit(NFT_EXIT_FAILURE);

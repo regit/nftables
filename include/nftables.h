@@ -29,6 +29,7 @@ struct output_ctx {
 	unsigned int stateless;
 	unsigned int ip2name;
 	unsigned int handle;
+	unsigned int echo;
 };
 
 struct nft_ctx {

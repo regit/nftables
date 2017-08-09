@@ -157,6 +157,16 @@ vi:ts=4 sw=4
 				</listitem>
 			</varlistentry>
 			<varlistentry>
+				<term><option>-e, --echo</option></term>
+				<listitem>
+					<para>
+						When inserting items into the ruleset using <command>add</command>,
+						<command>insert</command> or <command>replace</command> commands,
+						print notifications just like <command>nft monitor</command>.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
 				<term><option>-I, --includepath <replaceable>directory</replaceable></option></term>
 				<listitem>
 					<para>

@@ -1009,7 +1009,7 @@ static int do_add_set(struct netlink_ctx *ctx, const struct handle *h,
 		return -1;
 	if (set->init != NULL) {
 		return __do_add_setelems(ctx, &set->handle, set, set->init,
-					 false);
+					 flags);
 	}
 	return 0;
 }
@@ -1017,6 +1017,9 @@ static int do_add_set(struct netlink_ctx *ctx, const struct handle *h,
 static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd, bool excl)
 {
 	uint32_t flags = excl ? NLM_F_EXCL : 0;
+
+	if (ctx->octx->echo)
+		flags |= NLM_F_ECHO;
 
 	switch (cmd->obj) {
 	case CMD_OBJ_TABLE:
@@ -1056,10 +1059,12 @@ static int do_command_replace(struct netlink_ctx *ctx, struct cmd *cmd)
 
 static int do_command_insert(struct netlink_ctx *ctx, struct cmd *cmd)
 {
+	uint32_t flags = ctx->octx->echo ? NLM_F_ECHO : 0;
+
 	switch (cmd->obj) {
 	case CMD_OBJ_RULE:
 		return netlink_add_rule_batch(ctx, &cmd->handle,
-					      cmd->rule, 0);
+					      cmd->rule, flags);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}

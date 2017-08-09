@@ -222,4 +222,6 @@ extern int netlink_monitor(struct netlink_mon_handler *monhandler,
 			    struct mnl_socket *nf_sock);
 bool netlink_batch_supported(struct mnl_socket *nf_sock);
 
+int netlink_echo_callback(const struct nlmsghdr *nlh, void *data);
+
 #endif /* NFTABLES_NETLINK_H */
