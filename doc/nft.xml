@@ -314,7 +314,7 @@ filter input iif $int_ifs accept
 					<term><option>arp</option></term>
 					<listitem>
 						<para>
-							ARP address family, handling packets vi 
+							ARP address family, handling IPv4 ARP packets.
 						</para>
 					</listitem>
 				</varlistentry>
