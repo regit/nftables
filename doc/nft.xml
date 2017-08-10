@@ -439,6 +439,9 @@ filter input iif $int_ifs accept
 			<para>
 				The bridge address family handles ethernet packets traversing bridge devices.
 			</para>
+			<para>
+				The list of supported hooks is identical to IPv4/IPv6/Inet address families above.
+			</para>
 		</refsect2>
 		<refsect2>
 			<title>Netdev address family</title>
