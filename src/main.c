@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 
+#include <nftables/nftables.h>
 #include <nftables.h>
 #include <utils.h>
 #include <parser.h>
@@ -263,28 +264,6 @@ err1:
 	return ret;
 }
 
-void nft_init(void)
-{
-	mark_table_init();
-	realm_table_rt_init();
-	devgroup_table_init();
-	realm_table_meta_init();
-	ct_label_table_init();
-	gmp_init();
-#ifdef HAVE_LIBXTABLES
-	xt_init();
-#endif
-}
-
-void nft_exit(void)
-{
-	ct_label_table_exit();
-	realm_table_rt_exit();
-	devgroup_table_exit();
-	realm_table_meta_exit();
-	mark_table_exit();
-}
-
 int main(int argc, char * const *argv)
 {
 	struct parser_state state;
@@ -296,7 +275,7 @@ int main(int argc, char * const *argv)
 	int i, val, rc = NFT_EXIT_SUCCESS;
 	struct mnl_socket *nf_sock;
 
-	nft_init();
+	nft_global_init();
 	nf_sock = netlink_open_sock();
 	while (1) {
 		val = getopt_long(argc, argv, OPTSTRING, options, NULL);
@@ -424,7 +403,7 @@ out:
 	cache_release();
 	iface_cache_release();
 	netlink_close_sock(nf_sock);
-	nft_exit();
+	nft_global_deinit();
 
 	return rc;
 }
