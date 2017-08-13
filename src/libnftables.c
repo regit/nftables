@@ -60,3 +60,26 @@ void nft_context_free(struct nft_ctx *nft)
 	netlink_close_sock(nft->nf_sock);
 	free(nft);
 }
+
+static const struct input_descriptor indesc_cmdline = {
+	.type	= INDESC_BUFFER,
+	.name	= "<cmdline>",
+};
+
+int nft_run_command_from_buffer(struct nft_ctx *nft, const char *buf,
+				size_t buflen)
+{
+	int rc = NFT_EXIT_SUCCESS;
+	struct parser_state state;
+	LIST_HEAD(msgs);
+	void *scanner;
+
+	parser_init(nft->nf_sock, &state, &msgs);
+	scanner = scanner_init(&state);
+	scanner_push_buffer(scanner, &indesc_cmdline, buf);
+		
+	if (nft_run(nft, nft->nf_sock, scanner, &state, &msgs) != 0)
+		rc = NFT_EXIT_FAILURE;
+
+	return rc;
+}
