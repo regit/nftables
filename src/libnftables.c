@@ -8,6 +8,8 @@
 #include <erec.h>
 #include <libmnl/libmnl.h>
 #include <mnl.h>
+#include <netlink.h>
+#include <nftables_common.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -87,7 +89,6 @@ int nft_run_command_from_buffer(struct nft_ctx *nft, const char *buf,
 
 	return rc;
 }
-
 
 int nft_run_command_from_filename(struct nft_ctx *nft, const char *filename)
 {

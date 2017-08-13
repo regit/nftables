@@ -30,6 +30,7 @@
 #include <utils.h>
 #include <iface.h>
 #include <cli.h>
+#include <nftables_common.h>
 
 #include <libmnl/libmnl.h>
 

@@ -58,6 +58,7 @@ libnftables_la_SOURCES =	rule.c				\
 		libnftables.c			\
 		scanner.l			\
 		tcpopt.c			\
+		nftables_common.c		\
 		parser_bison.y
 
 if BUILD_MINIGMP
