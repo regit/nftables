@@ -39,6 +39,7 @@ extern const struct location netlink_location;
  * @data:	pointer to pass data to callback
  * @seqnum:	sequence number
  * @octx:	output context
+ * @cache:	cache context
  */
 struct netlink_ctx {
 	struct mnl_socket	*nf_sock;
@@ -50,6 +51,7 @@ struct netlink_ctx {
 	struct nftnl_batch	*batch;
 	bool			batch_supported;
 	struct output_ctx	*octx;
+	struct nft_cache	*cache;
 };
 
 extern struct nftnl_table *alloc_nftnl_table(const struct handle *h);
@@ -162,6 +164,7 @@ extern int netlink_get_set(struct netlink_ctx *ctx, const struct handle *h,
 			   const struct location *loc);
 
 extern struct stmt *netlink_parse_set_expr(const struct set *set,
+					   const struct nft_cache *cache,
 					   const struct nftnl_expr *nle);
 
 extern int netlink_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
@@ -216,6 +219,7 @@ struct netlink_mon_handler {
 	struct netlink_ctx	*ctx;
 	const struct location	*loc;
 	bool			cache_needed;
+	struct nft_cache	*cache;
 };
 
 extern int netlink_monitor(struct netlink_mon_handler *monhandler,

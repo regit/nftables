@@ -1275,12 +1275,13 @@ static int netlink_parse_rule_expr(struct nftnl_expr *nle, void *arg)
 }
 
 struct stmt *netlink_parse_set_expr(const struct set *set,
+				    const struct nft_cache *cache,
 				    const struct nftnl_expr *nle)
 {
 	struct netlink_parse_ctx ctx, *pctx = &ctx;
 
 	pctx->rule = rule_alloc(&netlink_location, &set->handle);
-	pctx->table = table_lookup(&set->handle);
+	pctx->table = table_lookup(&set->handle, cache);
 	assert(pctx->table != NULL);
 
 	if (netlink_parse_expr(nle, pctx) < 0)
@@ -2306,7 +2307,7 @@ struct rule *netlink_delinearize_rule(struct netlink_ctx *ctx,
 		h.position.id = nftnl_rule_get_u64(nlr, NFTNL_RULE_POSITION);
 
 	pctx->rule = rule_alloc(&netlink_location, &h);
-	pctx->table = table_lookup(&h);
+	pctx->table = table_lookup(&h, ctx->cache);
 	assert(pctx->table != NULL);
 
 	if (nftnl_rule_is_set(nlr, NFTNL_RULE_USERDATA)) {

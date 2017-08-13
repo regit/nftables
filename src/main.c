@@ -187,8 +187,9 @@ static const struct input_descriptor indesc_cmdline = {
 	.name	= "<cmdline>",
 };
 
-static int nft_netlink(struct nft_ctx *nft, struct parser_state *state,
-		       struct list_head *msgs, struct mnl_socket *nf_sock)
+static int nft_netlink(struct nft_ctx *nft, struct nft_cache *cache,
+		       struct parser_state *state, struct list_head *msgs,
+		       struct mnl_socket *nf_sock)
 {
 	struct nftnl_batch *batch;
 	struct netlink_ctx ctx;
@@ -210,6 +211,7 @@ static int nft_netlink(struct nft_ctx *nft, struct parser_state *state,
 		ctx.batch_supported = batch_supported;
 		ctx.octx = &nft->output;
 		ctx.nf_sock = nf_sock;
+		ctx.cache = cache;
 		init_list_head(&ctx.list);
 		ret = do_command(&ctx, cmd);
 		if (ret < 0)
@@ -244,8 +246,9 @@ out:
 	return ret;
 }
 
-int nft_run(struct nft_ctx *nft, struct mnl_socket *nf_sock, void *scanner,
-	    struct parser_state *state, struct list_head *msgs)
+int nft_run(struct nft_ctx *nft, struct mnl_socket *nf_sock,
+	    struct nft_cache *cache, void *scanner, struct parser_state *state,
+	    struct list_head *msgs)
 {
 	struct cmd *cmd, *next;
 	int ret;
@@ -259,7 +262,7 @@ int nft_run(struct nft_ctx *nft, struct mnl_socket *nf_sock, void *scanner,
 	list_for_each_entry(cmd, &state->cmds, list)
 		nft_cmd_expand(cmd);
 
-	ret = nft_netlink(nft, state, msgs, nf_sock);
+	ret = nft_netlink(nft, cache, state, msgs, nf_sock);
 err1:
 	list_for_each_entry_safe(cmd, next, &state->cmds, list) {
 		list_del(&cmd->list);
@@ -294,6 +297,7 @@ void nft_exit(void)
 int main(int argc, char * const *argv)
 {
 	struct parser_state state;
+	struct nft_cache cache;
 	void *scanner;
 	LIST_HEAD(msgs);
 	char *buf = NULL, *filename = NULL;
@@ -301,6 +305,9 @@ int main(int argc, char * const *argv)
 	bool interactive = false;
 	int i, val, rc = NFT_EXIT_SUCCESS;
 	struct mnl_socket *nf_sock;
+
+	memset(&cache, 0, sizeof(cache));
+	init_list_head(&cache.list);
 
 	nft_init();
 	nf_sock = netlink_open_sock();
@@ -400,20 +407,20 @@ int main(int argc, char * const *argv)
 				strcat(buf, " ");
 		}
 		strcat(buf, "\n");
-		parser_init(nf_sock, &state, &msgs);
+		parser_init(nf_sock, &cache, &state, &msgs);
 		scanner = scanner_init(&state);
 		scanner_push_buffer(scanner, &indesc_cmdline, buf);
 	} else if (filename != NULL) {
-		rc = cache_update(nf_sock, CMD_INVALID, &msgs);
+		rc = cache_update(nf_sock, &cache, CMD_INVALID, &msgs);
 		if (rc < 0)
 			return rc;
 
-		parser_init(nf_sock, &state, &msgs);
+		parser_init(nf_sock, &cache, &state, &msgs);
 		scanner = scanner_init(&state);
 		if (scanner_read_file(scanner, filename, &internal_location) < 0)
 			goto out;
 	} else if (interactive) {
-		if (cli_init(&nft, nf_sock, &state) < 0) {
+		if (cli_init(&nft, nf_sock, &cache, &state) < 0) {
 			fprintf(stderr, "%s: interactive CLI not supported in this build\n",
 				argv[0]);
 			exit(NFT_EXIT_FAILURE);
@@ -424,13 +431,13 @@ int main(int argc, char * const *argv)
 		exit(NFT_EXIT_FAILURE);
 	}
 
-	if (nft_run(&nft, nf_sock, scanner, &state, &msgs) != 0)
+	if (nft_run(&nft, nf_sock, &cache, scanner, &state, &msgs) != 0)
 		rc = NFT_EXIT_FAILURE;
 out:
 	scanner_destroy(scanner);
 	erec_print_list(stderr, &msgs);
 	xfree(buf);
-	cache_release();
+	cache_release(&cache);
 	iface_cache_release();
 	netlink_close_sock(nf_sock);
 	nft_exit();

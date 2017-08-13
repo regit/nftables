@@ -1623,7 +1623,8 @@ static void set_elem_parse_udata(struct nftnl_set_elem *nlse,
 }
 
 static int netlink_delinearize_setelem(struct nftnl_set_elem *nlse,
-				       const struct set *set)
+				       const struct set *set,
+				       struct nft_cache *cache)
 {
 	struct nft_data_delinearize nld;
 	struct expr *expr, *key, *data;
@@ -1659,7 +1660,7 @@ static int netlink_delinearize_setelem(struct nftnl_set_elem *nlse,
 		const struct nftnl_expr *nle;
 
 		nle = nftnl_set_elem_get(nlse, NFTNL_SET_ELEM_EXPR, NULL);
-		expr->stmt = netlink_parse_set_expr(set, nle);
+		expr->stmt = netlink_parse_set_expr(set, cache, nle);
 	}
 	if (flags & NFT_SET_ELEM_INTERVAL_END)
 		expr->flags |= EXPR_F_INTERVAL_END;
@@ -1712,7 +1713,7 @@ int netlink_delete_setelems(struct netlink_ctx *ctx, const struct handle *h,
 static int list_setelem_cb(struct nftnl_set_elem *nlse, void *arg)
 {
 	struct netlink_ctx *ctx = arg;
-	return netlink_delinearize_setelem(nlse, ctx->set);
+	return netlink_delinearize_setelem(nlse, ctx->set, ctx->cache);
 }
 
 int netlink_get_setelems(struct netlink_ctx *ctx, const struct handle *h,
@@ -2037,7 +2038,7 @@ static uint32_t netlink_msg2nftnl_of(uint32_t msg)
 
 static void nlr_for_each_set(struct nftnl_rule *nlr,
 			     void (*cb)(struct set *s, void *data),
-			     void *data)
+			     void *data, struct nft_cache *cache)
 {
 	struct nftnl_expr_iter *nlrei;
 	struct nftnl_expr *nlre;
@@ -2060,7 +2061,7 @@ static void nlr_for_each_set(struct nftnl_rule *nlr,
 			goto next;
 
 		set_name = nftnl_expr_get_str(nlre, NFTNL_EXPR_LOOKUP_SET);
-		s = set_lookup_global(family, table, set_name);
+		s = set_lookup_global(family, table, set_name, cache);
 		if (s == NULL)
 			goto next;
 
@@ -2269,7 +2270,7 @@ static int netlink_events_setelem_cb(const struct nlmsghdr *nlh, int type,
 	setname = nftnl_set_get_str(nls, NFTNL_SET_NAME);
 	family = nftnl_set_get_u32(nls, NFTNL_SET_FAMILY);
 
-	set = set_lookup_global(family, table, setname);
+	set = set_lookup_global(family, table, setname, monh->cache);
 	if (set == NULL) {
 		fprintf(stderr, "W: Received event for an unknown set.");
 		goto out;
@@ -2301,7 +2302,8 @@ static int netlink_events_setelem_cb(const struct nlmsghdr *nlh, int type,
 				nftnl_set_elems_iter_destroy(nlsei);
 				goto out;
 			}
-			if (netlink_delinearize_setelem(nlse, dummyset) < 0) {
+			if (netlink_delinearize_setelem(nlse, dummyset,
+							monh->cache) < 0) {
 				set_free(dummyset);
 				nftnl_set_elems_iter_destroy(nlsei);
 				goto out;
@@ -2418,7 +2420,8 @@ static int netlink_events_rule_cb(const struct nlmsghdr *nlh, int type,
 		switch (type) {
 		case NFT_MSG_NEWRULE:
 			r = netlink_delinearize_rule(monh->ctx, nlr);
-			nlr_for_each_set(nlr, rule_map_decompose_cb, NULL);
+			nlr_for_each_set(nlr, rule_map_decompose_cb, NULL,
+					 monh->cache);
 
 			printf("add rule %s %s %s ", family, table, chain);
 			rule_print(r, monh->ctx->octx);
@@ -2454,7 +2457,7 @@ static void netlink_events_cache_addtable(struct netlink_mon_handler *monh,
 	t = netlink_delinearize_table(monh->ctx, nlt);
 	nftnl_table_free(nlt);
 
-	table_add_hash(t);
+	table_add_hash(t, monh->cache);
 }
 
 static void netlink_events_cache_deltable(struct netlink_mon_handler *monh,
@@ -2468,7 +2471,7 @@ static void netlink_events_cache_deltable(struct netlink_mon_handler *monh,
 	h.family = nftnl_table_get_u32(nlt, NFTNL_TABLE_FAMILY);
 	h.table  = nftnl_table_get_str(nlt, NFTNL_TABLE_NAME);
 
-	t = table_lookup(&h);
+	t = table_lookup(&h, monh->cache);
 	if (t == NULL)
 		goto out;
 
@@ -2498,7 +2501,7 @@ static void netlink_events_cache_addset(struct netlink_mon_handler *monh,
 		goto out;
 	s->init = set_expr_alloc(monh->loc, s);
 
-	t = table_lookup(&s->handle);
+	t = table_lookup(&s->handle, monh->cache);
 	if (t == NULL) {
 		fprintf(stderr, "W: Unable to cache set: table not found.\n");
 		set_free(s);
@@ -2525,7 +2528,7 @@ static void netlink_events_cache_addsetelem(struct netlink_mon_handler *monh,
 	table   = nftnl_set_get_str(nls, NFTNL_SET_TABLE);
 	setname = nftnl_set_get_str(nls, NFTNL_SET_NAME);
 
-	set = set_lookup_global(family, table, setname);
+	set = set_lookup_global(family, table, setname, monh->cache);
 	if (set == NULL) {
 		fprintf(stderr,
 			"W: Unable to cache set_elem. Set not found.\n");
@@ -2538,7 +2541,7 @@ static void netlink_events_cache_addsetelem(struct netlink_mon_handler *monh,
 
 	nlse = nftnl_set_elems_iter_next(nlsei);
 	while (nlse != NULL) {
-		if (netlink_delinearize_setelem(nlse, set) < 0) {
+		if (netlink_delinearize_setelem(nlse, set, monh->cache) < 0) {
 			fprintf(stderr,
 				"W: Unable to cache set_elem. "
 				"Delinearize failed.\n");
@@ -2564,7 +2567,8 @@ static void netlink_events_cache_delsets(struct netlink_mon_handler *monh,
 {
 	struct nftnl_rule *nlr = netlink_rule_alloc(nlh);
 
-	nlr_for_each_set(nlr, netlink_events_cache_delset_cb, NULL);
+	nlr_for_each_set(nlr, netlink_events_cache_delset_cb, NULL,
+			 monh->cache);
 	nftnl_rule_free(nlr);
 }
 
@@ -2587,7 +2591,7 @@ static void netlink_events_cache_addobj(struct netlink_mon_handler *monh,
 	if (obj == NULL)
 		goto out;
 
-	t = table_lookup(&obj->handle);
+	t = table_lookup(&obj->handle, monh->cache);
 	if (t == NULL) {
 		fprintf(stderr, "W: Unable to cache object: table not found.\n");
 		obj_free(obj);
@@ -2616,7 +2620,7 @@ static void netlink_events_cache_delobj(struct netlink_mon_handler *monh,
 	name     = nftnl_obj_get_str(nlo, NFTNL_OBJ_NAME);
 	type	 = nftnl_obj_get_u32(nlo, NFTNL_OBJ_TYPE);
 
-	t = table_lookup(&h);
+	t = table_lookup(&h, monh->cache);
 	if (t == NULL) {
 		fprintf(stderr, "W: Unable to cache object: table not found.\n");
 		goto out;
@@ -2712,7 +2716,7 @@ static void trace_print_verdict(const struct nftnl_trace *nlt,
 }
 
 static void trace_print_rule(const struct nftnl_trace *nlt,
-			      struct output_ctx *octx)
+			      struct output_ctx *octx, struct nft_cache *cache)
 {
 	const struct table *table;
 	uint64_t rule_handle;
@@ -2727,7 +2731,7 @@ static void trace_print_rule(const struct nftnl_trace *nlt,
 	if (!h.table)
 		return;
 
-	table = table_lookup(&h);
+	table = table_lookup(&h, cache);
 	if (!table)
 		return;
 
@@ -2919,7 +2923,7 @@ static int netlink_events_trace_cb(const struct nlmsghdr *nlh, int type,
 			trace_print_packet(nlt, monh->ctx->octx);
 
 		if (nftnl_trace_is_set(nlt, NFTNL_TRACE_RULE_HANDLE))
-			trace_print_rule(nlt, monh->ctx->octx);
+			trace_print_rule(nlt, monh->ctx->octx, monh->cache);
 		break;
 	case NFT_TRACETYPE_POLICY:
 	case NFT_TRACETYPE_RETURN:

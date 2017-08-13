@@ -53,9 +53,8 @@ void handle_merge(struct handle *dst, const struct handle *src)
 		dst->position = src->position;
 }
 
-static LIST_HEAD(table_list);
-
-static int cache_init_tables(struct netlink_ctx *ctx, struct handle *h)
+static int cache_init_tables(struct netlink_ctx *ctx, struct handle *h,
+			     struct nft_cache *cache)
 {
 	int ret;
 
@@ -63,7 +62,7 @@ static int cache_init_tables(struct netlink_ctx *ctx, struct handle *h)
 	if (ret < 0)
 		return -1;
 
-	list_splice_tail_init(&ctx->list, &table_list);
+	list_splice_tail_init(&ctx->list, &cache->list);
 	return 0;
 }
 
@@ -75,7 +74,7 @@ static int cache_init_objects(struct netlink_ctx *ctx, enum cmd_ops cmd)
 	struct set *set;
 	int ret;
 
-	list_for_each_entry(table, &table_list, list) {
+	list_for_each_entry(table, &ctx->cache->list, list) {
 		ret = netlink_list_sets(ctx, &table->handle,
 					&internal_location);
 		list_splice_tail_init(&ctx->list, &table->sets);
@@ -122,8 +121,8 @@ static int cache_init_objects(struct netlink_ctx *ctx, enum cmd_ops cmd)
 	return 0;
 }
 
-static int cache_init(struct mnl_socket *nf_sock, enum cmd_ops cmd,
-		      struct list_head *msgs)
+static int cache_init(struct mnl_socket *nf_sock, struct nft_cache *cache,
+		      enum cmd_ops cmd, struct list_head *msgs)
 {
 	struct handle handle = {
 		.family = NFPROTO_UNSPEC,
@@ -134,9 +133,10 @@ static int cache_init(struct mnl_socket *nf_sock, enum cmd_ops cmd,
 	memset(&ctx, 0, sizeof(ctx));
 	init_list_head(&ctx.list);
 	ctx.nf_sock = nf_sock;
+	ctx.cache = cache;
 	ctx.msgs = msgs;
 
-	ret = cache_init_tables(&ctx, &handle);
+	ret = cache_init_tables(&ctx, &handle, cache);
 	if (ret < 0)
 		return ret;
 	ret = cache_init_objects(&ctx, cmd);
@@ -146,44 +146,42 @@ static int cache_init(struct mnl_socket *nf_sock, enum cmd_ops cmd,
 	return 0;
 }
 
-static bool cache_initialized;
-
-int cache_update(struct mnl_socket *nf_sock, enum cmd_ops cmd,
-		 struct list_head *msgs)
+int cache_update(struct mnl_socket *nf_sock, struct nft_cache *cache,
+		 enum cmd_ops cmd, struct list_head *msgs)
 {
 	int ret;
 
-	if (cache_initialized)
+	if (cache->initialized)
 		return 0;
 replay:
 	netlink_genid_get(nf_sock);
-	ret = cache_init(nf_sock, cmd, msgs);
+	ret = cache_init(nf_sock, cache, cmd, msgs);
 	if (ret < 0) {
-		cache_release();
+		cache_release(cache);
 		if (errno == EINTR) {
 			netlink_restart(nf_sock);
 			goto replay;
 		}
 		return -1;
 	}
-	cache_initialized = true;
+	cache->initialized = true;
 	return 0;
 }
 
-void cache_flush(void)
+void cache_flush(struct list_head *table_list)
 {
 	struct table *table, *next;
 
-	list_for_each_entry_safe(table, next, &table_list, list) {
+	list_for_each_entry_safe(table, next, table_list, list) {
 		list_del(&table->list);
 		table_free(table);
 	}
 }
 
-void cache_release(void)
+void cache_release(struct nft_cache *cache)
 {
-	cache_flush();
-	cache_initialized = false;
+	cache_flush(&cache->list);
+	cache->initialized = false;
 }
 
 /* internal ID to uniquely identify a set in the batch */
@@ -236,7 +234,7 @@ struct set *set_lookup(const struct table *table, const char *name)
 }
 
 struct set *set_lookup_global(uint32_t family, const char *table,
-			      const char *name)
+			      const char *name, struct nft_cache *cache)
 {
 	struct handle h;
 	struct table *t;
@@ -244,7 +242,7 @@ struct set *set_lookup_global(uint32_t family, const char *table,
 	h.family = family;
 	h.table = table;
 
-	t = table_lookup(&h);
+	t = table_lookup(&h, cache);
 	if (t == NULL)
 		return NULL;
 
@@ -745,16 +743,17 @@ struct table *table_get(struct table *table)
 	return table;
 }
 
-void table_add_hash(struct table *table)
+void table_add_hash(struct table *table, struct nft_cache *cache)
 {
-	list_add_tail(&table->list, &table_list);
+	list_add_tail(&table->list, &cache->list);
 }
 
-struct table *table_lookup(const struct handle *h)
+struct table *table_lookup(const struct handle *h,
+			   const struct nft_cache *cache)
 {
 	struct table *table;
 
-	list_for_each_entry(table, &table_list, list) {
+	list_for_each_entry(table, &cache->list, list) {
 		if (table->handle.family == h->family &&
 		    !strcmp(table->handle.table, h->table))
 			return table;
@@ -987,7 +986,7 @@ static int do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	struct table *table;
 	struct set *set;
 
-	table = table_lookup(h);
+	table = table_lookup(h, ctx->cache);
 	set = set_lookup(table, h->set);
 
 	if (set->flags & NFT_SET_INTERVAL &&
@@ -1077,7 +1076,7 @@ static int do_delete_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	struct table *table;
 	struct set *set;
 
-	table = table_lookup(h);
+	table = table_lookup(h, ctx->cache);
 	set = set_lookup(table, h->set);
 
 	if (set->flags & NFT_SET_INTERVAL &&
@@ -1152,7 +1151,7 @@ static int do_list_sets(struct netlink_ctx *ctx, struct cmd *cmd)
 	struct table *table;
 	struct set *set;
 
-	list_for_each_entry(table, &table_list, list) {
+	list_for_each_entry(table, &ctx->cache->list, list) {
 		if (cmd->handle.family != NFPROTO_UNSPEC &&
 		    cmd->handle.family != table->handle.family)
 			continue;
@@ -1355,7 +1354,7 @@ static int do_list_obj(struct netlink_ctx *ctx, struct cmd *cmd, uint32_t type)
 	struct table *table;
 	struct obj *obj;
 
-	list_for_each_entry(table, &table_list, list) {
+	list_for_each_entry(table, &ctx->cache->list, list) {
 		if (cmd->handle.family != NFPROTO_UNSPEC &&
 		    cmd->handle.family != table->handle.family)
 			continue;
@@ -1389,7 +1388,7 @@ static int do_list_ruleset(struct netlink_ctx *ctx, struct cmd *cmd)
 	unsigned int family = cmd->handle.family;
 	struct table *table;
 
-	list_for_each_entry(table, &table_list, list) {
+	list_for_each_entry(table, &ctx->cache->list, list) {
 		if (family != NFPROTO_UNSPEC &&
 		    table->handle.family != family)
 			continue;
@@ -1410,7 +1409,7 @@ static int do_list_tables(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	struct table *table;
 
-	list_for_each_entry(table, &table_list, list) {
+	list_for_each_entry(table, &ctx->cache->list, list) {
 		if (cmd->handle.family != NFPROTO_UNSPEC &&
 		    cmd->handle.family != table->handle.family)
 			continue;
@@ -1455,7 +1454,7 @@ static int do_list_chains(struct netlink_ctx *ctx, struct cmd *cmd)
 	struct table *table;
 	struct chain *chain;
 
-	list_for_each_entry(table, &table_list, list) {
+	list_for_each_entry(table, &ctx->cache->list, list) {
 		if (cmd->handle.family != NFPROTO_UNSPEC &&
 		    cmd->handle.family != table->handle.family)
 			continue;
@@ -1493,7 +1492,7 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	struct table *table = NULL;
 
 	if (cmd->handle.table != NULL)
-		table = table_lookup(&cmd->handle);
+		table = table_lookup(&cmd->handle, ctx->cache);
 
 	switch (cmd->obj) {
 	case CMD_OBJ_TABLE:
@@ -1559,7 +1558,7 @@ static int do_command_reset(struct netlink_ctx *ctx, struct cmd *cmd)
 
 	ret = netlink_reset_objs(ctx, &cmd->handle, &cmd->location, type, dump);
 	list_for_each_entry_safe(obj, next, &ctx->list, list) {
-		table = table_lookup(&obj->handle);
+		table = table_lookup(&obj->handle, ctx->cache);
 		list_move(&obj->list, &table->objs);
 	}
 	if (ret < 0)
@@ -1590,7 +1589,7 @@ static int do_command_flush(struct netlink_ctx *ctx, struct cmd *cmd)
 
 static int do_command_rename(struct netlink_ctx *ctx, struct cmd *cmd)
 {
-	struct table *table = table_lookup(&cmd->handle);
+	struct table *table = table_lookup(&cmd->handle, ctx->cache);
 	struct chain *chain;
 
 	switch (cmd->obj) {
@@ -1634,7 +1633,7 @@ static int do_command_monitor(struct netlink_ctx *ctx, struct cmd *cmd)
 		struct chain *chain;
 		int ret;
 
-		list_for_each_entry(t, &table_list, list) {
+		list_for_each_entry(t, &ctx->cache->list, list) {
 			list_for_each_entry(s, &t->sets, list)
 				s->init = set_expr_alloc(&cmd->location, s);
 
@@ -1665,6 +1664,7 @@ static int do_command_monitor(struct netlink_ctx *ctx, struct cmd *cmd)
 	monhandler.format = cmd->monitor->format;
 	monhandler.ctx = ctx;
 	monhandler.loc = &cmd->location;
+	monhandler.cache = ctx->cache;
 
 	return netlink_monitor(&monhandler, ctx->nf_sock);
 }

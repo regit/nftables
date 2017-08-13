@@ -144,7 +144,7 @@ static struct table *table_lookup_global(struct eval_ctx *ctx)
 	if (ctx->table != NULL)
 		return ctx->table;
 
-	table = table_lookup(&ctx->cmd->handle);
+	table = table_lookup(&ctx->cmd->handle, ctx->cache);
 	if (table == NULL)
 		return NULL;
 
@@ -181,7 +181,8 @@ static int expr_evaluate_symbol(struct eval_ctx *ctx, struct expr **expr)
 		new = expr_clone(sym->expr);
 		break;
 	case SYMBOL_SET:
-		ret = cache_update(ctx->nf_sock, ctx->cmd->op, ctx->msgs);
+		ret = cache_update(ctx->nf_sock, ctx->cache, ctx->cmd->op,
+				   ctx->msgs);
 		if (ret < 0)
 			return ret;
 
@@ -2915,13 +2916,13 @@ static int table_evaluate(struct eval_ctx *ctx, struct table *table)
 	struct chain *chain;
 	struct set *set;
 
-	if (table_lookup(&ctx->cmd->handle) == NULL) {
+	if (table_lookup(&ctx->cmd->handle, ctx->cache) == NULL) {
 		if (table == NULL) {
 			table = table_alloc();
 			handle_merge(&table->handle, &ctx->cmd->handle);
-			table_add_hash(table);
+			table_add_hash(table, ctx->cache);
 		} else {
-			table_add_hash(table_get(table));
+			table_add_hash(table_get(table), ctx->cache);
 		}
 	}
 
@@ -2949,26 +2950,30 @@ static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 
 	switch (cmd->obj) {
 	case CMD_OBJ_SETELEM:
-		ret = cache_update(ctx->nf_sock, cmd->op, ctx->msgs);
+		ret = cache_update(ctx->nf_sock, ctx->cache, cmd->op,
+				   ctx->msgs);
 		if (ret < 0)
 			return ret;
 
 		return setelem_evaluate(ctx, &cmd->expr);
 	case CMD_OBJ_SET:
-		ret = cache_update(ctx->nf_sock, cmd->op, ctx->msgs);
+		ret = cache_update(ctx->nf_sock, ctx->cache, cmd->op,
+				   ctx->msgs);
 		if (ret < 0)
 			return ret;
 
 		handle_merge(&cmd->set->handle, &cmd->handle);
 		return set_evaluate(ctx, cmd->set);
 	case CMD_OBJ_RULE:
-		ret = cache_update(ctx->nf_sock, cmd->op, ctx->msgs);
+		ret = cache_update(ctx->nf_sock, ctx->cache, cmd->op,
+				   ctx->msgs);
 		if (ret < 0)
 			return ret;
 		handle_merge(&cmd->rule->handle, &cmd->handle);
 		return rule_evaluate(ctx, cmd->rule);
 	case CMD_OBJ_CHAIN:
-		ret = cache_update(ctx->nf_sock, cmd->op, ctx->msgs);
+		ret = cache_update(ctx->nf_sock, ctx->cache, cmd->op,
+				   ctx->msgs);
 		if (ret < 0)
 			return ret;
 
@@ -2978,7 +2983,8 @@ static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_COUNTER:
 	case CMD_OBJ_QUOTA:
 	case CMD_OBJ_CT_HELPER:
-		ret = cache_update(ctx->nf_sock, cmd->op, ctx->msgs);
+		ret = cache_update(ctx->nf_sock, ctx->cache, cmd->op,
+				   ctx->msgs);
 		if (ret < 0)
 			return ret;
 
@@ -2994,7 +3000,8 @@ static int cmd_evaluate_delete(struct eval_ctx *ctx, struct cmd *cmd)
 
 	switch (cmd->obj) {
 	case CMD_OBJ_SETELEM:
-		ret = cache_update(ctx->nf_sock, cmd->op, ctx->msgs);
+		ret = cache_update(ctx->nf_sock, ctx->cache, cmd->op,
+				   ctx->msgs);
 		if (ret < 0)
 			return ret;
 
@@ -3020,7 +3027,7 @@ static int cmd_evaluate_list_obj(struct eval_ctx *ctx, const struct cmd *cmd,
 	if (obj_type == NFT_OBJECT_UNSPEC)
 		obj_type = NFT_OBJECT_COUNTER;
 
-	table = table_lookup(&cmd->handle);
+	table = table_lookup(&cmd->handle, ctx->cache);
 	if (table == NULL)
 		return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 				 cmd->handle.table);
@@ -3036,7 +3043,7 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 	struct set *set;
 	int ret;
 
-	ret = cache_update(ctx->nf_sock, cmd->op, ctx->msgs);
+	ret = cache_update(ctx->nf_sock, ctx->cache, cmd->op, ctx->msgs);
 	if (ret < 0)
 		return ret;
 
@@ -3045,13 +3052,13 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 		if (cmd->handle.table == NULL)
 			return 0;
 
-		table = table_lookup(&cmd->handle);
+		table = table_lookup(&cmd->handle, ctx->cache);
 		if (table == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
 		return 0;
 	case CMD_OBJ_SET:
-		table = table_lookup(&cmd->handle);
+		table = table_lookup(&cmd->handle, ctx->cache);
 		if (table == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
@@ -3061,7 +3068,7 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 					 cmd->handle.set);
 		return 0;
 	case CMD_OBJ_FLOWTABLE:
-		table = table_lookup(&cmd->handle);
+		table = table_lookup(&cmd->handle, ctx->cache);
 		if (table == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
@@ -3071,7 +3078,7 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 					 cmd->handle.set);
 		return 0;
 	case CMD_OBJ_MAP:
-		table = table_lookup(&cmd->handle);
+		table = table_lookup(&cmd->handle, ctx->cache);
 		if (table == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
@@ -3081,7 +3088,7 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 					 cmd->handle.set);
 		return 0;
 	case CMD_OBJ_CHAIN:
-		table = table_lookup(&cmd->handle);
+		table = table_lookup(&cmd->handle, ctx->cache);
 		if (table == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
@@ -3101,7 +3108,7 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_SETS:
 		if (cmd->handle.table == NULL)
 			return 0;
-		if (table_lookup(&cmd->handle) == NULL)
+		if (table_lookup(&cmd->handle, ctx->cache) == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
 		return 0;
@@ -3119,7 +3126,7 @@ static int cmd_evaluate_reset(struct eval_ctx *ctx, struct cmd *cmd)
 {
 	int ret;
 
-	ret = cache_update(ctx->nf_sock, cmd->op, ctx->msgs);
+	ret = cache_update(ctx->nf_sock, ctx->cache, cmd->op, ctx->msgs);
 	if (ret < 0)
 		return ret;
 
@@ -3130,7 +3137,7 @@ static int cmd_evaluate_reset(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_QUOTAS:
 		if (cmd->handle.table == NULL)
 			return 0;
-		if (table_lookup(&cmd->handle) == NULL)
+		if (table_lookup(&cmd->handle, ctx->cache) == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
 		return 0;
@@ -3145,13 +3152,13 @@ static int cmd_evaluate_flush(struct eval_ctx *ctx, struct cmd *cmd)
 	struct set *set;
 	int ret;
 
-	ret = cache_update(ctx->nf_sock, cmd->op, ctx->msgs);
+	ret = cache_update(ctx->nf_sock, ctx->cache, cmd->op, ctx->msgs);
 	if (ret < 0)
 		return ret;
 
 	switch (cmd->obj) {
 	case CMD_OBJ_RULESET:
-		cache_flush();
+		cache_flush(&ctx->cache->list);
 		break;
 	case CMD_OBJ_TABLE:
 		/* Flushing a table does not empty the sets in the table nor remove
@@ -3161,7 +3168,7 @@ static int cmd_evaluate_flush(struct eval_ctx *ctx, struct cmd *cmd)
 		/* Chains don't hold sets */
 		break;
 	case CMD_OBJ_SET:
-		table = table_lookup(&cmd->handle);
+		table = table_lookup(&cmd->handle, ctx->cache);
 		if (table == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
@@ -3171,7 +3178,7 @@ static int cmd_evaluate_flush(struct eval_ctx *ctx, struct cmd *cmd)
 					 cmd->handle.set);
 		return 0;
 	case CMD_OBJ_MAP:
-		table = table_lookup(&cmd->handle);
+		table = table_lookup(&cmd->handle, ctx->cache);
 		if (table == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
@@ -3181,7 +3188,7 @@ static int cmd_evaluate_flush(struct eval_ctx *ctx, struct cmd *cmd)
 					 cmd->handle.set);
 		return 0;
 	case CMD_OBJ_FLOWTABLE:
-		table = table_lookup(&cmd->handle);
+		table = table_lookup(&cmd->handle, ctx->cache);
 		if (table == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 cmd->handle.table);
@@ -3203,11 +3210,12 @@ static int cmd_evaluate_rename(struct eval_ctx *ctx, struct cmd *cmd)
 
 	switch (cmd->obj) {
 	case CMD_OBJ_CHAIN:
-		ret = cache_update(ctx->nf_sock, cmd->op, ctx->msgs);
+		ret = cache_update(ctx->nf_sock, ctx->cache, cmd->op,
+				   ctx->msgs);
 		if (ret < 0)
 			return ret;
 
-		table = table_lookup(&ctx->cmd->handle);
+		table = table_lookup(&ctx->cmd->handle, ctx->cache);
 		if (table == NULL)
 			return cmd_error(ctx, "Could not process rule: Table '%s' does not exist",
 					 ctx->cmd->handle.table);
@@ -3300,7 +3308,7 @@ static int cmd_evaluate_monitor(struct eval_ctx *ctx, struct cmd *cmd)
 	uint32_t event;
 	int ret;
 
-	ret = cache_update(ctx->nf_sock, cmd->op, ctx->msgs);
+	ret = cache_update(ctx->nf_sock, ctx->cache, cmd->op, ctx->msgs);
 	if (ret < 0)
 		return ret;
 
@@ -3321,7 +3329,7 @@ static int cmd_evaluate_monitor(struct eval_ctx *ctx, struct cmd *cmd)
 
 static int cmd_evaluate_export(struct eval_ctx *ctx, struct cmd *cmd)
 {
-	return cache_update(ctx->nf_sock, cmd->op, ctx->msgs);
+	return cache_update(ctx->nf_sock, ctx->cache, cmd->op, ctx->msgs);
 }
 
 #ifdef DEBUG

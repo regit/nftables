@@ -116,8 +116,9 @@ struct table {
 extern struct table *table_alloc(void);
 extern struct table *table_get(struct table *table);
 extern void table_free(struct table *table);
-extern void table_add_hash(struct table *table);
-extern struct table *table_lookup(const struct handle *h);
+extern void table_add_hash(struct table *table, struct nft_cache *cache);
+extern struct table *table_lookup(const struct handle *h,
+				  const struct nft_cache *cache);
 
 /**
  * enum chain_flags - chain flags
@@ -248,7 +249,7 @@ extern void set_free(struct set *set);
 extern void set_add_hash(struct set *set, struct table *table);
 extern struct set *set_lookup(const struct table *table, const char *name);
 extern struct set *set_lookup_global(uint32_t family, const char *table,
-				     const char *name);
+				     const char *name, struct nft_cache *cache);
 extern void set_print(const struct set *set, struct output_ctx *octx);
 extern void set_print_plain(const struct set *s, struct output_ctx *octx);
 
@@ -468,6 +469,7 @@ extern void cmd_free(struct cmd *cmd);
  * @rule:	current rule
  * @set:	current set
  * @stmt:	current statement
+ * @cache:	cache context
  * @ectx:	expression context
  * @pctx:	payload context
  */
@@ -479,6 +481,7 @@ struct eval_ctx {
 	struct rule		*rule;
 	struct set		*set;
 	struct stmt		*stmt;
+	struct nft_cache	*cache;
 	struct expr_ctx		ectx;
 	struct proto_ctx	pctx;
 };
@@ -490,10 +493,10 @@ extern struct error_record *rule_postprocess(struct rule *rule);
 struct netlink_ctx;
 extern int do_command(struct netlink_ctx *ctx, struct cmd *cmd);
 
-extern int cache_update(struct mnl_socket *nf_sock, enum cmd_ops cmd,
-			struct list_head *msgs);
-extern void cache_flush(void);
-extern void cache_release(void);
+extern int cache_update(struct mnl_socket *nf_sock, struct nft_cache *cache,
+			 enum cmd_ops cmd, struct list_head *msgs);
+extern void cache_flush(struct list_head *table_list);
+extern void cache_release(struct nft_cache *cache);
 
 enum udata_type {
 	UDATA_TYPE_COMMENT,
