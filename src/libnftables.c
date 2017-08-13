@@ -36,6 +36,8 @@ void nft_global_init(void)
 
 void nft_global_deinit(void)
 {
+	cache_release();
+	iface_cache_release();
 	ct_label_table_exit();
 	realm_table_rt_exit();
 	devgroup_table_exit();
@@ -78,8 +80,10 @@ int nft_run_command_from_buffer(struct nft_ctx *nft, const char *buf,
 	scanner = scanner_init(&state);
 	scanner_push_buffer(scanner, &indesc_cmdline, buf);
 		
-	if (nft_run(nft, nft->nf_sock, scanner, &state, &msgs) != 0)
+	if (nft_run(nft, nft->nf_sock, scanner, &state, &msgs) != 0) {
+		erec_print_list(stderr, &msgs);
 		rc = NFT_EXIT_FAILURE;
+	}
 
 	return rc;
 }
@@ -99,8 +103,10 @@ int nft_run_command_from_filename(struct nft_ctx *nft, const char *filename)
 	scanner = scanner_init(&state);
 	if (scanner_read_file(scanner, filename, &internal_location) < 0)
 		return NFT_EXIT_FAILURE;
-	if (nft_run(nft, nft->nf_sock, scanner, &state, &msgs) != 0)
+	if (nft_run(nft, nft->nf_sock, scanner, &state, &msgs) != 0) {
+		erec_print_list(stderr, &msgs);
 		rc = NFT_EXIT_FAILURE;
+	}
 
 	return rc;
 }

@@ -175,10 +175,11 @@ void __fmtstring(1, 0) cli_display(const char *fmt, va_list ap)
 	rl_forced_update_display();
 }
 
-int cli_init(struct nft_ctx *nft, struct mnl_socket *nf_sock,
-	     struct parser_state *_state)
+int cli_init(struct nft_ctx *nft, struct mnl_socket *nf_sock)
 {
 	const char *home;
+	struct parser_state _state;
+
 
 	cli_nf_sock = nf_sock;
 	cli_nft = *nft;
@@ -197,8 +198,7 @@ int cli_init(struct nft_ctx *nft, struct mnl_socket *nf_sock,
 	read_history(histfile);
 	history_set_pos(history_length);
 
-	state	= _state;
-	scanner = scanner_init(state);
+	scanner = scanner_init(&_state);
 
 	while (!eof)
 		rl_callback_read_char();

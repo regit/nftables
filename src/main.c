@@ -260,9 +260,6 @@ err1:
 
 int main(int argc, char * const *argv)
 {
-	struct parser_state state;
-	void *scanner;
-	LIST_HEAD(msgs);
 	char *buf = NULL, *filename = NULL;
 	unsigned int len;
 	bool interactive = false;
@@ -367,14 +364,14 @@ int main(int argc, char * const *argv)
 		rc = nft_run_command_from_buffer(nft, buf, len + 2);
 		if (rc < 0)
 			return rc;
-		goto libout;
+		goto out;
 	} else if (filename != NULL) {
 		rc = nft_run_command_from_filename(nft, filename);
 		if (rc < 0)
 			return rc;
-		goto libout;
+		goto out;
 	} else if (interactive) {
-		if (cli_init(nft, nft->nf_sock, &state) < 0) {
+		if (cli_init(nft, nft->nf_sock) < 0) {
 			fprintf(stderr, "%s: interactive CLI not supported in this build\n",
 				argv[0]);
 			exit(NFT_EXIT_FAILURE);
@@ -386,12 +383,7 @@ int main(int argc, char * const *argv)
 	}
 
 out:
-	scanner_destroy(scanner);
-	erec_print_list(stderr, &msgs);
-libout:
 	xfree(buf);
-	cache_release();
-	iface_cache_release();
 	nft_context_free(nft);
 	nft_global_deinit();
 
