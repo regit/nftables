@@ -17,4 +17,7 @@
 void nft_global_init(void);
 void nft_global_deinit(void);
 
+struct nft_ctx *nft_context_new(void);
+void nft_context_free(struct nft_ctx *nft);
+
 #endif

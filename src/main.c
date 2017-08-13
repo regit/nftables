@@ -29,7 +29,6 @@
 #include <iface.h>
 #include <cli.h>
 
-static struct nft_ctx nft;
 unsigned int max_errors = 10;
 #ifdef DEBUG
 unsigned int debug_level;
@@ -283,13 +282,13 @@ int main(int argc, char * const *argv)
 	unsigned int len;
 	bool interactive = false;
 	int i, val, rc = NFT_EXIT_SUCCESS;
-	struct mnl_socket *nf_sock;
+	struct nft_ctx *nft;
 
 	memset(&cache, 0, sizeof(cache));
 	init_list_head(&cache.list);
 
 	nft_global_init();
-	nf_sock = netlink_open_sock();
+	nft = nft_context_new();
 	while (1) {
 		val = getopt_long(argc, argv, OPTSTRING, options, NULL);
 		if (val == -1)
@@ -304,7 +303,7 @@ int main(int argc, char * const *argv)
 			       PACKAGE_NAME, PACKAGE_VERSION, RELEASE_NAME);
 			exit(NFT_EXIT_SUCCESS);
 		case OPT_CHECK:
-			nft.check = true;
+			nft->check = true;
 			break;
 		case OPT_FILE:
 			filename = optarg;
@@ -322,7 +321,7 @@ int main(int argc, char * const *argv)
 			include_paths[num_include_paths++] = optarg;
 			break;
 		case OPT_NUMERIC:
-			if (++nft.output.numeric > NUMERIC_ALL) {
+			if (++nft->output.numeric > NUMERIC_ALL) {
 				fprintf(stderr, "Too many numeric options "
 						"used, max. %u\n",
 					NUMERIC_ALL);
@@ -330,10 +329,10 @@ int main(int argc, char * const *argv)
 			}
 			break;
 		case OPT_STATELESS:
-			nft.output.stateless++;
+			nft->output.stateless++;
 			break;
 		case OPT_IP2NAME:
-			nft.output.ip2name++;
+			nft->output.ip2name++;
 			break;
 #ifdef DEBUG
 		case OPT_DEBUG:
@@ -365,10 +364,10 @@ int main(int argc, char * const *argv)
 			break;
 #endif
 		case OPT_HANDLE_OUTPUT:
-			nft.output.handle++;
+			nft->output.handle++;
 			break;
 		case OPT_ECHO:
-			nft.output.echo++;
+			nft->output.echo++;
 			break;
 		case OPT_INVALID:
 			exit(NFT_EXIT_FAILURE);
@@ -386,20 +385,20 @@ int main(int argc, char * const *argv)
 				strcat(buf, " ");
 		}
 		strcat(buf, "\n");
-		parser_init(nf_sock, &cache, &state, &msgs);
+		parser_init(nft->nf_sock, &cache, &state, &msgs);
 		scanner = scanner_init(&state);
 		scanner_push_buffer(scanner, &indesc_cmdline, buf);
 	} else if (filename != NULL) {
-		rc = cache_update(nf_sock, &cache, CMD_INVALID, &msgs);
+		rc = cache_update(nft->nf_sock, &cache, CMD_INVALID, &msgs);
 		if (rc < 0)
 			return rc;
 
-		parser_init(nf_sock, &cache, &state, &msgs);
+		parser_init(nft->nf_sock, &cache, &state, &msgs);
 		scanner = scanner_init(&state);
 		if (scanner_read_file(scanner, filename, &internal_location) < 0)
 			goto out;
 	} else if (interactive) {
-		if (cli_init(&nft, nf_sock, &cache, &state) < 0) {
+		if (cli_init(nft, nft->nf_sock, &cache, &state) < 0) {
 			fprintf(stderr, "%s: interactive CLI not supported in this build\n",
 				argv[0]);
 			exit(NFT_EXIT_FAILURE);
@@ -410,7 +409,7 @@ int main(int argc, char * const *argv)
 		exit(NFT_EXIT_FAILURE);
 	}
 
-	if (nft_run(&nft, nf_sock, &cache, scanner, &state, &msgs) != 0)
+	if (nft_run(nft, nft->nf_sock, &cache, scanner, &state, &msgs) != 0)
 		rc = NFT_EXIT_FAILURE;
 out:
 	scanner_destroy(scanner);
@@ -418,7 +417,7 @@ out:
 	xfree(buf);
 	cache_release(&cache);
 	iface_cache_release();
-	netlink_close_sock(nf_sock);
+	nft_context_free(nft);
 	nft_global_deinit();
 
 	return rc;
