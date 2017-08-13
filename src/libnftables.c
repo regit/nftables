@@ -24,6 +24,8 @@ unsigned int handle_output;
 unsigned int debug_level;
 #endif
 
+const char *include_paths[INCLUDE_PATHS_MAX] = { DEFAULT_INCLUDE_PATH };
+
 void nft_global_init(void)
 {
 	mark_table_init();
