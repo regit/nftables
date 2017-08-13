@@ -34,7 +34,6 @@ unsigned int max_errors = 10;
 unsigned int debug_level;
 #endif
 
-const char *include_paths[INCLUDE_PATHS_MAX] = { DEFAULT_INCLUDE_PATH };
 static unsigned int num_include_paths = 1;
 
 enum opt_vals {
