@@ -34,6 +34,7 @@ struct output_ctx {
 struct nft_ctx {
 	struct output_ctx	output;
 	bool			check;
+	struct mnl_socket	*nf_sock;
 };
 
 extern unsigned int max_errors;

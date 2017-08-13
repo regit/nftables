@@ -42,3 +42,21 @@ void nft_global_deinit(void)
 	realm_table_meta_exit();
 	mark_table_exit();
 }
+
+struct nft_ctx *nft_context_new(void)
+{
+	struct nft_ctx *ctx = NULL;
+	ctx = malloc(sizeof(struct nft_ctx));
+	if (ctx == NULL)
+		return NULL;
+	ctx->nf_sock = netlink_open_sock();
+
+	return ctx;
+}
+
+
+void nft_context_free(struct nft_ctx *nft)
+{
+	netlink_close_sock(nft->nf_sock);
+	free(nft);
+}
