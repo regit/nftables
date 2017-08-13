@@ -18,8 +18,8 @@
 #include <fcntl.h>
 #include <sys/types.h>
 
-#include <nftables/nftables.h>
 #include <nftables.h>
+#include <nftables/nftables.h>
 #include <utils.h>
 #include <parser.h>
 #include <rule.h>
@@ -181,11 +181,6 @@ static const struct {
 	},
 };
 #endif
-
-static const struct input_descriptor indesc_cmdline = {
-	.type	= INDESC_BUFFER,
-	.name	= "<cmdline>",
-};
 
 static int nft_netlink(struct nft_ctx *nft, struct nft_cache *cache,
 		       struct parser_state *state, struct list_head *msgs,
@@ -367,7 +362,7 @@ int main(int argc, char * const *argv)
 			nft->output.handle++;
 			break;
 		case OPT_ECHO:
-			nft.output.echo++;
+			nft->output.echo++;
 			break;
 		case OPT_INVALID:
 			exit(NFT_EXIT_FAILURE);
@@ -385,9 +380,10 @@ int main(int argc, char * const *argv)
 				strcat(buf, " ");
 		}
 		strcat(buf, "\n");
-		parser_init(nft->nf_sock, &cache, &state, &msgs);
-		scanner = scanner_init(&state);
-		scanner_push_buffer(scanner, &indesc_cmdline, buf);
+		rc = nft_run_command_from_buffer(nft, &cache, buf, len + 2);
+		if (rc < 0)
+			return rc;
+		goto libout;
 	} else if (filename != NULL) {
 		rc = cache_update(nft->nf_sock, &cache, CMD_INVALID, &msgs);
 		if (rc < 0)
@@ -397,6 +393,8 @@ int main(int argc, char * const *argv)
 		scanner = scanner_init(&state);
 		if (scanner_read_file(scanner, filename, &internal_location) < 0)
 			goto out;
+		if (nft_run(nft, nft->nf_sock, &cache, scanner, &state, &msgs) != 0)
+			rc = NFT_EXIT_FAILURE;
 	} else if (interactive) {
 		if (cli_init(nft, nft->nf_sock, &cache, &state) < 0) {
 			fprintf(stderr, "%s: interactive CLI not supported in this build\n",
@@ -409,11 +407,10 @@ int main(int argc, char * const *argv)
 		exit(NFT_EXIT_FAILURE);
 	}
 
-	if (nft_run(nft, nft->nf_sock, &cache, scanner, &state, &msgs) != 0)
-		rc = NFT_EXIT_FAILURE;
 out:
 	scanner_destroy(scanner);
 	erec_print_list(stderr, &msgs);
+libout:
 	xfree(buf);
 	cache_release(&cache);
 	iface_cache_release();
