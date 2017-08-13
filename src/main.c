@@ -271,7 +271,6 @@ int main(int argc, char * const *argv)
 {
 	struct parser_state state;
 	struct nft_cache cache;
-	void *scanner;
 	LIST_HEAD(msgs);
 	char *buf = NULL, *filename = NULL;
 	unsigned int len;
@@ -383,18 +382,12 @@ int main(int argc, char * const *argv)
 		rc = nft_run_command_from_buffer(nft, &cache, buf, len + 2);
 		if (rc < 0)
 			return rc;
-		goto libout;
+		goto out;
 	} else if (filename != NULL) {
-		rc = cache_update(nft->nf_sock, &cache, CMD_INVALID, &msgs);
+		rc = nft_run_command_from_filename(nft, &cache, filename);
 		if (rc < 0)
 			return rc;
-
-		parser_init(nft->nf_sock, &cache, &state, &msgs);
-		scanner = scanner_init(&state);
-		if (scanner_read_file(scanner, filename, &internal_location) < 0)
-			goto out;
-		if (nft_run(nft, nft->nf_sock, &cache, scanner, &state, &msgs) != 0)
-			rc = NFT_EXIT_FAILURE;
+		goto out;
 	} else if (interactive) {
 		if (cli_init(nft, nft->nf_sock, &cache, &state) < 0) {
 			fprintf(stderr, "%s: interactive CLI not supported in this build\n",
@@ -408,9 +401,6 @@ int main(int argc, char * const *argv)
 	}
 
 out:
-	scanner_destroy(scanner);
-	erec_print_list(stderr, &msgs);
-libout:
 	xfree(buf);
 	cache_release(&cache);
 	iface_cache_release();
