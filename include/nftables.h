@@ -123,10 +123,6 @@ struct input_descriptor {
 struct parser_state;
 struct mnl_socket;
 
-int nft_run(struct nft_ctx *nft, struct mnl_socket *nf_sock,
-	    struct nft_cache *cache, void *scanner, struct parser_state *state,
-	    struct list_head *msgs);
-
 void ct_label_table_init(void);
 void mark_table_init(void);
 void gmp_init(void);

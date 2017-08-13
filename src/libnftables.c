@@ -7,6 +7,8 @@
 #include <erec.h>
 #include <libmnl/libmnl.h>
 #include <mnl.h>
+#include <netlink.h>
+#include <nftables_common.h>
 
 #include <nftables/nftables.h>
 
