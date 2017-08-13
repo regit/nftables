@@ -84,5 +84,30 @@ int nft_run_command_from_buffer(struct nft_ctx *nft, struct nft_cache *cache,
 	if (nft_run(nft, nft->nf_sock, cache, scanner, &state, &msgs) != 0)
 		rc = NFT_EXIT_FAILURE;
 
+	scanner_destroy(scanner);
+	erec_print_list(stderr, &msgs);
+	return rc;
+}
+
+int nft_run_command_from_filename(struct nft_ctx *nft, struct nft_cache *cache,
+				  const char *filename)
+{
+	int rc = NFT_EXIT_SUCCESS;
+	struct parser_state state;
+	LIST_HEAD(msgs);
+	void *scanner;
+
+	rc = cache_update(nft->nf_sock, cache, CMD_INVALID, &msgs);
+	if (rc < 0)
+		return rc;
+	parser_init(nft->nf_sock, cache, &state, &msgs);
+	scanner = scanner_init(&state);
+	if (scanner_read_file(scanner, filename, &internal_location) < 0)
+		return NFT_EXIT_FAILURE;
+	if (nft_run(nft, nft->nf_sock, cache, scanner, &state, &msgs) != 0)
+		rc = NFT_EXIT_FAILURE;
+
+	scanner_destroy(scanner);
+	erec_print_list(stderr, &msgs);
 	return rc;
 }
