@@ -13,5 +13,6 @@ void nft_context_free(struct nft_ctx *nft);
 
 int nft_run_command_from_buffer(struct nft_ctx *nft, const char *buf,
 				size_t buflen);
+int nft_run_command_from_filename(struct nft_ctx *nft, const char *filename);
 
 #endif

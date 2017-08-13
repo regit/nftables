@@ -369,16 +369,10 @@ int main(int argc, char * const *argv)
 			return rc;
 		goto libout;
 	} else if (filename != NULL) {
-		rc = cache_update(nft->nf_sock, CMD_INVALID, &msgs);
+		rc = nft_run_command_from_filename(nft, filename);
 		if (rc < 0)
 			return rc;
-
-		parser_init(nft->nf_sock, &state, &msgs);
-		scanner = scanner_init(&state);
-		if (scanner_read_file(scanner, filename, &internal_location) < 0)
-			goto out;
-		if (nft_run(nft, nft->nf_sock, scanner, &state, &msgs) != 0)
-			rc = NFT_EXIT_FAILURE;
+		goto libout;
 	} else if (interactive) {
 		if (cli_init(nft, nft->nf_sock, &state) < 0) {
 			fprintf(stderr, "%s: interactive CLI not supported in this build\n",
