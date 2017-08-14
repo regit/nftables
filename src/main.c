@@ -179,16 +179,12 @@ static const struct {
 int main(int argc, char * const *argv)
 {
 	struct parser_state state;
-	struct nft_cache cache;
 	LIST_HEAD(msgs);
 	char *buf = NULL, *filename = NULL;
 	unsigned int len;
 	bool interactive = false;
 	int i, val, rc = NFT_EXIT_SUCCESS;
 	struct nft_ctx *nft;
-
-	memset(&cache, 0, sizeof(cache));
-	init_list_head(&cache.list);
 
 	nft_global_init();
 	nft = nft_context_new();
@@ -288,17 +284,17 @@ int main(int argc, char * const *argv)
 				strcat(buf, " ");
 		}
 		strcat(buf, "\n");
-		rc = nft_run_command_from_buffer(nft, &cache, buf, len + 2);
+		rc = nft_run_command_from_buffer(nft, buf, len + 2);
 		if (rc < 0)
 			return rc;
 		goto out;
 	} else if (filename != NULL) {
-		rc = nft_run_command_from_filename(nft, &cache, filename);
+		rc = nft_run_command_from_filename(nft, filename);
 		if (rc < 0)
 			return rc;
 		goto out;
 	} else if (interactive) {
-		if (cli_init(nft, nft->nf_sock, &cache, &state) < 0) {
+		if (cli_init(nft, nft->nf_sock, &state) < 0) {
 			fprintf(stderr, "%s: interactive CLI not supported in this build\n",
 				argv[0]);
 			exit(NFT_EXIT_FAILURE);
@@ -311,7 +307,6 @@ int main(int argc, char * const *argv)
 
 out:
 	xfree(buf);
-	cache_release(&cache);
 	iface_cache_release();
 	nft_context_free(nft);
 	nft_global_deinit();
