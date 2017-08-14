@@ -3075,12 +3075,14 @@ static int netlink_events_cb(const struct nlmsghdr *nlh, void *data)
 
 int netlink_echo_callback(const struct nlmsghdr *nlh, void *data)
 {
+	struct netlink_ctx *ctx = data;
 	struct netlink_mon_handler echo_monh = {
 		.format = NFTNL_OUTPUT_DEFAULT,
-		.ctx = data,
+		.ctx = ctx,
 		.loc = &netlink_location,
 		.monitor_flags = 0xffffffff,
 		.cache_needed = true,
+		.cache = ctx->cache,
 	};
 
 	if (!echo_monh.ctx->octx->echo)
