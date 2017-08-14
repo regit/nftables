@@ -30,6 +30,7 @@
 #include <linux/netfilter.h>
 
 #include <nftables.h>
+#include <nftables/nftables.h>
 #include <netlink.h>
 #include <mnl.h>
 #include <expression.h>
