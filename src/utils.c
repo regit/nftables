@@ -16,6 +16,7 @@
 #include <string.h>
 
 #include <nftables.h>
+#include <nftables/nftables.h>
 #include <utils.h>
 
 void __noreturn __memory_allocation_error(const char *filename, uint32_t line)
