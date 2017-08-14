@@ -5059,7 +5059,7 @@ filter output oif wlan0
 			</simplelist>
 		</para>
 		<para>
-			There is an official wiki at: http://wiki.nftables.org
+			There is an official wiki at: https://wiki.nftables.org
 		</para>
 	</refsect1>
 
