@@ -41,6 +41,7 @@ void nft_global_init(void)
 
 void nft_global_deinit(void)
 {
+	iface_cache_release();
 	ct_label_table_exit();
 	realm_table_rt_exit();
 	devgroup_table_exit();
