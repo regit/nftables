@@ -32,15 +32,16 @@ struct output_ctx {
 	unsigned int echo;
 };
 
+struct nft_cache {
+	bool			initialized;
+	struct list_head	list;
+};
+
 struct nft_ctx {
 	struct output_ctx	output;
 	bool			check;
 	struct mnl_socket	*nf_sock;
-};
-
-struct nft_cache {
-	bool			initialized;
-	struct list_head	list;
+	struct nft_cache	cache;
 };
 
 extern unsigned int max_errors;
