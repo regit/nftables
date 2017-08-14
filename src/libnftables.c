@@ -63,7 +63,10 @@ struct nft_ctx *nft_context_new(void)
 	ctx = malloc(sizeof(struct nft_ctx));
 	if (ctx == NULL)
 		return NULL;
+
+	memset(ctx, 0, sizeof(*ctx));
 	ctx->nf_sock = netlink_open_sock();
+	init_list_head(&ctx->cache.list);
 
 	return ctx;
 }
@@ -74,6 +77,7 @@ void nft_context_free(struct nft_ctx *nft)
 	if (nft == NULL)
 		return;
 	netlink_close_sock(nft->nf_sock);
+	cache_release(&nft->cache);
 	xfree(nft);
 }
 
@@ -82,7 +86,7 @@ static const struct input_descriptor indesc_cmdline = {
 	.name	= "<cmdline>",
 };
 
-int nft_run_command_from_buffer(struct nft_ctx *nft, struct nft_cache *cache,
+int nft_run_command_from_buffer(struct nft_ctx *nft,
 				char *buf, size_t buflen)
 {
 	int rc = NFT_EXIT_SUCCESS;
@@ -90,11 +94,11 @@ int nft_run_command_from_buffer(struct nft_ctx *nft, struct nft_cache *cache,
 	LIST_HEAD(msgs);
 	void *scanner;
 
-	parser_init(nft->nf_sock, cache, &state, &msgs);
+	parser_init(nft->nf_sock, &nft->cache, &state, &msgs);
 	scanner = scanner_init(&state);
 	scanner_push_buffer(scanner, &indesc_cmdline, buf);
 		
-	if (nft_run(nft, nft->nf_sock, cache, scanner, &state, &msgs) != 0)
+	if (nft_run(nft, nft->nf_sock, &nft->cache, scanner, &state, &msgs) != 0)
 		rc = NFT_EXIT_FAILURE;
 
 	scanner_destroy(scanner);
@@ -102,22 +106,21 @@ int nft_run_command_from_buffer(struct nft_ctx *nft, struct nft_cache *cache,
 	return rc;
 }
 
-int nft_run_command_from_filename(struct nft_ctx *nft, struct nft_cache *cache,
-				  const char *filename)
+int nft_run_command_from_filename(struct nft_ctx *nft, const char *filename)
 {
 	int rc = NFT_EXIT_SUCCESS;
 	struct parser_state state;
 	LIST_HEAD(msgs);
 	void *scanner;
 
-	rc = cache_update(nft->nf_sock, cache, CMD_INVALID, &msgs);
+	rc = cache_update(nft->nf_sock, &nft->cache, CMD_INVALID, &msgs);
 	if (rc < 0)
 		return rc;
-	parser_init(nft->nf_sock, cache, &state, &msgs);
+	parser_init(nft->nf_sock, &nft->cache, &state, &msgs);
 	scanner = scanner_init(&state);
 	if (scanner_read_file(scanner, filename, &internal_location) < 0)
 		return NFT_EXIT_FAILURE;
-	if (nft_run(nft, nft->nf_sock, cache, scanner, &state, &msgs) != 0)
+	if (nft_run(nft, nft->nf_sock, &nft->cache, scanner, &state, &msgs) != 0)
 		rc = NFT_EXIT_FAILURE;
 
 	scanner_destroy(scanner);

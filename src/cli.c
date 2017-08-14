@@ -177,13 +177,17 @@ void __fmtstring(1, 0) cli_display(const char *fmt, va_list ap)
 }
 
 int cli_init(struct nft_ctx *nft, struct mnl_socket *nf_sock,
-	     struct nft_cache *cache, struct parser_state *_state)
+	     struct parser_state *_state)
 {
 	const char *home;
+	struct nft_cache cache;
+
+	memset(&cache, 0, sizeof(cache));
+	init_list_head(&cache.list);
 
 	cli_nf_sock = nf_sock;
 	cli_nft = *nft;
-	cli_cache = cache;
+	cli_cache = &cache;
 	rl_readline_name = "nft";
 	rl_instream  = stdin;
 	rl_outstream = stdout;
@@ -204,6 +208,8 @@ int cli_init(struct nft_ctx *nft, struct mnl_socket *nf_sock,
 
 	while (!eof)
 		rl_callback_read_char();
+
+	cache_release(&cache);
 	return 0;
 }
 
