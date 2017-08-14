@@ -307,7 +307,6 @@ int main(int argc, char * const *argv)
 
 out:
 	xfree(buf);
-	iface_cache_release();
 	nft_context_free(nft);
 	nft_global_deinit();
 
