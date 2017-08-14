@@ -67,32 +67,11 @@ out:
 	return ret;
 }
 
-struct nft_mnl_talk_cb_data {
-	int (*cb)(const struct nlmsghdr *nlh, void *data);
-	void *data;
-};
-
-static int nft_mnl_talk_cb(const struct nlmsghdr *nlh, void *data)
-{
-	struct nft_mnl_talk_cb_data *cbdata = data;
-	int rc;
-
-	if (cbdata->cb)
-		rc = cbdata->cb(nlh, cbdata->data);
-	if (rc)
-		return rc;
-	return netlink_echo_callback(nlh, cbdata->data);
-}
-
 static int
 nft_mnl_talk(struct mnl_socket *nf_sock, const void *data, unsigned int len,
 	     int (*cb)(const struct nlmsghdr *nlh, void *data), void *cb_data)
 {
 	uint32_t portid = mnl_socket_get_portid(nf_sock);
-	struct nft_mnl_talk_cb_data tcb_data = {
-		.cb = cb,
-		.data = cb_data,
-	};
 
 #ifdef DEBUG
 	if (debug_level & DEBUG_MNL)
@@ -102,7 +81,7 @@ nft_mnl_talk(struct mnl_socket *nf_sock, const void *data, unsigned int len,
 	if (mnl_socket_sendto(nf_sock, data, len) < 0)
 		return -1;
 
-	return nft_mnl_recv(nf_sock, seq, portid, &nft_mnl_talk_cb, &tcb_data);
+	return nft_mnl_recv(nf_sock, seq, portid, cb, cb_data);
 }
 
 /*
