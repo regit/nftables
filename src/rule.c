@@ -135,6 +135,7 @@ static int cache_init(struct mnl_socket *nf_sock, struct nft_cache *cache,
 	ctx.nf_sock = nf_sock;
 	ctx.cache = cache;
 	ctx.msgs = msgs;
+	ctx.seqnum = cache->seqnum++;
 
 	ret = cache_init_tables(&ctx, &handle, cache);
 	if (ret < 0)
@@ -154,7 +155,7 @@ int cache_update(struct mnl_socket *nf_sock, struct nft_cache *cache,
 	if (cache->initialized)
 		return 0;
 replay:
-	netlink_genid_get(nf_sock);
+	netlink_genid_get(nf_sock, cache->seqnum++);
 	ret = cache_init(nf_sock, cache, cmd, msgs);
 	if (ret < 0) {
 		cache_release(cache);

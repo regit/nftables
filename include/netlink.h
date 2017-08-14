@@ -195,7 +195,7 @@ extern void netlink_dump_obj(struct nftnl_obj *nlo);
 
 extern int netlink_batch_send(struct netlink_ctx *ctx, struct list_head *err_list);
 
-extern void netlink_genid_get(struct mnl_socket *nf_sock);
+extern void netlink_genid_get(struct mnl_socket *nf_sock, uint32_t seqnum);
 extern void netlink_restart(struct mnl_socket *nf_sock);
 #define netlink_abi_error()	\
 	__netlink_abi_error(__FILE__, __LINE__, strerror(errno));
@@ -224,7 +224,7 @@ struct netlink_mon_handler {
 
 extern int netlink_monitor(struct netlink_mon_handler *monhandler,
 			    struct mnl_socket *nf_sock);
-bool netlink_batch_supported(struct mnl_socket *nf_sock);
+bool netlink_batch_supported(struct mnl_socket *nf_sock, uint32_t *seqnum);
 
 int netlink_echo_callback(const struct nlmsghdr *nlh, void *data);
 

@@ -40,6 +40,7 @@ struct nft_ctx {
 struct nft_cache {
 	bool			initialized;
 	struct list_head	list;
+	uint32_t		seqnum;
 };
 
 extern unsigned int max_errors;

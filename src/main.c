@@ -191,22 +191,22 @@ static int nft_netlink(struct nft_ctx *nft, struct nft_cache *cache,
 		       struct parser_state *state, struct list_head *msgs,
 		       struct mnl_socket *nf_sock)
 {
+	uint32_t batch_seqnum, seqnum = 0;
 	struct nftnl_batch *batch;
 	struct netlink_ctx ctx;
 	struct cmd *cmd;
 	struct mnl_err *err, *tmp;
 	LIST_HEAD(err_list);
-	uint32_t batch_seqnum;
-	bool batch_supported = netlink_batch_supported(nf_sock);
+	bool batch_supported = netlink_batch_supported(nf_sock, &seqnum);
 	int ret = 0;
 
 	batch = mnl_batch_init();
 
-	batch_seqnum = mnl_batch_begin(batch);
+	batch_seqnum = mnl_batch_begin(batch, mnl_seqnum_alloc(&seqnum));
 	list_for_each_entry(cmd, &state->cmds, list) {
 		memset(&ctx, 0, sizeof(ctx));
 		ctx.msgs = msgs;
-		ctx.seqnum = cmd->seqnum = mnl_seqnum_alloc();
+		ctx.seqnum = cmd->seqnum = mnl_seqnum_alloc(&seqnum);
 		ctx.batch = batch;
 		ctx.batch_supported = batch_supported;
 		ctx.octx = &nft->output;
@@ -218,7 +218,7 @@ static int nft_netlink(struct nft_ctx *nft, struct nft_cache *cache,
 			goto out;
 	}
 	if (!nft->check)
-		mnl_batch_end(batch);
+		mnl_batch_end(batch, mnl_seqnum_alloc(&seqnum));
 
 	if (!mnl_batch_ready(batch))
 		goto out;
