@@ -46,9 +46,9 @@ static void payload_expr_print(const struct expr *expr, struct output_ctx *octx)
 	desc = expr->payload.desc;
 	tmpl = expr->payload.tmpl;
 	if (payload_is_known(expr))
-		printf("%s %s", desc->name, tmpl->token);
+		octx->print(octx->ctx, "%s %s", desc->name, tmpl->token);
 	else
-		printf("payload @%s,%u,%u",
+		octx->print(octx->ctx, "payload @%s,%u,%u",
 		       proto_base_tokens[expr->payload.base],
 		       expr->payload.offset, expr->len);
 }

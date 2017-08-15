@@ -33,19 +33,19 @@ static void exthdr_expr_print(const struct expr *expr, struct output_ctx *octx)
 		char buf[9] = {0};
 
 		if (expr->exthdr.flags & NFT_EXTHDR_F_PRESENT) {
-			printf("tcp option %s", expr->exthdr.desc->name);
+			octx->print(octx->ctx, "tcp option %s", expr->exthdr.desc->name);
 			return;
 		}
 
 		if (offset)
 			snprintf(buf, sizeof buf, "%d", offset);
-		printf("tcp option %s%s %s", expr->exthdr.desc->name, buf,
+		octx->print(octx->ctx, "tcp option %s%s %s", expr->exthdr.desc->name, buf,
 					     expr->exthdr.tmpl->token);
 	} else {
 		if (expr->exthdr.flags & NFT_EXTHDR_F_PRESENT)
-			printf("exthdr %s", expr->exthdr.desc->name);
+			octx->print(octx->ctx, "exthdr %s", expr->exthdr.desc->name);
 		else {
-			printf("%s %s", expr->exthdr.desc ? expr->exthdr.desc->name : "unknown-exthdr",
+			octx->print(octx->ctx, "%s %s", expr->exthdr.desc ? expr->exthdr.desc->name : "unknown-exthdr",
 					expr->exthdr.tmpl->token);
 		}
 	}

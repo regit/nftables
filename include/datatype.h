@@ -209,7 +209,8 @@ extern void symbolic_constant_print(const struct symbol_table *tbl,
 				    struct output_ctx *octx);
 extern void symbol_table_print(const struct symbol_table *tbl,
 			       const struct datatype *dtype,
-			       enum byteorder byteorder);
+			       enum byteorder byteorder,
+			       struct output_ctx *octx);
 
 extern struct symbol_table *rt_symbol_table_init(const char *filename);
 extern void rt_symbol_table_free(struct symbol_table *tbl);
@@ -261,7 +262,7 @@ extern const struct datatype *
 set_datatype_alloc(const struct datatype *orig_dtype, unsigned int byteorder);
 extern void set_datatype_destroy(const struct datatype *dtype);
 
-extern void time_print(uint64_t seconds);
+extern void time_print(uint64_t seconds, struct output_ctx *octx);
 extern struct error_record *time_parse(const struct location *loc,
 				       const char *c, uint64_t *res);
 

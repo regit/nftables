@@ -271,7 +271,8 @@ static const char *set_policy2str(uint32_t policy)
 }
 
 static void set_print_declaration(const struct set *set,
-				  struct print_fmt_options *opts)
+				  struct print_fmt_options *opts,
+				  struct output_ctx *octx)
 {
 	const char *delim = "";
 	const char *type;
@@ -284,33 +285,33 @@ static void set_print_declaration(const struct set *set,
 	else
 		type = "set";
 
-	printf("%s%s", opts->tab, type);
+	octx->print(octx->ctx, "%s%s", opts->tab, type);
 
 	if (opts->family != NULL)
-		printf(" %s", opts->family);
+		octx->print(octx->ctx, " %s", opts->family);
 
 	if (opts->table != NULL)
-		printf(" %s", opts->table);
+		octx->print(octx->ctx, " %s", opts->table);
 
-	printf(" %s {%s", set->handle.set, opts->nl);
+	octx->print(octx->ctx, " %s {%s", set->handle.set, opts->nl);
 
-	printf("%s%stype %s", opts->tab, opts->tab, set->keytype->name);
+	octx->print(octx->ctx, "%s%stype %s", opts->tab, opts->tab, set->keytype->name);
 	if (set->flags & NFT_SET_MAP)
-		printf(" : %s", set->datatype->name);
+		octx->print(octx->ctx, " : %s", set->datatype->name);
 	else if (set->flags & NFT_SET_OBJECT)
-		printf(" : %s", obj_type_name(set->objtype));
+		octx->print(octx->ctx, " : %s", obj_type_name(set->objtype));
 
-	printf("%s", opts->stmt_separator);
+	octx->print(octx->ctx, "%s", opts->stmt_separator);
 
 	if (!(set->flags & (NFT_SET_CONSTANT))) {
 		if (set->policy != NFT_SET_POL_PERFORMANCE) {
-			printf("%s%spolicy %s%s", opts->tab, opts->tab,
+			octx->print(octx->ctx, "%s%spolicy %s%s", opts->tab, opts->tab,
 			       set_policy2str(set->policy),
 			       opts->stmt_separator);
 		}
 
 		if (set->desc.size > 0) {
-			printf("%s%ssize %u%s", opts->tab, opts->tab,
+			octx->print(octx->ctx, "%s%ssize %u%s", opts->tab, opts->tab,
 			       set->desc.size, opts->stmt_separator);
 		}
 	}
@@ -321,45 +322,45 @@ static void set_print_declaration(const struct set *set,
 		flags &= ~NFT_SET_TIMEOUT;
 
 	if (flags & (NFT_SET_CONSTANT | NFT_SET_INTERVAL | NFT_SET_TIMEOUT)) {
-		printf("%s%sflags ", opts->tab, opts->tab);
+		octx->print(octx->ctx, "%s%sflags ", opts->tab, opts->tab);
 		if (set->flags & NFT_SET_CONSTANT) {
-			printf("%sconstant", delim);
+			octx->print(octx->ctx, "%sconstant", delim);
 			delim = ",";
 		}
 		if (set->flags & NFT_SET_INTERVAL) {
-			printf("%sinterval", delim);
+			octx->print(octx->ctx, "%sinterval", delim);
 			delim = ",";
 		}
 		if (set->flags & NFT_SET_TIMEOUT) {
-			printf("%stimeout", delim);
+			octx->print(octx->ctx, "%stimeout", delim);
 			delim = ",";
 		}
-		printf("%s", opts->stmt_separator);
+		octx->print(octx->ctx, "%s", opts->stmt_separator);
 	}
 
 	if (set->timeout) {
-		printf("%s%stimeout ", opts->tab, opts->tab);
-		time_print(set->timeout / 1000);
-		printf("%s", opts->stmt_separator);
+		octx->print(octx->ctx, "%s%stimeout ", opts->tab, opts->tab);
+		time_print(set->timeout / 1000, octx);
+		octx->print(octx->ctx, "%s", opts->stmt_separator);
 	}
 	if (set->gc_int) {
-		printf("%s%sgc-interval ", opts->tab, opts->tab);
-		time_print(set->gc_int / 1000);
-		printf("%s", opts->stmt_separator);
+		octx->print(octx->ctx, "%s%sgc-interval ", opts->tab, opts->tab);
+		time_print(set->gc_int / 1000, octx);
+		octx->print(octx->ctx, "%s", opts->stmt_separator);
 	}
 }
 
 static void do_set_print(const struct set *set, struct print_fmt_options *opts,
 			  struct output_ctx *octx)
 {
-	set_print_declaration(set, opts);
+	set_print_declaration(set, opts, octx);
 
 	if (set->init != NULL && set->init->size > 0) {
-		printf("%s%selements = ", opts->tab, opts->tab);
+		octx->print(octx->ctx, "%s%selements = ", opts->tab, opts->tab);
 		expr_print(set->init, octx);
-		printf("%s", opts->nl);
+		octx->print(octx->ctx, "%s", opts->nl);
 	}
-	printf("%s}%s", opts->tab, opts->nl);
+	octx->print(octx->ctx, "%s}%s", opts->tab, opts->nl);
 }
 
 void set_print(const struct set *s, struct output_ctx *octx)
@@ -424,14 +425,14 @@ void rule_print(const struct rule *rule, struct output_ctx *octx)
 	list_for_each_entry(stmt, &rule->stmts, list) {
 		stmt->ops->print(stmt, octx);
 		if (!list_is_last(&stmt->list, &rule->stmts))
-			printf(" ");
+			octx->print(octx->ctx, " ");
 	}
 
 	if (rule->comment)
-		printf(" comment \"%s\"", rule->comment);
+		octx->print(octx->ctx, " comment \"%s\"", rule->comment);
 
 	if (octx->handle > 0)
-		printf(" # handle %" PRIu64, rule->handle.handle.id);
+		octx->print(octx->ctx, " # handle %" PRIu64, rule->handle.handle.id);
 }
 
 struct rule *rule_lookup(const struct chain *chain, uint64_t handle)
@@ -661,18 +662,19 @@ static const char *chain_policy2str(uint32_t policy)
 	return "unknown";
 }
 
-static void chain_print_declaration(const struct chain *chain)
+static void chain_print_declaration(const struct chain *chain,
+				    struct output_ctx *octx)
 {
-	printf("\tchain %s {\n", chain->handle.chain);
+	octx->print(octx->ctx, "\tchain %s {\n", chain->handle.chain);
 	if (chain->flags & CHAIN_F_BASECHAIN) {
 		if (chain->dev != NULL) {
-			printf("\t\ttype %s hook %s device %s priority %d; policy %s;\n",
+			octx->print(octx->ctx, "\t\ttype %s hook %s device %s priority %d; policy %s;\n",
 			       chain->type,
 			       hooknum2str(chain->handle.family, chain->hooknum),
 			       chain->dev, chain->priority,
 			       chain_policy2str(chain->policy));
 		} else {
-			printf("\t\ttype %s hook %s priority %d; policy %s;\n",
+			octx->print(octx->ctx, "\t\ttype %s hook %s priority %d; policy %s;\n",
 			       chain->type,
 			       hooknum2str(chain->handle.family, chain->hooknum),
 			       chain->priority, chain_policy2str(chain->policy));
@@ -684,14 +686,14 @@ static void chain_print(const struct chain *chain, struct output_ctx *octx)
 {
 	struct rule *rule;
 
-	chain_print_declaration(chain);
+	chain_print_declaration(chain, octx);
 
 	list_for_each_entry(rule, &chain->rules, list) {
-		printf("\t\t");
+		octx->print(octx->ctx, "\t\t");
 		rule_print(rule, octx);
-		printf("\n");
+		octx->print(octx->ctx, "\n");
 	}
-	printf("\t}\n");
+	octx->print(octx->ctx, "\t}\n");
 }
 
 void chain_print_plain(const struct chain *chain)
@@ -796,27 +798,27 @@ static void table_print(const struct table *table, struct output_ctx *octx)
 	const char *delim = "";
 	const char *family = family2str(table->handle.family);
 
-	printf("table %s %s {\n", family, table->handle.table);
+	octx->print(octx->ctx, "table %s %s {\n", family, table->handle.table);
 	table_print_options(table, &delim);
 
 	list_for_each_entry(obj, &table->objs, list) {
-		printf("%s", delim);
+		octx->print(octx->ctx, "%s", delim);
 		obj_print(obj, octx);
 		delim = "\n";
 	}
 	list_for_each_entry(set, &table->sets, list) {
 		if (set->flags & NFT_SET_ANONYMOUS)
 			continue;
-		printf("%s", delim);
+		octx->print(octx->ctx, "%s", delim);
 		set_print(set, octx);
 		delim = "\n";
 	}
 	list_for_each_entry(chain, &table->chains, list) {
-		printf("%s", delim);
+		octx->print(octx->ctx, "%s", delim);
 		chain_print(chain, octx);
 		delim = "\n";
 	}
-	printf("}\n");
+	octx->print(octx->ctx, "}\n");
 }
 
 struct cmd *cmd_alloc(enum cmd_ops op, enum cmd_obj obj,
@@ -1176,7 +1178,7 @@ static int do_list_sets(struct netlink_ctx *ctx, struct cmd *cmd)
 		    cmd->handle.family != table->handle.family)
 			continue;
 
-		printf("table %s %s {\n",
+		ctx->octx->print(ctx->octx->ctx, "table %s %s {\n",
 		       family2str(table->handle.family),
 		       table->handle.table);
 
@@ -1191,11 +1193,12 @@ static int do_list_sets(struct netlink_ctx *ctx, struct cmd *cmd)
 			if (cmd->obj == CMD_OBJ_MAPS &&
 			    !(set->flags & NFT_SET_MAP))
 				continue;
-			set_print_declaration(set, &opts);
-			printf("%s}%s", opts.tab, opts.nl);
+			set_print_declaration(set, &opts, ctx->octx);
+			ctx->octx->print(ctx->octx->ctx, "%s}%s",
+					 opts.tab, opts.nl);
 		}
 
-		printf("}\n");
+		ctx->octx->print(ctx->octx->ctx, "}\n");
 	}
 	return 0;
 }
@@ -1260,40 +1263,40 @@ static void obj_print_data(const struct obj *obj,
 {
 	switch (obj->type) {
 	case NFT_OBJECT_COUNTER:
-		printf(" %s {%s%s%s", obj->handle.obj,
+		octx->print(octx->ctx, " %s {%s%s%s", obj->handle.obj,
 				      opts->nl, opts->tab, opts->tab);
 		if (octx->stateless) {
-			printf("packets 0 bytes 0");
+			octx->print(octx->ctx, "packets 0 bytes 0");
 			break;
 		}
-		printf("packets %"PRIu64" bytes %"PRIu64"",
+		octx->print(octx->ctx, "packets %"PRIu64" bytes %"PRIu64"",
 		       obj->counter.packets, obj->counter.bytes);
 		break;
 	case NFT_OBJECT_QUOTA: {
 		const char *data_unit;
 		uint64_t bytes;
 
-		printf(" %s {%s%s%s", obj->handle.obj,
+		octx->print(octx->ctx, " %s {%s%s%s", obj->handle.obj,
 				      opts->nl, opts->tab, opts->tab);
 		data_unit = get_rate(obj->quota.bytes, &bytes);
-		printf("%s%"PRIu64" %s",
+		octx->print(octx->ctx, "%s%"PRIu64" %s",
 		       obj->quota.flags & NFT_QUOTA_F_INV ? "over " : "",
 		       bytes, data_unit);
 		if (!octx->stateless && obj->quota.used) {
 			data_unit = get_rate(obj->quota.used, &bytes);
-			printf(" used %"PRIu64" %s", bytes, data_unit);
+			octx->print(octx->ctx, " used %"PRIu64" %s", bytes, data_unit);
 		}
 		}
 		break;
 	case NFT_OBJECT_CT_HELPER: {
-		printf("ct helper %s {\n", obj->handle.obj);
-		printf("\t\ttype \"%s\" protocol ", obj->ct_helper.name);
+		octx->print(octx->ctx, "ct helper %s {\n", obj->handle.obj);
+		octx->print(octx->ctx, "\t\ttype \"%s\" protocol ", obj->ct_helper.name);
 		print_proto_name_proto(obj->ct_helper.l4proto);
-		printf("\t\tl3proto %s", family2str(obj->ct_helper.l3proto));
+		octx->print(octx->ctx, "\t\tl3proto %s", family2str(obj->ct_helper.l3proto));
 		break;
 		}
 	default:
-		printf("unknown {%s", opts->nl);
+		octx->print(octx->ctx, "unknown {%s", opts->nl);
 		break;
 	}
 }
@@ -1328,17 +1331,17 @@ static void obj_print_declaration(const struct obj *obj,
 				  struct print_fmt_options *opts,
 				  struct output_ctx *octx)
 {
-	printf("%s%s", opts->tab, obj_type_name(obj->type));
+	octx->print(octx->ctx, "%s%s", opts->tab, obj_type_name(obj->type));
 
 	if (opts->family != NULL)
-		printf(" %s", opts->family);
+		octx->print(octx->ctx, " %s", opts->family);
 
 	if (opts->table != NULL)
-		printf(" %s", opts->table);
+		octx->print(octx->ctx, " %s", opts->table);
 
 	obj_print_data(obj, opts, octx);
 
-	printf("%s%s}%s", opts->nl, opts->tab, opts->nl);
+	octx->print(octx->ctx, "%s%s}%s", opts->nl, opts->tab, opts->nl);
 }
 
 void obj_print(const struct obj *obj, struct output_ctx *octx)
@@ -1379,13 +1382,13 @@ static int do_list_obj(struct netlink_ctx *ctx, struct cmd *cmd, uint32_t type)
 		    cmd->handle.family != table->handle.family)
 			continue;
 
-		printf("table %s %s {\n",
+		ctx->octx->print(ctx->octx->ctx, "table %s %s {\n",
 		       family2str(table->handle.family),
 		       table->handle.table);
 
 		if (cmd->handle.table != NULL &&
 		    strcmp(cmd->handle.table, table->handle.table)) {
-			printf("}\n");
+			ctx->octx->print(ctx->octx->ctx, "}\n");
 			continue;
 		}
 
@@ -1398,7 +1401,7 @@ static int do_list_obj(struct netlink_ctx *ctx, struct cmd *cmd, uint32_t type)
 			obj_print_declaration(obj, &opts, ctx->octx);
 		}
 
-		printf("}\n");
+		ctx->octx->print(ctx->octx->ctx, "}\n");
 	}
 	return 0;
 }
@@ -1434,7 +1437,7 @@ static int do_list_tables(struct netlink_ctx *ctx, struct cmd *cmd)
 		    cmd->handle.family != table->handle.family)
 			continue;
 
-		printf("table %s %s\n",
+		ctx->octx->print(ctx->octx->ctx, "table %s %s\n",
 		       family2str(table->handle.family),
 		       table->handle.table);
 	}
@@ -1442,9 +1445,10 @@ static int do_list_tables(struct netlink_ctx *ctx, struct cmd *cmd)
 	return 0;
 }
 
-static void table_print_declaration(struct table *table)
+static void table_print_declaration(struct table *table,
+				    struct output_ctx *octx)
 {
-	printf("table %s %s {\n",
+	octx->print(octx->ctx, "table %s %s {\n",
 		family2str(table->handle.family),
 		table->handle.table);
 }
@@ -1454,7 +1458,7 @@ static int do_list_chain(struct netlink_ctx *ctx, struct cmd *cmd,
 {
 	struct chain *chain;
 
-	table_print_declaration(table);
+	table_print_declaration(table, ctx->octx);
 
 	list_for_each_entry(chain, &table->chains, list) {
 		if (chain->handle.family != cmd->handle.family ||
@@ -1464,7 +1468,7 @@ static int do_list_chain(struct netlink_ctx *ctx, struct cmd *cmd,
 		chain_print(chain, ctx->octx);
 	}
 
-	printf("}\n");
+	ctx->octx->print(ctx->octx->ctx, "}\n");
 
 	return 0;
 }
@@ -1479,13 +1483,13 @@ static int do_list_chains(struct netlink_ctx *ctx, struct cmd *cmd)
 		    cmd->handle.family != table->handle.family)
 			continue;
 
-		table_print_declaration(table);
+		table_print_declaration(table, ctx->octx);
 
 		list_for_each_entry(chain, &table->chains, list) {
-			chain_print_declaration(chain);
-			printf("\t}\n");
+			chain_print_declaration(chain, ctx->octx);
+			ctx->octx->print(ctx->octx->ctx, "\t}\n");
 		}
-		printf("}\n");
+		ctx->octx->print(ctx->octx->ctx, "}\n");
 	}
 
 	return 0;
@@ -1500,9 +1504,9 @@ static int do_list_set(struct netlink_ctx *ctx, struct cmd *cmd,
 	if (set == NULL)
 		return -1;
 
-	table_print_declaration(table);
+	table_print_declaration(table, ctx->octx);
 	set_print(set, ctx->octx);
-	printf("}\n");
+	ctx->octx->print(ctx->octx->ctx, "}\n");
 
 	return 0;
 }
@@ -1689,9 +1693,10 @@ static int do_command_monitor(struct netlink_ctx *ctx, struct cmd *cmd)
 	return netlink_monitor(&monhandler, ctx->nf_sock);
 }
 
-static int do_command_describe(struct netlink_ctx *ctx, struct cmd *cmd)
+static int do_command_describe(struct netlink_ctx *ctx, struct cmd *cmd,
+			       struct output_ctx *octx)
 {
-	expr_describe(cmd->expr);
+	expr_describe(cmd->expr, octx);
 	return 0;
 }
 
@@ -1737,7 +1742,7 @@ int do_command(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_MONITOR:
 		return do_command_monitor(ctx, cmd);
 	case CMD_DESCRIBE:
-		return do_command_describe(ctx, cmd);
+		return do_command_describe(ctx, cmd, ctx->octx);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
