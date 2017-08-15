@@ -30,6 +30,8 @@ struct output_ctx {
 	unsigned int ip2name;
 	unsigned int handle;
 	unsigned int echo;
+	void *ctx;
+	int (*print)(void *ctx, const char *format, ...);
 };
 
 struct nft_cache {

@@ -141,11 +141,11 @@ static void ct_label_type_print(const struct expr *expr,
 	for (s = ct_label_tbl->symbols; s->identifier != NULL; s++) {
 		if (bit != s->value)
 			continue;
-		printf("\"%s\"", s->identifier);
+		octx->print(octx->ctx, "\"%s\"", s->identifier);
 		return;
 	}
 	/* can happen when connlabel.conf is altered after rules were added */
-	printf("%ld\n", (long)mpz_scan1(expr->value, 0));
+	octx->print(octx->ctx, "%ld\n", (long)mpz_scan1(expr->value, 0));
 }
 
 static struct error_record *ct_label_type_parse(const struct expr *sym,
@@ -269,27 +269,27 @@ static const struct ct_template ct_templates[] = {
 					      BYTEORDER_HOST_ENDIAN, 32),
 };
 
-static void ct_print(enum nft_ct_keys key, int8_t dir)
+static void ct_print(enum nft_ct_keys key, int8_t dir, struct output_ctx *octx)
 {
 	const struct symbolic_constant *s;
 
-	printf("ct ");
+	octx->print(octx->ctx, "ct ");
 	if (dir < 0)
 		goto done;
 
 	for (s = ct_dir_tbl.symbols; s->identifier != NULL; s++) {
 		if (dir == (int)s->value) {
-			printf("%s ", s->identifier);
+			octx->print(octx->ctx, "%s ", s->identifier);
 			break;
 		}
 	}
  done:
-	printf("%s", ct_templates[key].token);
+	octx->print(octx->ctx, "%s", ct_templates[key].token);
 }
 
 static void ct_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
-	ct_print(expr->ct.key, expr->ct.direction);
+	ct_print(expr->ct.key, expr->ct.direction, octx);
 }
 
 static bool ct_expr_cmp(const struct expr *e1, const struct expr *e2)
@@ -445,8 +445,8 @@ void ct_expr_update_type(struct proto_ctx *ctx, struct expr *expr)
 
 static void ct_stmt_print(const struct stmt *stmt, struct output_ctx *octx)
 {
-	ct_print(stmt->ct.key, stmt->ct.direction);
-	printf(" set ");
+	ct_print(stmt->ct.key, stmt->ct.direction, octx);
+	octx->print(octx->ctx, " set ");
 	expr_print(stmt->ct.expr, octx);
 }
 
@@ -472,7 +472,7 @@ struct stmt *ct_stmt_alloc(const struct location *loc, enum nft_ct_keys key,
 
 static void notrack_stmt_print(const struct stmt *stmt, struct output_ctx *octx)
 {
-	printf("notrack");
+	octx->print(octx->ctx, "notrack");
 }
 
 static const struct stmt_ops notrack_stmt_ops = {

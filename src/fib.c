@@ -60,32 +60,33 @@ static const char *fib_result_str(enum nft_fib_result result)
 	return "unknown";
 }
 
-static void __fib_expr_print_f(unsigned int *flags, unsigned int f, const char *s)
+static void __fib_expr_print_f(unsigned int *flags, unsigned int f,
+			       const char *s, struct output_ctx *octx)
 {
 	if ((*flags & f) == 0)
 		return;
 
-	printf("%s", s);
+	octx->print(octx->ctx, "%s", s);
 	*flags &= ~f;
 	if (*flags)
-		printf(" . ");
+		octx->print(octx->ctx, " . ");
 }
 
 static void fib_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	unsigned int flags = expr->fib.flags & ~NFTA_FIB_F_PRESENT;
 
-	printf("fib ");
-	__fib_expr_print_f(&flags, NFTA_FIB_F_SADDR, "saddr");
-	__fib_expr_print_f(&flags, NFTA_FIB_F_DADDR, "daddr");
-	__fib_expr_print_f(&flags, NFTA_FIB_F_MARK, "mark");
-	__fib_expr_print_f(&flags, NFTA_FIB_F_IIF, "iif");
-	__fib_expr_print_f(&flags, NFTA_FIB_F_OIF, "oif");
+	octx->print(octx->ctx, "fib ");
+	__fib_expr_print_f(&flags, NFTA_FIB_F_SADDR, "saddr", octx);
+	__fib_expr_print_f(&flags, NFTA_FIB_F_DADDR, "daddr", octx);
+	__fib_expr_print_f(&flags, NFTA_FIB_F_MARK, "mark", octx);
+	__fib_expr_print_f(&flags, NFTA_FIB_F_IIF, "iif", octx);
+	__fib_expr_print_f(&flags, NFTA_FIB_F_OIF, "oif", octx);
 
 	if (flags)
-		printf("0x%x", flags);
+		octx->print(octx->ctx, "0x%x", flags);
 
-	printf(" %s", fib_result_str(expr->fib.result));
+	octx->print(octx->ctx, " %s", fib_result_str(expr->fib.result));
 }
 
 static bool fib_expr_cmp(const struct expr *e1, const struct expr *e2)

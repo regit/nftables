@@ -334,7 +334,7 @@ extern struct expr *expr_get(struct expr *expr);
 extern void expr_free(struct expr *expr);
 extern void expr_print(const struct expr *expr, struct output_ctx *octx);
 extern bool expr_cmp(const struct expr *e1, const struct expr *e2);
-extern void expr_describe(const struct expr *expr);
+extern void expr_describe(const struct expr *expr, struct output_ctx *octx);
 
 extern const struct datatype *expr_basetype(const struct expr *expr);
 extern void expr_set_type(struct expr *expr, const struct datatype *dtype,

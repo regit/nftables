@@ -86,41 +86,41 @@ bool expr_cmp(const struct expr *e1, const struct expr *e2)
 	return e1->ops->cmp(e1, e2);
 }
 
-void expr_describe(const struct expr *expr)
+void expr_describe(const struct expr *expr, struct output_ctx *octx)
 {
 	const struct datatype *dtype = expr->dtype;
 	const char *delim = "";
 
-	printf("%s expression, datatype %s (%s)",
+	octx->print(octx->ctx, "%s expression, datatype %s (%s)",
 		expr->ops->name, dtype->name, dtype->desc);
 	if (dtype->basetype != NULL) {
-		printf(" (basetype ");
+		octx->print(octx->ctx, " (basetype ");
 		for (dtype = dtype->basetype; dtype != NULL;
 		     dtype = dtype->basetype) {
-			printf("%s%s", delim, dtype->desc);
+			octx->print(octx->ctx, "%s%s", delim, dtype->desc);
 			delim = ", ";
 		}
-		printf(")");
+		octx->print(octx->ctx, ")");
 	}
 
 	if (expr_basetype(expr)->type == TYPE_STRING) {
 		if (expr->len)
-			printf(", %u characters", expr->len / BITS_PER_BYTE);
+			octx->print(octx->ctx, ", %u characters", expr->len / BITS_PER_BYTE);
 		else
-			printf(", dynamic length");
+			octx->print(octx->ctx, ", dynamic length");
 	} else
-		printf(", %u bits", expr->len);
+		octx->print(octx->ctx, ", %u bits", expr->len);
 
-	printf("\n");
+	octx->print(octx->ctx, "\n");
 
 	if (expr->dtype->sym_tbl != NULL) {
-		printf("\npre-defined symbolic constants ");
+		octx->print(octx->ctx, "\npre-defined symbolic constants ");
 		if (expr->dtype->sym_tbl->base == BASE_DECIMAL)
-			printf("(in decimal):\n");
+			octx->print(octx->ctx, "(in decimal):\n");
 		else
-			printf("(in hexadecimal):\n");
+			octx->print(octx->ctx, "(in hexadecimal):\n");
 		symbol_table_print(expr->dtype->sym_tbl, expr->dtype,
-				   expr->byteorder);
+				   expr->byteorder, octx);
 	}
 }
 
@@ -215,7 +215,7 @@ struct expr *verdict_expr_alloc(const struct location *loc,
 
 static void symbol_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
-	printf("%s%s", expr->scope != NULL ? "$" : "", expr->identifier);
+	octx->print(octx->ctx, "%s%s", expr->scope != NULL ? "$" : "", expr->identifier);
 }
 
 static void symbol_expr_clone(struct expr *new, const struct expr *expr)
@@ -398,7 +398,7 @@ struct expr *bitmask_expr_to_binops(struct expr *expr)
 static void prefix_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	expr_print(expr->prefix, octx);
-	printf("/%u", expr->prefix_len);
+	octx->print(octx->ctx, "/%u", expr->prefix_len);
 }
 
 static void prefix_expr_set_type(const struct expr *expr,
@@ -513,10 +513,10 @@ static void binop_arg_print(const struct expr *op, const struct expr *arg,
 		prec = 1;
 
 	if (prec)
-		printf("(");
+		octx->print(octx->ctx, "(");
 	expr_print(arg, octx);
 	if (prec)
-		printf(")");
+		octx->print(octx->ctx, ")");
 }
 
 static bool must_print_eq_op(const struct expr *expr)
@@ -534,9 +534,9 @@ static void binop_expr_print(const struct expr *expr, struct output_ctx *octx)
 
 	if (expr_op_symbols[expr->op] &&
 	    (expr->op != OP_EQ || must_print_eq_op(expr)))
-		printf(" %s ", expr_op_symbols[expr->op]);
+		octx->print(octx->ctx, " %s ", expr_op_symbols[expr->op]);
 	else
-		printf(" ");
+		octx->print(octx->ctx, " ");
 
 	binop_arg_print(expr, expr->right, octx);
 }
@@ -602,7 +602,7 @@ static void range_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	octx->numeric += NUMERIC_ALL + 1;
 	expr_print(expr->left, octx);
-	printf("-");
+	octx->print(octx->ctx, "-");
 	expr_print(expr->right, octx);
 	octx->numeric -= NUMERIC_ALL + 1;
 }
@@ -682,7 +682,7 @@ static void compound_expr_print(const struct expr *expr, const char *delim,
 	const char *d = "";
 
 	list_for_each_entry(i, &expr->expressions, list) {
-		printf("%s", d);
+		octx->print(octx->ctx, "%s", d);
 		expr_print(i, octx);
 		d = delim;
 	}
@@ -793,16 +793,16 @@ static void set_expr_print(const struct expr *expr, struct output_ctx *octx)
 	const char *d = "";
 	int count = 0;
 
-	printf("{ ");
+	octx->print(octx->ctx, "{ ");
 
 	list_for_each_entry(i, &expr->expressions, list) {
-		printf("%s", d);
+		octx->print(octx->ctx, "%s", d);
 		expr_print(i, octx);
 		count++;
 		d = calculate_delim(expr, &count);
 	}
 
-	printf(" }");
+	octx->print(octx->ctx, " }");
 }
 
 static void set_expr_set_type(const struct expr *expr,
@@ -840,7 +840,7 @@ struct expr *set_expr_alloc(const struct location *loc, const struct set *set)
 static void mapping_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	expr_print(expr->left, octx);
-	printf(" : ");
+	octx->print(octx->ctx, " : ");
 	expr_print(expr->right, octx);
 }
 
@@ -889,9 +889,9 @@ static void map_expr_print(const struct expr *expr, struct output_ctx *octx)
 	expr_print(expr->map, octx);
 	if (expr->mappings->ops->type == EXPR_SET_REF &&
 	    expr->mappings->set->datatype->type == TYPE_VERDICT)
-		printf(" vmap ");
+		octx->print(octx->ctx, " vmap ");
 	else
-		printf(" map ");
+		octx->print(octx->ctx, " map ");
 	expr_print(expr->mappings, octx);
 }
 
@@ -930,11 +930,11 @@ static void set_ref_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	if (expr->set->flags & NFT_SET_ANONYMOUS) {
 		if (expr->set->flags & NFT_SET_EVAL)
-			printf("table %s", expr->set->handle.set);
+			octx->print(octx->ctx, "table %s", expr->set->handle.set);
 		else
 			expr_print(expr->set->init, octx);
 	} else {
-		printf("@%s", expr->set->handle.set);
+		octx->print(octx->ctx, "@%s", expr->set->handle.set);
 	}
 }
 
@@ -971,18 +971,18 @@ static void set_elem_expr_print(const struct expr *expr,
 {
 	expr_print(expr->key, octx);
 	if (expr->timeout) {
-		printf(" timeout ");
-		time_print(expr->timeout / 1000);
+		octx->print(octx->ctx, " timeout ");
+		time_print(expr->timeout / 1000, octx);
 	}
 	if (!octx->stateless && expr->expiration) {
-		printf(" expires ");
-		time_print(expr->expiration / 1000);
+		octx->print(octx->ctx, " expires ");
+		time_print(expr->expiration / 1000, octx);
 	}
 	if (expr->comment)
-		printf(" comment \"%s\"", expr->comment);
+		octx->print(octx->ctx, " comment \"%s\"", expr->comment);
 
 	if (expr->stmt) {
-		printf(" : ");
+		octx->print(octx->ctx, " : ");
 		stmt_print(expr->stmt, octx);
 	}
 }

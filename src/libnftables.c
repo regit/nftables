@@ -58,6 +58,17 @@ void nft_global_deinit(void)
 	mark_table_exit();
 }
 
+__attribute__((format(printf, 2, 0)))
+static int nft_print(void *ctx, const char *fmt, ...)
+{
+	va_list arg;
+	va_start(arg, fmt);
+	vfprintf(stdout, fmt, arg);
+	va_end(arg);
+
+	return 0;
+} 
+
 struct nft_ctx *nft_context_new(void)
 {
 	struct nft_ctx *ctx = NULL;
@@ -67,8 +78,11 @@ struct nft_ctx *nft_context_new(void)
 
 	memset(ctx, 0, sizeof(*ctx));
 	ctx->nf_sock = netlink_open_sock();
+
 	init_list_head(&ctx->cache.list);
 
+	ctx->output.ctx = ctx;
+	ctx->output.print = nft_print;
 	return ctx;
 }
 
