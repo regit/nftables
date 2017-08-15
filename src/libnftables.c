@@ -86,6 +86,15 @@ struct nft_ctx *nft_context_new(void)
 	return ctx;
 }
 
+void nft_context_set_print_func(struct nft_ctx *nft,
+				int (*print)(void *ctx, const char *fmt, ...),
+				void *ctx)
+{
+	if (nft) {
+		nft->output.print = print;
+		nft->output.ctx = ctx;
+	}
+}
 
 void nft_context_free(struct nft_ctx *nft)
 {
