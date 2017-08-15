@@ -34,4 +34,11 @@ int nft_run_command_from_buffer(struct nft_ctx *nft,
 				char *buf, size_t buflen);
 int nft_run_command_from_filename(struct nft_ctx *nft, const char *filename);
 
+
+struct nft_batch *nft_batch_start(struct nft_ctx *ctx);
+int nft_batch_add(struct nft_ctx *ctx, struct nft_batch *batch,
+		  const char * buf, size_t buflen);
+int nft_batch_commit(struct nft_ctx *ctx, struct nft_batch *batch);
+void nft_batch_free(struct nft_batch *batch);
+
 #endif
