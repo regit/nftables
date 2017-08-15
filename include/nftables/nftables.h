@@ -26,6 +26,9 @@ void nft_global_deinit(void);
 
 struct nft_ctx *nft_context_new(void);
 void nft_context_free(struct nft_ctx *nft);
+void nft_context_set_print_func(struct nft_ctx *nft,
+				int (*print)(void *ctx, const char *fmt, ...),
+				void *ctx);
 
 int nft_run_command_from_buffer(struct nft_ctx *nft,
 				char *buf, size_t buflen);
