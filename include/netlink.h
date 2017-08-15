@@ -54,6 +54,11 @@ struct netlink_ctx {
 	struct nft_cache	*cache;
 };
 
+struct nft_batch {
+	struct netlink_ctx	nl_ctx;
+	struct nftnl_batch	*batch;
+};
+
 extern struct nftnl_table *alloc_nftnl_table(const struct handle *h);
 extern struct nftnl_chain *alloc_nftnl_chain(const struct handle *h);
 extern struct nftnl_rule *alloc_nftnl_rule(const struct handle *h);
