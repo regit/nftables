@@ -470,7 +470,6 @@ extern void cmd_free(struct cmd *cmd);
  * @set:	current set
  * @stmt:	current statement
  * @cache:	cache context
- * @seqnum:	netlink sequence number
  * @ectx:	expression context
  * @pctx:	payload context
  */
@@ -483,7 +482,6 @@ struct eval_ctx {
 	struct set		*set;
 	struct stmt		*stmt;
 	struct nft_cache	*cache;
-	uint32_t		seqnum;
 	struct expr_ctx		ectx;
 	struct proto_ctx	pctx;
 };
