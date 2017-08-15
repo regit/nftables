@@ -1017,8 +1017,16 @@ static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd, bool excl)
 {
 	uint32_t flags = excl ? NLM_F_EXCL : 0;
 
-	if (ctx->octx->echo)
+	if (ctx->octx->echo) {
+		int ret;
+
+		ret = cache_update(ctx->nf_sock, ctx->cache,
+				  cmd->obj, ctx->msgs);
+		if (ret < 0)
+			return ret;
+
 		flags |= NLM_F_ECHO;
+	}
 
 	switch (cmd->obj) {
 	case CMD_OBJ_TABLE:
@@ -1058,7 +1066,18 @@ static int do_command_replace(struct netlink_ctx *ctx, struct cmd *cmd)
 
 static int do_command_insert(struct netlink_ctx *ctx, struct cmd *cmd)
 {
-	uint32_t flags = ctx->octx->echo ? NLM_F_ECHO : 0;
+	uint32_t flags = 0;
+
+	if (ctx->octx->echo) {
+		int ret;
+
+		ret = cache_update(ctx->nf_sock, ctx->cache,
+				  cmd->obj, ctx->msgs);
+		if (ret < 0)
+			return ret;
+
+		flags |= NLM_F_ECHO;
+	}
 
 	switch (cmd->obj) {
 	case CMD_OBJ_RULE:

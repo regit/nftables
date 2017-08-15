@@ -464,7 +464,16 @@ int netlink_replace_rule_batch(struct netlink_ctx *ctx, const struct handle *h,
 			       const struct location *loc)
 {
 	struct nftnl_rule *nlr;
-	int err, flags = ctx->octx->echo ? NLM_F_ECHO : 0;
+	int err, flags = 0;
+
+	if (ctx->octx->echo) {
+		err = cache_update(ctx->nf_sock, ctx->cache,
+				   CMD_INVALID, ctx->msgs);
+		if (err < 0)
+			return err;
+
+		flags |= NLM_F_ECHO;
+	}
 
 	nlr = alloc_nftnl_rule(&rule->handle);
 	netlink_linearize_rule(ctx, nlr, rule);
