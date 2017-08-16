@@ -25,7 +25,7 @@
 #include <fcntl.h>
 
 
-unsigned int max_errors = 10;
+unsigned int max_errors = 1;
 unsigned int numeric_output;
 unsigned int ip2name_output;
 unsigned int handle_output;
@@ -56,6 +56,12 @@ void nft_global_deinit(void)
 	devgroup_table_exit();
 	realm_table_meta_exit();
 	mark_table_exit();
+}
+
+int nft_global_set_max_errors(unsigned int errors)
+{
+	max_errors = errors;
+	return NFT_EXIT_SUCCESS;
 }
 
 __attribute__((format(printf, 2, 0)))

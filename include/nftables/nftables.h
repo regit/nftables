@@ -22,6 +22,7 @@ enum nftables_exit_codes {
 };
 
 void nft_global_init(void);
+int nft_global_set_max_errors(unsigned int errors);
 void nft_global_deinit(void);
 
 struct nft_ctx *nft_context_new(void);
