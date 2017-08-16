@@ -192,6 +192,7 @@ int main(int argc, char * const *argv)
 	struct nft_ctx *nft;
 
 	nft_global_init();
+	nft_global_set_max_errors(10);
 	nft = nft_context_new();
 	while (1) {
 		val = getopt_long(argc, argv, OPTSTRING, options, NULL);
