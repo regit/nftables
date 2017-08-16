@@ -30,6 +30,7 @@ void nft_context_free(struct nft_ctx *nft);
 void nft_context_set_print_func(struct nft_ctx *nft,
 				int (*print)(void *ctx, const char *fmt, ...),
 				void *ctx);
+int nft_get_error(struct nft_ctx *nft, char *err_buf, size_t err_buf_len);
 
 int nft_run_command_from_buffer(struct nft_ctx *nft,
 				char *buf, size_t buflen);
