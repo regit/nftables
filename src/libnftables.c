@@ -7,6 +7,38 @@
  *
  */
 
+/**
+ *  \defgroup libnftables libnftables
+ *
+ *  libnftables is a high level nftables library that is meant to
+ *  be useful for frontend to nftables.
+ *
+ *  The synopsis of the library for a basic usage is the following
+ *
+ *  ```C
+ *	// init once the library cache
+ *	nft_global_init();
+ *	// create the nftables context
+ *	nft = nft_context_new();
+ *	// now you can run nftables commands
+ *	rc = nft_run_command_from_buffer(nft, CMD, sizeof(CMD));
+ *	if (rc != NFT_EXIT_SUCCESS) {
+ *		// use the following function to get errors
+ *		nft_get_error(nft, err_buf, sizeof(err_buf));
+ *		printf("%s\n", err_buf);
+ *		return -1;
+ *	}
+ *	// once you're done with the context, free allocated ressources
+ *	nft_context_free(nft);
+ *	// call deinit when you will not need anymore the library
+ *	nft_global_deinit();
+ *  ```
+ *  The library can be used to \ref run_commands "run commands" and has support
+ *  for \ref batch "batched commands".
+ *
+ *  @{
+ */
+
 #include <string.h>
 #include <errno.h>
 #include <nftables.h>
@@ -32,6 +64,12 @@ unsigned int debug_level;
 
 const char *include_paths[INCLUDE_PATHS_MAX] = { DEFAULT_INCLUDE_PATH };
 
+/**
+ * Init cache structure.
+ *
+ * This needs to be called once by process to do the initialization
+ * phase of some structures.
+ */
 void nft_global_init(void)
 {
 	mark_table_init();
@@ -45,6 +83,11 @@ void nft_global_init(void)
 #endif
 }
 
+/**
+ * Deinit global structures
+ *
+ * To be called once before exiting the nftables tasks
+ */
 void nft_global_deinit(void)
 {
 	iface_cache_release();
@@ -55,6 +98,15 @@ void nft_global_deinit(void)
 	mark_table_exit();
 }
 
+/**
+ * Set number of consecutive errors to handle
+ *
+ * This can be useful if you send complex command to nftables
+ * and want to debug it but it causes memory leak.
+ *
+ * \param errors number of errors message to queue
+ * \return NFT_EXIT_SUCCESS if success NFT_EXIT_FAILURE if not
+ */
 int nft_global_set_max_errors(unsigned int errors)
 {
 	max_errors = errors;
@@ -72,6 +124,11 @@ static int nft_print(void *ctx, const char *fmt, ...)
 	return 0;
 } 
 
+/**
+ * Allocate a nftables context
+ *
+ * \return a struct nft_ctx or NULL in case of error
+ */
 struct nft_ctx *nft_context_new(void)
 {
 	struct nft_ctx *ctx = NULL;
@@ -90,6 +147,16 @@ struct nft_ctx *nft_context_new(void)
 	return ctx;
 }
 
+/**
+ * Set print function for your application
+ *
+ * Command such as `list ruleset` can trigger an output. This function
+ * allows you to define which function should be used.
+ *
+ * \param nft a initialized struct nft_ctx
+ * \param print a print function
+ * \param ctx a pointer that will be passed as first argument of print function call
+ */
 void nft_context_set_print_func(struct nft_ctx *nft,
 				int (*print)(void *ctx, const char *fmt, ...),
 				void *ctx)
@@ -100,6 +167,11 @@ void nft_context_set_print_func(struct nft_ctx *nft,
 	}
 }
 
+/**
+ * Free a nftables context
+ *
+ * \param nft a struct nft_ctx to be freed
+ */
 void nft_context_free(struct nft_ctx *nft)
 {
 	if (nft == NULL)
@@ -118,7 +190,7 @@ static const struct input_descriptor indesc_cmdline = {
 /**
  * Get current errors and write them in provided buffer
  *
- * \return NFT_EXIT_SUCCESS if error, NFT_EXIT_FAILURE if error
+ * \return NFT_EXIT_SUCCESS if there is error, NFT_EXIT_FAILURE if no error available
  */
 int nft_get_error(struct nft_ctx *nft, char *err_buf, size_t err_buf_len)
 {
@@ -131,6 +203,37 @@ int nft_get_error(struct nft_ctx *nft, char *err_buf, size_t err_buf_len)
 	return NFT_EXIT_SUCCESS;
 }
 
+
+/**
+ * \defgroup run_commands Run nftables commands
+ *
+ * Once a nftables context has been initialized with nft_context_new()
+ * it is possible to run nftables commands via the following
+ * functions:
+ * * nft_run_command_from_buffer(): run command from a buffer
+ * * nft_run_command_from_filename(): run commands contained in a filename
+ *
+ * It is also possible to run multiple commands via \ref batch
+ *
+ * @{
+ */
+
+/**
+ * Run nftables command contained in provided buffer
+ *
+ * This function accept nft command with the same syntax
+ * as `nft` in interactive mode. For instance, this is a valid
+ * command if your ruleset has a `filter output` chain:
+ *
+ * ```C
+ * char ADD[] = "add rule filter output counter drop";
+ * ```
+ *
+ * \param nft a pointer to a initialized struct nft_ctx
+ * \param buf buffer containing the command to execute
+ * \param buflen the length of the buffer
+ * \return NFT_EXIT_SUCCESS if success NFT_EXIT_FAILURE if not
+ */
 int nft_run_command_from_buffer(struct nft_ctx *nft,
 				char *buf, size_t buflen)
 {
@@ -150,6 +253,26 @@ int nft_run_command_from_buffer(struct nft_ctx *nft,
 	return rc;
 }
 
+/**
+ * Run all nftables commands contained in a file
+ *
+ * This function provides away to programmatically get an equivalent
+ * of the `-f` option of `nft`. For instance
+ * For instance, this is a valid content for a file
+ * if your ruleset has a `filter output` chain:
+ *
+ * ```
+ *	table filter {
+ *		chain output {
+ *			counter drop
+ *		}
+ *	}
+ * ```
+ *
+ * \param nft a pointer to a initialized struct nft_ctx
+ * \param filename path to the file containing  nft rules
+ * \return NFT_EXIT_SUCCESS if success NFT_EXIT_FAILURE if not
+ */
 int nft_run_command_from_filename(struct nft_ctx *nft, const char *filename)
 {
 	int rc = NFT_EXIT_SUCCESS;
@@ -172,6 +295,63 @@ int nft_run_command_from_filename(struct nft_ctx *nft, const char *filename)
 	return rc;
 }
 
+/**
+ * @}
+ */
+
+/**
+ * \defgroup batch Batch support
+ *
+ * Nftables supports batch or transsaction. It is possible to prepare
+ * multiple commands and then run it at once. If one of the commands fails
+ * then the complete set of commands is not added to the firewall ruleset.
+ *
+ * libnftables support transaction and the synopsis of the usage it the
+ * following:
+ * * create a transaction with nft_batch_start()
+ * * add command to the batch with nft_batch_add()
+ * * commit the batch to kernel with nft_batch_commit()
+ *
+ * The following example code shows how to use it:
+ *
+ * ```C
+ *      char ADD1[] = "add rule nat postrouting ip saddr 1.2.3.4 masquerade";
+ *      char ADD2[] = "add rule filter forward ip saddr 1.2.3.4 accept";
+ *	// start a batch using an existing nftables context
+ *	batch = nft_batch_start(nft);
+ *	// add first command to the batch
+ *	if (nft_batch_add(nft, batch, ADD1, strlen(ADD1)) != NFT_EXIT_SUCCESS) {
+ *		// standard error handling
+ *		nft_get_error(nft, err_buf, sizeof(err_buf));
+ *		printf("%s\n", err_buf);
+ *		// free the batch
+ *		nft_batch_free(batch);
+ *		return -1;
+ *	}
+ *	// add second command
+ *	if (nft_batch_add(nft, batch, ADD2, strlen(ADD2)) != NFT_EXIT_SUCCESS) {
+ *		// error handling
+ *		nft_batch_free(batch);
+ *		return -1;
+ *	}
+ *	// send this batch of two commands to kernel and get result
+ *	ret = nft_batch_commit(nft, batch);
+ *	if (ret != 0) {
+ *		// error handling
+ *		nft_batch_free(batch);
+ *		return -1;
+ *	}
+ * ```
+ *
+ *  @{
+ */
+
+/**
+ * Start a batch
+ *
+ * \param nft a pointer to an initalized struct nft_ctx
+ * \return a pointer to an allocated and initialized struct nft_batch or NULL if error
+ */
 struct nft_batch *nft_batch_start(struct nft_ctx *nft)
 {
 	uint32_t seqnum;
@@ -198,6 +378,15 @@ struct nft_batch *nft_batch_start(struct nft_ctx *nft)
 	return batch;
 }
 
+/**
+ * Add a command to an already created batch
+ *
+ * \param nft nftables context initialized with nft_context_new()
+ * \param batch nftables batch initialized with nft_batch_start()
+ * \param buf buffer with command to execute
+ * \param buflen length of buffer string
+ * \return NFT_EXIT_SUCCESS in case of success or NFT_EXIT_FAILURE
+ */
 int nft_batch_add(struct nft_ctx *nft, struct nft_batch *batch,
 		  const char * buf, size_t buflen)
 {
@@ -236,6 +425,13 @@ err1:
 	return rc;
 }
 
+/**
+ * Commit a batch to the kernel
+ *
+ * \param nft nftables context initialized with nft_context_new()
+ * \param batch nftables batch with commands added via nft_batch_add()
+ * \return NFT_EXIT_SUCCESS in case of success or NFT_EXIT_FAILURE
+ */
 int nft_batch_commit(struct nft_ctx *nft, struct nft_batch *batch)
 {
 	int ret = 0;
@@ -264,6 +460,11 @@ out:
 	return ret;
 }
 
+/**
+ * Free ressources allocated to a batch
+ *
+ * \param batch nftables batch initialized with nft_batch_start()
+ */
 void nft_batch_free(struct nft_batch *batch)
 {
 	if (batch == NULL)
@@ -271,3 +472,11 @@ void nft_batch_free(struct nft_batch *batch)
 	mnl_batch_reset(batch->batch);
 	xfree(batch);
 }
+
+/**
+ * @}
+ */
+
+/**
+ * @}
+ */
