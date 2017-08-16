@@ -213,6 +213,16 @@ void erec_print_list(FILE *f, struct list_head *list)
 	}
 }
 
+void erec_free_list(struct list_head *list)
+{
+	struct error_record *erec, *next;
+
+	list_for_each_entry_safe(erec, next, list, list) {
+		list_del(&erec->list);
+		erec_destroy(erec);
+	}
+}
+
 int __fmtstring(4, 5) __stmt_binary_error(struct eval_ctx *ctx,
 					  const struct location *l1,
 					  const struct location *l2,
