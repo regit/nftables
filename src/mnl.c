@@ -245,6 +245,7 @@ static ssize_t mnl_nft_socket_sendmsg(const struct mnl_socket *nl,
 
 int mnl_batch_talk(struct netlink_ctx *ctx, struct list_head *err_list)
 {
+	int rc = 0;
 	struct mnl_socket *nl = ctx->nf_sock;
 	int ret, fd = mnl_socket_get_fd(nl), portid = mnl_socket_get_portid(nl);
 	char rcv_buf[MNL_SOCKET_BUFFER_SIZE];
@@ -275,8 +276,10 @@ int mnl_batch_talk(struct netlink_ctx *ctx, struct list_head *err_list)
 
 		ret = mnl_cb_run(rcv_buf, ret, 0, portid, &netlink_echo_callback, ctx);
 		/* Continue on error, make sure we get all acknowledgments */
-		if (ret == -1)
+		if (ret == -1) {
 			mnl_err_list_node_add(err_list, errno, nlh->nlmsg_seq);
+			rc = -1;
+		}
 
 		ret = select(fd+1, &readfds, NULL, NULL, &tv);
 		if (ret == -1)
@@ -285,7 +288,7 @@ int mnl_batch_talk(struct netlink_ctx *ctx, struct list_head *err_list)
 		FD_ZERO(&readfds);
 		FD_SET(fd, &readfds);
 	}
-	return ret;
+	return rc;
 }
 
 int mnl_nft_rule_batch_add(struct nftnl_rule *nlr, struct nftnl_batch *batch,
