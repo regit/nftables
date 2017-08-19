@@ -26,9 +26,6 @@
 
 
 unsigned int max_errors = 1;
-unsigned int numeric_output;
-unsigned int ip2name_output;
-unsigned int handle_output;
 #ifdef DEBUG
 unsigned int debug_level;
 #endif
